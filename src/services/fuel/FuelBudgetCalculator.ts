@@ -10,6 +10,8 @@ import type {
   FuelBudgetCalculation,
   FuelBudgetAdjustment,
   FuelBudgetValidationRules,
+} from '../../types/fuel.types';
+import {
   DEFAULT_VALIDATION_RULES,
 } from '../../types/fuel.types';
 

@@ -19,6 +19,8 @@ import type {
   CashAdvanceEligibility,
   CashAdvanceRepaymentTerms,
   PayrollConfiguration,
+} from '../../types/payroll.types';
+import {
   DEFAULT_PAYROLL_CONFIG,
 } from '../../types/payroll.types';
 

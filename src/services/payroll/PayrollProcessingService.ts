@@ -19,7 +19,6 @@ import type {
   PayrollPeriod,
   PayrollRecord,
   PayrollConfiguration,
-  DEFAULT_PAYROLL_CONFIG,
   EmployeeCompensation,
   DestinationRate,
   Allowance,
@@ -32,6 +31,9 @@ import type {
   PayrollAuditLog,
   Payslip,
   PayrollSummaryReport,
+} from '../../types/payroll.types';
+import {
+  DEFAULT_PAYROLL_CONFIG,
 } from '../../types/payroll.types';
 import { compensationCalculationService } from './CompensationCalculationService';
 import { cashAdvanceManagementService } from './CashAdvanceManagementService';

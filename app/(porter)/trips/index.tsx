@@ -75,7 +75,7 @@ export default function PorterTripsScreen() {
                 {trip.trip_number}
               </Text>
               <Text style={[styles.tripDate, { color: colors.textSecondary }]}>
-                {formatPhilippineDate(trip.trip_date)} • {formatPhilippineTime(trip.call_time)}
+                {formatPhilippineDate(trip.delivery_date)} • {formatPhilippineTime(trip.call_time)}
               </Text>
             </View>
             {isPending && (

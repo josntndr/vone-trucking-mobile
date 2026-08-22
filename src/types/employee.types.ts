@@ -57,8 +57,8 @@ export interface PerformanceNote {
 }
 
 export interface Employee {
-  id: string;
-  employee_id: string; // Employee number
+  readonly id: string;
+  readonly employee_id: string; // Employee number
   first_name: string;
   last_name: string;
   full_name?: string; // Computed
@@ -94,7 +94,7 @@ export interface Employee {
   compensation_config?: CompensationConfig;
   
   // Metadata
-  created_at: string;
+  readonly created_at: string;
   updated_at: string;
   created_by?: string;
   updated_by?: string;

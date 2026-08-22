@@ -19,6 +19,8 @@ import type {
   GPSCoordinates,
   IncidentValidation,
   IncidentValidationRules,
+} from '../../types/delivery.types';
+import {
   DEFAULT_INCIDENT_RULES,
 } from '../../types/delivery.types';
 

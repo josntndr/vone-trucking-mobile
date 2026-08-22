@@ -29,6 +29,8 @@ import { Ionicons } from '@expo/vector-icons';
 import type {
   IncidentReport,
   IncidentStatus,
+} from '../../types/delivery.types';
+import {
   INCIDENT_TYPE_LABELS,
   INCIDENT_SEVERITY_LABELS,
   INCIDENT_SEVERITY_COLORS,

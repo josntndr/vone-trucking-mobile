@@ -50,8 +50,8 @@ export interface TripAssignment {
 }
 
 export interface Trip {
-  id: string;
-  trip_number: string;
+  readonly id: string;
+  readonly trip_number: string;
   delivery_reference: string;
   
   // Schedule
@@ -97,9 +97,9 @@ export interface Trip {
   parent_trip_id?: string;
   
   // Metadata
-  created_at: string;
+  readonly created_at: string;
   updated_at: string;
-  created_by: string;
+  readonly created_by: string;
   updated_by: string;
   cancelled_at?: string;
   cancelled_by?: string;

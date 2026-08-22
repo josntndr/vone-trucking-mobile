@@ -27,6 +27,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import type {
   ProofOfDelivery,
+} from '../../types/delivery.types';
+import {
   ITEM_STATUS_LABELS,
   ITEM_STATUS_COLORS,
 } from '../../types/delivery.types';

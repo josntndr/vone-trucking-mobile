@@ -21,7 +21,7 @@ export default function HomeScreen() {
             style={[
               styles.greeting,
               {
-                color: theme.colors.text.secondary,
+                color: theme.colors.textSecondary,
                 fontSize: theme.fontSizes.base,
               },
             ]}
@@ -32,13 +32,13 @@ export default function HomeScreen() {
             style={[
               styles.name,
               {
-                color: theme.colors.text.primary,
+                color: theme.colors.text,
                 fontSize: theme.fontSizes['2xl'],
                 fontWeight: theme.fontWeights.bold,
               },
             ]}
           >
-            {user?.firstName || user?.email}
+            {user?.email}
           </Text>
         </View>
 
@@ -66,7 +66,7 @@ export default function HomeScreen() {
             style={[
               styles.cardTitle,
               {
-                color: theme.colors.text.primary,
+                color: theme.colors.text,
                 fontSize: theme.fontSizes.lg,
                 fontWeight: theme.fontWeights.semibold,
                 marginBottom: theme.spacing[2],
@@ -79,7 +79,7 @@ export default function HomeScreen() {
             style={[
               styles.cardText,
               {
-                color: theme.colors.text.secondary,
+                color: theme.colors.textSecondary,
                 fontSize: theme.fontSizes.base,
               },
             ]}
@@ -93,7 +93,7 @@ export default function HomeScreen() {
             style={[
               styles.cardTitle,
               {
-                color: theme.colors.text.primary,
+                color: theme.colors.text,
                 fontSize: theme.fontSizes.lg,
                 fontWeight: theme.fontWeights.semibold,
                 marginBottom: theme.spacing[3],
@@ -120,7 +120,7 @@ export default function HomeScreen() {
                 style={[
                   styles.statLabel,
                   {
-                    color: theme.colors.text.secondary,
+                    color: theme.colors.textSecondary,
                     fontSize: theme.fontSizes.sm,
                   },
                 ]}
@@ -145,7 +145,7 @@ export default function HomeScreen() {
                 style={[
                   styles.statLabel,
                   {
-                    color: theme.colors.text.secondary,
+                    color: theme.colors.textSecondary,
                     fontSize: theme.fontSizes.sm,
                   },
                 ]}

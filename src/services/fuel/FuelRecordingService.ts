@@ -9,9 +9,11 @@ import type {
   FuelRecord,
   FuelRecordValidation,
   FuelRecordValidationRules,
-  DEFAULT_FUEL_RECORD_RULES,
   OdometerReading,
   OdometerValidation,
+} from '../../types/fuel.types';
+import {
+  DEFAULT_FUEL_RECORD_RULES,
 } from '../../types/fuel.types';
 
 interface CreateFuelRecordInput {

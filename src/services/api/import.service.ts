@@ -15,11 +15,15 @@ import type {
   ColumnMappingPreset,
   ValidatedRow,
   ValidationIssue,
-  VoneTruckingField,
-  ValidationSeverity,
   ImportSource,
 } from '../../types/import.types';
-import { validateFieldDataType, getRequiredFields, FIELD_METADATA } from '../../types/import.types';
+import {
+  VoneTruckingField,
+  ValidationSeverity,
+  validateFieldDataType,
+  getRequiredFields,
+  FIELD_METADATA,
+} from '../../types/import.types';
 import { getTrips } from './trip.service';
 import { createTrip } from './trip.service';
 

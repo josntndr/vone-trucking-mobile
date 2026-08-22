@@ -13,6 +13,8 @@ import type {
   UploadQueueItem,
   UploadQueueStats,
   UploadQueueConfig,
+} from '../../types/delivery.types';
+import {
   DEFAULT_UPLOAD_CONFIG,
 } from '../../types/delivery.types';
 

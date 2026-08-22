@@ -3,9 +3,12 @@
  * Types for mobile workflows, assignments, checklists, and reports
  */
 
-import type { Trip, TripStatus, TripAssignment } from './trip.types';
+import { type Trip, TripStatus, type TripAssignment } from './trip.types';
 import type { Truck } from './truck.types';
 import type { Employee } from './employee.types';
+
+// Re-export TripStatus for convenience
+export { TripStatus };
 
 // Assignment status for driver/porter
 export enum AssignmentStatus {
@@ -15,10 +18,27 @@ export enum AssignmentStatus {
 }
 
 // Driver/Porter assignment with trip details
+/**
+ * Trip assignment for driver or porter.
+ * Tracks acknowledgment, rejection, and assigned resources.
+ * 
+ * @property id - Assignment identifier
+ * @property trip_id - Associated trip
+ * @property porter_id - Porter employee ID (for porter assignments)
+ * @property trip - Full trip details
+ * @property assignment_status - Current status (assigned, acknowledged, rejected, etc.)
+ * @property acknowledged_at - When assignment was acknowledged
+ * @property acknowledged_location - GPS location of acknowledgment
+ * @property rejection_reason - Why assignment was rejected (if applicable)
+ * @property truck - Assigned truck (populated for driver assignments)
+ * @property driver - Assigned driver (populated when needed)
+ * @property porters - List of assigned porters
+ */
 export interface Assignment {
-  id: string;
-  trip_id: string;
-  trip: Trip;
+  readonly id: string;
+  readonly trip_id: string;
+  readonly porter_id?: string; // Porter's employee ID (when assignment is for a porter)
+  readonly trip: Trip;
   assignment_status: AssignmentStatus;
   acknowledged_at?: string;
   acknowledged_location?: {
@@ -58,11 +78,11 @@ export enum DelayReason {
 }
 
 export interface DelayReport {
-  id: string;
-  trip_id: string;
-  reported_by: string;
-  reported_by_name: string;
-  reported_at: string;
+  readonly id: string;
+  readonly trip_id: string;
+  readonly reported_by: string;
+  readonly reported_by_name: string;
+  readonly reported_at: string;
   delay_reason: DelayReason;
   estimated_delay_minutes: number;
   description: string;
@@ -91,11 +111,11 @@ export enum IncidentSeverity {
 }
 
 export interface IncidentReport {
-  id: string;
-  trip_id: string;
-  reported_by: string;
-  reported_by_name: string;
-  reported_at: string;
+  readonly id: string;
+  readonly trip_id: string;
+  readonly reported_by: string;
+  readonly reported_by_name: string;
+  readonly reported_at: string;
   incident_type: IncidentType;
   severity: IncidentSeverity;
   description: string;
@@ -231,29 +251,82 @@ export interface ChecklistItem {
 }
 
 // Porter loading checklist
+/**
+ * Porter loading checklist for tracking items loaded onto truck.
+ * Includes validation flags for quality control and photographic evidence.
+ * 
+ * @property id - Auto-generated unique identifier
+ * @property trip_id - Associated trip identifier
+ * @property porter_id - Porter performing the loading
+ * @property started_at - Timestamp when loading began (auto-generated)
+ * @property completed_at - Timestamp when loading completed
+ * @property items - Detailed list of items being loaded
+ * @property total_items_loaded - Count of items successfully loaded
+ * @property discrepancy_reported - Whether any issues were found
+ * @property loading_photos - Photo URLs of loaded cargo
+ * @property all_items_loaded - Validation: all manifest items accounted for
+ * @property items_match_manifest - Validation: items match expected manifest
+ * @property items_properly_secured - Validation: cargo secured correctly
+ * @property no_damage_observed - Validation: no damage during loading
+ */
 export interface LoadingChecklist {
-  id: string;
-  trip_id: string;
-  porter_id: string;
-  started_at: string;
+  readonly id: string;
+  readonly trip_id: string;
+  readonly porter_id: string;
+  readonly started_at: string;
   completed_at?: string;
   items: ChecklistItem[];
   total_items_loaded: number;
   discrepancy_reported: boolean;
   discrepancy_notes?: string;
   loading_photos: string[];
+  
+  // Checklist validation flags
+  all_items_loaded?: boolean;
+  truck_condition_checked?: boolean;
+  items_secured?: boolean;
+  items_match_manifest?: boolean;
+  items_properly_secured?: boolean;
+  no_damage_observed?: boolean;
+  quantity_confirmed?: boolean;
+  notes?: string;
+  photo_urls?: string[]; // Alternative field name for photos
+  
   location?: {
     latitude: number;
     longitude: number;
   };
 }
 
-// Porter delivery checklist
+/**
+ * Submission payload for creating/updating loading checklist.
+ * Omits auto-generated fields (id, started_at).
+ * completed_at is set when checklist is finalized.
+ */
+export type LoadingChecklistSubmission = Omit<LoadingChecklist, 'id' | 'started_at'>;
+
+/**
+ * Porter delivery checklist for tracking delivery completion and customer acceptance.
+ * Includes validation flags and signature/acceptance tracking.
+ * 
+ * @property id - Auto-generated unique identifier
+ * @property trip_id - Associated trip identifier
+ * @property porter_id - Porter performing the delivery
+ * @property started_at - Timestamp when delivery began (auto-generated)
+ * @property completed_at - Timestamp when delivery completed
+ * @property total_items_delivered - Count of items successfully delivered
+ * @property items_returned - Count of items returned/rejected
+ * @property items_damaged - Count of items damaged during delivery
+ * @property all_items_delivered - Validation: all items delivered successfully
+ * @property customer_signature_obtained - Validation: customer signed acceptance
+ * @property delivery_location_correct - Validation: delivered to correct location
+ * @property no_damage_on_delivery - Validation: no damage at delivery point
+ */
 export interface DeliveryChecklist {
-  id: string;
-  trip_id: string;
-  porter_id: string;
-  started_at: string;
+  readonly id: string;
+  readonly trip_id: string;
+  readonly porter_id: string;
+  readonly started_at: string;
   completed_at?: string;
   items: ChecklistItem[];
   total_items_delivered: number;
@@ -262,11 +335,29 @@ export interface DeliveryChecklist {
   discrepancy_reported: boolean;
   discrepancy_notes?: string;
   unloading_photos: string[];
+  customer_notes?: string;
+  delivery_notes?: string;
+  photo_urls: string[];
+  
+  // Checklist validation flags
+  all_items_delivered?: boolean;
+  customer_signature_obtained?: boolean;
+  delivery_location_correct?: boolean;
+  no_damage_on_delivery?: boolean;
+  quantity_delivered?: number;
+  
   location?: {
     latitude: number;
     longitude: number;
   };
 }
+
+/**
+ * Submission payload for creating/updating delivery checklist.
+ * Omits auto-generated fields (id, started_at).
+ * completed_at is set when checklist is finalized.
+ */
+export type DeliveryChecklistSubmission = Omit<DeliveryChecklist, 'id' | 'started_at'>;
 
 // Porter time tracking
 export interface PorterTimeEntry {
@@ -296,21 +387,38 @@ export enum DiscrepancyType {
 }
 
 export interface ProductDiscrepancy {
-  id: string;
-  trip_id: string;
-  reported_by: string;
-  reported_by_name: string;
-  reported_at: string;
+  readonly id: string;
+  readonly trip_id: string;
+  readonly reported_by: string;
+  readonly reported_by_name: string;
+  readonly reported_at: string;
   discrepancy_type: DiscrepancyType;
-  product_description: string;
-  quantity: number;
+  product_name: string; // Name of the product
+  product_description: string; // Description of the discrepancy
+  expected_quantity?: number; // Expected quantity (for missing/rejected)
+  actual_quantity?: number; // Actual quantity received
+  quantity_difference?: number; // Difference in quantity
+  quantity: number; // Final quantity (damaged, missing, or rejected)
   reason?: string;
+  description?: string; // Additional description
   photos: string[];
+  photo_urls?: string[]; // Alternative field name for photos
   location?: {
     latitude: number;
     longitude: number;
   };
 }
+
+/**
+ * Submission payload for creating product discrepancy reports.
+ * Omits fields that are generated by the backend (id, reported_at).
+ * reported_by and reported_by_name should come from current user context.
+ */
+export type ProductDiscrepancySubmission = Omit<ProductDiscrepancy, 'id' | 'reported_at' | 'reported_by' | 'reported_by_name'> & {
+  // These fields are optional in submission, will be populated from auth context
+  reported_by?: string;
+  reported_by_name?: string;
+};
 
 // Payslip
 export interface Payslip {

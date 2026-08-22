@@ -15,8 +15,8 @@ export enum UserRole {
 
 // User profile
 export interface UserProfile {
-  id: string;
-  employee_id: string;
+  readonly id: string;
+  readonly employee_id: string;
   first_name: string;
   last_name: string;
   phone?: string;
@@ -27,7 +27,7 @@ export interface UserProfile {
   profile_photo_url?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
-  created_at: string;
+  readonly created_at: string;
   updated_at: string;
 }
 

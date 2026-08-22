@@ -16,9 +16,11 @@ import type {
   GPSCoordinates,
   PODValidation,
   PODValidationRules,
-  DEFAULT_POD_RULES,
   LocationVerification,
   DuplicateCheckResult,
+} from '../../types/delivery.types';
+import {
+  DEFAULT_POD_RULES,
 } from '../../types/delivery.types';
 
 const DRAFT_STORAGE_KEY = '@vone_pod_drafts';
