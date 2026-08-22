@@ -1,67 +1,66 @@
 /**
- * Root Index - Entry Point with Authentication Check
- * Determines whether to show demo login or real auth based on configuration
+ * Root Index - Application Entry Point
+ * Routes to splash → onboarding → welcome flow
+ * Or demo mode for development
  */
 
 import React, { useEffect, useState } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { useRouter } from 'expo-router';
-import { isDemoMode } from '../src/services/demo/demoAuth.service';
 import Constants from 'expo-constants';
 
 const SUPABASE_URL = Constants.expoConfig?.extra?.EXPO_PUBLIC_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
 
-// Check if Supabase is actually configured (not placeholder values)
-const isSupabaseConfigured = () => {
-  return SUPABASE_URL && 
-         SUPABASE_URL !== 'https://your-project.supabase.co' &&
-         !SUPABASE_URL.includes('your-project');
-};
+// Check if in development mode
+const isDevelopment = __DEV__;
 
 export default function Index() {
   const router = useRouter();
-  const [checking, setChecking] = useState(true);
+  const [showDevOptions, setShowDevOptions] = useState(false);
 
   useEffect(() => {
-    checkAuthAndRedirect();
+    // In development, show dev options briefly
+    if (isDevelopment) {
+      const timer = setTimeout(() => {
+        setShowDevOptions(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else {
+      // In production, go straight to entry flow
+      router.replace('/entry');
+    }
   }, []);
 
-  const checkAuthAndRedirect = async () => {
-    try {
-      // Check if we're in demo mode
-      const inDemoMode = await isDemoMode();
-      
-      if (inDemoMode) {
-        // Already in demo mode, check if user is logged in
-        // This will be handled by individual role screens
-        router.replace('/demo-login');
-        return;
-      }
-
-      // Check if Supabase is configured
-      if (!isSupabaseConfigured()) {
-        // No Supabase - go to demo login
-        router.replace('/demo-login');
-        return;
-      }
-
-      // Supabase is configured - use real auth
-      // This would check auth state and route accordingly
-      // For now, redirect to auth welcome screen
-      router.replace('/(auth)/welcome');
-      
-    } catch (error) {
-      console.error('Auth check error:', error);
-      // On error, default to demo mode
-      router.replace('/demo-login');
-    } finally {
-      setChecking(false);
-    }
+  const handleEntry = () => {
+    router.replace('/entry');
   };
 
+  const handleDemoMode = () => {
+    router.replace('/demo-login');
+  };
+
+  if (!isDevelopment || !showDevOptions) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#1B2845" />
+      </View>
+    );
+  }
+
+  // Development mode - show options
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#1A237E" />
+    <View style={styles.devContainer}>
+      <Text style={styles.devTitle}>Development Mode</Text>
+      
+      <TouchableOpacity style={styles.devButton} onPress={handleEntry}>
+        <Text style={styles.devButtonText}>Launch App (Normal Flow)</Text>
+        <Text style={styles.devButtonSubtext}>Splash → Onboarding → Welcome</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={[styles.devButton, styles.devButtonSecondary]} onPress={handleDemoMode}>
+        <Text style={[styles.devButtonText, styles.devButtonTextSecondary]}>Demo Mode (Testing)</Text>
+        <Text style={[styles.devButtonSubtext, styles.devButtonTextSecondary]}>Quick role selection</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -71,7 +70,47 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#FAF9F7',
+  },
+  devContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FAF9F7',
+    padding: 20,
+  },
+  devTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1B2845',
+    marginBottom: 32,
+  },
+  devButton: {
+    backgroundColor: '#1B2845',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    width: '100%',
+    maxWidth: 320,
+    alignItems: 'center',
+  },
+  devButtonSecondary: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#1B2845',
+  },
+  devButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  devButtonTextSecondary: {
+    color: '#1B2845',
+  },
+  devButtonSubtext: {
+    color: '#D97638',
+    fontSize: 14,
   },
 });
 

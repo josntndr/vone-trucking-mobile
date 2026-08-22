@@ -1,67 +1,68 @@
 /**
- * Theme Provider - Professional Vone Trucking Design System
- * Deep navy blue primary, orange accent, consistent spacing and typography
+ * Theme Provider - Modern Vone Trucking Design System
+ * Warm, sophisticated palette inspired by modern mobile apps
+ * Deep ink navy, muted orange/clay accents, warm backgrounds
  */
 
 import React, { createContext, useContext, ReactNode } from 'react';
 
-// Professional Vone Trucking Color System
+// Warm, Modern Vone Trucking Color System
 const colors = {
-  // Brand Colors
-  primary: '#1A237E',        // Deep navy blue
-  primaryLight: '#3949AB',   // Lighter navy
-  primaryDark: '#0D1642',    // Darker navy
-  accent: '#FF6F00',         // Orange accent
-  accentLight: '#FF9800',    // Lighter orange/amber
-  accentDark: '#E65100',     // Darker orange
+  // Brand Colors - Deep, sophisticated tones
+  primary: '#1B2845',        // Deep ink navy (darker, warmer than pure navy)
+  primaryLight: '#2E4057',   // Lighter navy with warmth
+  primaryDark: '#0F1923',    // Very dark navy, almost black
+  accent: '#D97638',         // Muted clay orange (warmer, less bright)
+  accentLight: '#E89A5F',    // Lighter clay
+  accentDark: '#B85E28',     // Deeper terracotta
   
-  // Background Colors
-  background: '#F5F5F5',     // Soft off-white
-  backgroundDark: '#E0E0E0', // Slightly darker background
-  surface: '#FFFFFF',        // White cards/surfaces
-  surfaceElevated: '#FAFAFA', // Slightly elevated surfaces
+  // Background Colors - Warm, inviting
+  background: '#FAF9F7',     // Warm off-white (cream undertone)
+  backgroundDark: '#F0EBE3', // Slightly darker warm background
+  surface: '#FFFFFF',        // Pure white for cards
+  surfaceElevated: '#FEFDFB', // Barely-there warm tint
   
-  // Text Colors
-  text: '#212121',           // Primary text (dark gray, not pure black)
-  textSecondary: '#757575',  // Secondary text
-  textTertiary: '#9E9E9E',   // Tertiary text/disabled
+  // Text Colors - Warm, readable
+  text: '#2A2520',           // Deep warm charcoal (not pure black)
+  textSecondary: '#6B5D52',  // Warm mid-gray with brown undertone
+  textTertiary: '#9C8D80',   // Light warm gray
   textInverse: '#FFFFFF',    // Text on dark backgrounds
   
-  // Border Colors
-  border: '#E0E0E0',         // Default borders
-  borderLight: '#F5F5F5',    // Light borders
-  borderDark: '#BDBDBD',     // Darker borders
+  // Border Colors - Soft, subtle
+  border: '#E8E3DC',         // Soft warm border
+  borderLight: '#F2EFE9',    // Very light warm border
+  borderDark: '#CDC4B8',     // Darker warm border
   
-  // Status Colors
-  success: '#4CAF50',        // Green
-  successLight: '#81C784',
-  successDark: '#388E3C',
+  // Status Colors - Muted, sophisticated
+  success: '#5C9F76',        // Muted sage green
+  successLight: '#7DB795',
+  successDark: '#478563',
   
-  warning: '#FF9800',        // Amber
-  warningLight: '#FFB74D',
-  warningDark: '#F57C00',
+  warning: '#D9A74A',        // Muted amber/gold
+  warningLight: '#E6BD6D',
+  warningDark: '#B8872F',
   
-  error: '#F44336',          // Red
-  errorLight: '#E57373',
-  errorDark: '#D32F2F',
+  error: '#C85C52',          // Muted terracotta red
+  errorLight: '#D97E75',
+  errorDark: '#A54139',
   
-  info: '#2196F3',           // Blue
-  infoLight: '#64B5F6',
-  infoDark: '#1976D2',
+  info: '#5B8BA6',           // Muted steel blue
+  infoLight: '#7BA5BB',
+  infoDark: '#446E85',
   
-  // Trip Status Colors
-  statusScheduled: '#2196F3',    // Blue
-  statusInProgress: '#FF9800',   // Orange
-  statusCompleted: '#4CAF50',    // Green
-  statusCancelled: '#9E9E9E',    // Gray
-  statusDelayed: '#F44336',      // Red
+  // Trip Status Colors - Consistent with muted palette
+  statusScheduled: '#5B8BA6',    // Muted blue
+  statusInProgress: '#D9A74A',   // Muted amber
+  statusCompleted: '#5C9F76',    // Muted green
+  statusCancelled: '#9C8D80',    // Warm gray
+  statusDelayed: '#C85C52',      // Muted red
   
   // Overlay Colors
-  overlay: 'rgba(0, 0, 0, 0.5)',
-  overlayLight: 'rgba(0, 0, 0, 0.3)',
+  overlay: 'rgba(27, 40, 69, 0.6)',      // Dark navy overlay
+  overlayLight: 'rgba(27, 40, 69, 0.3)',
 };
 
-// Typography Scale
+// Typography Scale - Strong, editorial-style headings
 const typography = {
   fontFamily: {
     regular: 'System',
@@ -70,25 +71,26 @@ const typography = {
     bold: 'System',
   },
   fontSize: {
-    xs: 11,
-    sm: 13,
-    base: 16,
-    lg: 18,
-    xl: 20,
-    '2xl': 24,
-    '3xl': 28,
-    '4xl': 32,
+    xs: 12,
+    sm: 14,
+    base: 17,        // Increased from 16 for better readability
+    lg: 20,          // Increased for stronger hierarchy
+    xl: 24,
+    '2xl': 32,       // Large editorial headings
+    '3xl': 38,       // Very large headings
+    '4xl': 44,       // Hero text
   },
   lineHeight: {
     tight: 1.2,
     normal: 1.5,
-    relaxed: 1.75,
+    relaxed: 1.6,    // More comfortable
   },
   fontWeight: {
     regular: '400' as const,
     medium: '500' as const,
     semibold: '600' as const,
     bold: '700' as const,
+    heavy: '800' as const,  // For strong headlines
   },
 };
 
@@ -107,18 +109,18 @@ const spacing = {
   16: 64,
 };
 
-// Border Radius
+// Border Radius - Rounded, modern mobile surfaces
 const borderRadius = {
   none: 0,
-  sm: 4,
-  base: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  sm: 8,
+  base: 12,
+  md: 18,         // Increased for more rounded cards
+  lg: 24,         // Very rounded
+  xl: 32,         // Extra rounded
   full: 9999,
 };
 
-// Shadows
+// Shadows - Soft, subtle elevation
 const shadows = {
   none: {
     shadowColor: 'transparent',
@@ -128,31 +130,31 @@ const shadows = {
     elevation: 0,
   },
   sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowColor: '#1B2845',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 3,
     elevation: 1,
   },
   base: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowColor: '#1B2845',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
     elevation: 2,
   },
   md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowColor: '#1B2845',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
     elevation: 4,
   },
   lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
+    shadowColor: '#1B2845',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
     elevation: 8,
   },
 };
