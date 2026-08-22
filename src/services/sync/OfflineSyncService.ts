@@ -18,9 +18,9 @@ import type {
   SyncStatus,
   PhotoUploadQueueItem,
   SyncConfiguration,
-  DEFAULT_SYNC_CONFIG,
   DuplicateDetection,
 } from '../../types/sync.types';
+import { DEFAULT_SYNC_CONFIG } from '../../types/sync.types';
 
 const SYNC_QUEUE_KEY = '@vone_sync_queue';
 const PHOTO_QUEUE_KEY = '@vone_photo_queue';

@@ -1,15 +1,16 @@
 /**
  * Root Layout - Simplified
- * Main navigation layout
+ * Main navigation layout with mobile viewport wrapper for web testing
  */
 
 import React from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import MobileViewportWrapper from '../src/components/layout/MobileViewportWrapper';
 
 export default function RootLayout() {
   return (
-    <>
+    <MobileViewportWrapper>
       <StatusBar style="auto" />
       <Stack
         screenOptions={{
@@ -21,6 +22,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" />
       </Stack>
-    </>
+    </MobileViewportWrapper>
   );
 }
+

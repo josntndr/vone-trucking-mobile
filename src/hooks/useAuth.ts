@@ -1,16 +1,19 @@
 /**
  * Authentication Hook
  * Manages authentication state and provides auth methods
+ * Supports both Supabase auth and demo mode
  */
 
 import { useState, useEffect, useCallback } from 'react';
 import * as AuthService from '../services/api/auth.service';
-import { supabase } from '../services/api/supabase';
+import { supabase, isSupabaseConfigured } from '../services/api/supabase';
+import * as DemoAuth from '../services/demo/demoAuth.service';
 
 export const useAuth = () => {
   const [user, setUser] = useState<AuthService.User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inDemoMode, setInDemoMode] = useState(false);
 
   /**
    * Load current user session
@@ -20,13 +23,30 @@ export const useAuth = () => {
       setLoading(true);
       setError(null);
 
-      const response = await AuthService.getCurrentUser();
+      // Check if in demo mode
+      const demoMode = await DemoAuth.isDemoMode();
+      setInDemoMode(demoMode);
 
-      if (response.error) {
+      if (demoMode) {
+        // Load demo user
+        const demoResponse = await DemoAuth.getDemoUser();
+        if (demoResponse.data) {
+          setUser(demoResponse.data);
+        } else {
+          setUser(null);
+        }
+      } else if (isSupabaseConfigured()) {
+        // Load real user
+        const response = await AuthService.getCurrentUser();
+        if (response.error) {
+          setUser(null);
+          setError(response.error);
+        } else if (response.data) {
+          setUser(response.data);
+        }
+      } else {
+        // No auth configured
         setUser(null);
-        setError(response.error);
-      } else if (response.data) {
-        setUser(response.data);
       }
     } catch (err) {
       setUser(null);
@@ -100,12 +120,18 @@ export const useAuth = () => {
     setLoading(true);
     setError(null);
 
-    const response = await AuthService.signOut();
-
-    if (response.error) {
-      setError(response.error);
-      setLoading(false);
-      return { success: false, error: response.error };
+    // Check if demo mode
+    const demoMode = await DemoAuth.isDemoMode();
+    
+    if (demoMode) {
+      await DemoAuth.demoSignOut();
+    } else {
+      const response = await AuthService.signOut();
+      if (response.error) {
+        setError(response.error);
+        setLoading(false);
+        return { success: false, error: response.error };
+      }
     }
 
     setUser(null);
@@ -183,23 +209,25 @@ export const useAuth = () => {
   useEffect(() => {
     loadUser();
 
-    // Listen for auth state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
-          const response = await AuthService.getCurrentUser();
-          if (response.data) {
-            setUser(response.data);
+    // Only listen for Supabase auth changes if configured
+    if (isSupabaseConfigured()) {
+      const { data: authListener } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          if (event === 'SIGNED_IN' && session?.user) {
+            const response = await AuthService.getCurrentUser();
+            if (response.data) {
+              setUser(response.data);
+            }
+          } else if (event === 'SIGNED_OUT') {
+            setUser(null);
           }
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
         }
-      }
-    );
+      );
 
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+      return () => {
+        authListener.subscription.unsubscribe();
+      };
+    }
   }, [loadUser]);
 
   return {
@@ -207,6 +235,7 @@ export const useAuth = () => {
     loading,
     error,
     isAuthenticated: !!user,
+    isDemoMode: inDemoMode,
     signIn,
     signUp,
     signOut,

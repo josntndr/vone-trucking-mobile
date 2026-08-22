@@ -17,7 +17,7 @@ export type SyncEntityType =
 
 export type SyncOperation = 'create' | 'update' | 'delete';
 
-export type SyncStatus = 'pending' | 'syncing' | 'synced' | 'failed' | 'conflict';
+export type SyncItemStatus = 'pending' | 'syncing' | 'synced' | 'failed' | 'conflict';
 
 export interface SyncQueueItem {
   id: string;
@@ -34,7 +34,7 @@ export interface SyncQueueItem {
   device_id: string;
   
   // Sync status
-  status: SyncStatus;
+  status: SyncItemStatus;
   sync_attempts: number;
   last_sync_attempt_at?: string;
   synced_at?: string;
