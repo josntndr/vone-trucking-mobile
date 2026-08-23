@@ -374,10 +374,9 @@ export default function FuelReceiptsScreen() {
             </Card>
 
             <Button
-              title={submitting ? 'Submitting...' : 'Submit Fuel Entry'}
               onPress={handleSubmitFuel}
               fullWidth
-              size="large"
+              size="lg"
               disabled={submitting}
               icon={
                 submitting ? (
@@ -386,7 +385,9 @@ export default function FuelReceiptsScreen() {
                   <MaterialCommunityIcons name="send" size={24} color="#fff" />
                 )
               }
-            />
+            >
+              {submitting ? 'Submitting...' : 'Submit Fuel Entry'}
+            </Button>
           </>
         )}
 
@@ -484,10 +485,9 @@ export default function FuelReceiptsScreen() {
             </Card>
 
             <Button
-              title={submitting ? 'Submitting...' : 'Submit Receipt'}
               onPress={handleSubmitReceipt}
               fullWidth
-              size="large"
+              size="lg"
               disabled={submitting}
               icon={
                 submitting ? (
@@ -496,7 +496,9 @@ export default function FuelReceiptsScreen() {
                   <MaterialCommunityIcons name="send" size={24} color="#fff" />
                 )
               }
-            />
+            >
+              {submitting ? 'Submitting...' : 'Submit Receipt'}
+            </Button>
           </>
         )}
 
@@ -602,10 +604,9 @@ export default function FuelReceiptsScreen() {
             </Card>
 
             <Button
-              title={submitting ? 'Recording...' : 'Record Odometer'}
               onPress={handleSubmitOdometer}
               fullWidth
-              size="large"
+              size="lg"
               disabled={submitting}
               icon={
                 submitting ? (
@@ -614,7 +615,9 @@ export default function FuelReceiptsScreen() {
                   <MaterialCommunityIcons name="send" size={24} color="#fff" />
                 )
               }
-            />
+            >
+              {submitting ? 'Recording...' : 'Record Odometer'}
+            </Button>
           </>
         )}
       </ScrollView>

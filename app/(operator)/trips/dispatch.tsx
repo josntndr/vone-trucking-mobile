@@ -28,7 +28,22 @@ interface StatusGroup {
 }
 
 export default function DispatchDashboardScreen() {
-  const { colors, spacing } = useTheme();
+  // Force light theme for operator/admin
+  const themeObj = useTheme();
+  const colors = {
+    background: '#F7F4EF',
+    surface: '#FFFDFC',
+    text: '#24211F',
+    textSecondary: '#746B63',
+    border: '#E5DDD5',
+    primary: '#192A4A',
+    success: '#4F956E',
+    info: '#4D728C',
+    warning: '#C68A24',
+    error: '#C44C47',
+    white: '#FFFFFF',
+  };
+  const { spacing } = themeObj;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [stats, setStats] = useState<TripStats | null>(null);
@@ -108,7 +123,9 @@ export default function DispatchDashboardScreen() {
   if (loading) {
     return (
       <Screen>
-        <LoadingSpinner />
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <LoadingSpinner />
+        </View>
       </Screen>
     );
   }
@@ -116,9 +133,9 @@ export default function DispatchDashboardScreen() {
   return (
     <Screen>
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
       >
         {/* Stats Overview */}
         {stats && (
@@ -188,7 +205,7 @@ export default function DispatchDashboardScreen() {
                     </Text>
                   </View>
                   <View style={[styles.statusBadge, { backgroundColor: group.color }]}>
-                    <Text style={[styles.statusCount, { color: '#FFFFFF' }]}>
+                    <Text style={[styles.statusCount, { color: colors.white }]}>
                       {group.trips.length}
                     </Text>
                   </View>

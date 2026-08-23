@@ -104,7 +104,7 @@ export default function SpreadsheetsScreen() {
         <Card
           style={[
             styles.spreadsheetCard,
-            isSelected && { borderColor: colors.primary, borderWidth: 2 },
+            isSelected ? { borderColor: colors.primary, borderWidth: 2 } : {},
           ]}
         >
           <View style={styles.spreadsheetHeader}>

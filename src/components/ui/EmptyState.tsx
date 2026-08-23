@@ -37,7 +37,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         style={[
           styles.title,
           {
-            color: theme.colors.text.primary,
+            color: theme.colors.text,
             fontSize: theme.fontSizes.xl,
             fontWeight: theme.fontWeights.semibold,
             marginTop: icon ? theme.spacing[4] : 0,
@@ -52,7 +52,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
           style={[
             styles.description,
             {
-              color: theme.colors.text.secondary,
+              color: theme.colors.textSecondary,
               fontSize: theme.fontSizes.base,
               marginTop: theme.spacing[2],
             },

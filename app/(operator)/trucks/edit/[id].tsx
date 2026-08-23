@@ -53,7 +53,7 @@ export default function EditTruckScreen() {
     watch,
     reset,
   } = useForm<TruckFormData>({
-    resolver: zodResolver(truckSchema),
+    resolver: zodResolver(truckSchema) as any,
   });
 
   const selectedFuelType = watch('fuel_type');
@@ -364,17 +364,19 @@ export default function EditTruckScreen() {
       >
         <View style={[styles.footerContent, { paddingHorizontal: spacing.md }]}>
           <Button
-            title="Cancel"
             onPress={() => router.back()}
             variant="outline"
             style={{ flex: 1, marginRight: spacing.sm }}
-          />
+          >
+            Cancel
+          </Button>
           <Button
-            title={isSubmitting ? 'Saving...' : 'Save Changes'}
-            onPress={handleSubmit(onSubmit)}
+            onPress={handleSubmit((data) => onSubmit(data))}
             loading={isSubmitting}
             style={{ flex: 1 }}
-          />
+          >
+            {isSubmitting ? 'Saving...' : 'Save Changes'}
+          </Button>
         </View>
       </View>
     </Screen>

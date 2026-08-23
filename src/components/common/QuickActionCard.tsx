@@ -23,7 +23,7 @@ export default function QuickActionCard({
   variant = 'primary',
   style,
 }: QuickActionCardProps) {
-  const { colors, typography, spacing, borderRadius, shadows } = useTheme();
+  const { colors, fontSizes, fontWeights, spacing, borderRadius, shadows } = useTheme();
 
   const isPrimary = variant === 'primary';
 
@@ -54,8 +54,8 @@ export default function QuickActionCard({
           styles.label,
           {
             color: isPrimary ? colors.textInverse : colors.text,
-            fontSize: typography.fontSize.sm,
-            fontWeight: typography.fontWeight.medium,
+            fontSize: fontSizes.sm,
+            fontWeight: fontWeights.medium,
             marginTop: spacing[2],
           },
         ]}

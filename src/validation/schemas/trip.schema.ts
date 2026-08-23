@@ -154,10 +154,7 @@ export const createTripSchema = z.object({
     .optional()
     .or(z.literal('')),
 
-  status: z
-    .nativeEnum(TripStatus)
-    .optional()
-    .default(TripStatus.DRAFT),
+  status: z.nativeEnum(TripStatus).default(TripStatus.DRAFT),
 
   is_recurring: z
     .boolean()

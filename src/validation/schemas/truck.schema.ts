@@ -37,16 +37,20 @@ export const truckSchema = z.object({
     .trim(),
   
   year: z
-    .number()
-    .int('Year must be a whole number')
-    .min(1900, 'Year must be 1900 or later')
-    .max(currentYear + 1, `Year cannot be later than ${currentYear + 1}`)
-    .or(
+    .union([
+      z.number(),
       z.string().transform((val) => {
         const num = parseInt(val, 10);
         if (isNaN(num)) throw new Error('Invalid year');
         return num;
-      })
+      }),
+    ])
+    .pipe(
+      z
+        .number()
+        .int('Year must be a whole number')
+        .min(1900, 'Year must be 1900 or later')
+        .max(currentYear + 1, `Year cannot be later than ${currentYear + 1}`)
     ),
   
   truck_type: z
@@ -55,15 +59,15 @@ export const truckSchema = z.object({
     .optional(),
   
   capacity_kg: z
-    .number()
-    .positive('Capacity must be positive')
-    .or(
+    .union([
+      z.number(),
       z.string().transform((val) => {
         const num = parseFloat(val);
         if (isNaN(num) || num <= 0) throw new Error('Capacity must be a positive number');
         return num;
-      })
-    ),
+      }),
+    ])
+    .pipe(z.number().positive('Capacity must be positive')),
   
   fuel_type: z.nativeEnum(FuelType, {
     message: 'Invalid fuel type',

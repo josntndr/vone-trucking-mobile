@@ -1,11 +1,13 @@
 /**
  * Truck Service
  * Handles truck CRUD operations via Supabase
+ * Falls back to demo data when Supabase is not configured
  */
 
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { ApiResponse, PaginatedResponse } from '../../types';
 import type { Truck, CreateTruckInput, UpdateTruckInput, TruckFilters, TruckStatus } from '../../types/truck.types';
+import { getDemoTrucks, getDemoTruckById } from '../demo/demoTrucks.service';
 
 /**
  * Fetch all trucks with optional filters
@@ -16,6 +18,31 @@ export const getTrucks = async (
   limit: number = 20
 ): Promise<ApiResponse<PaginatedResponse<Truck>>> => {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured()) {
+      // Use demo data
+      const demoTrucks = getDemoTrucks({
+        status: filters?.status,
+        is_active: filters?.is_active,
+        search: filters?.search,
+      });
+
+      // Pagination
+      const start = (page - 1) * limit;
+      const end = start + limit;
+      const paginatedData = demoTrucks.slice(start, end);
+
+      return {
+        data: {
+          data: paginatedData,
+          total: demoTrucks.length,
+          page,
+          limit,
+          hasMore: demoTrucks.length > end,
+        },
+      };
+    }
+
     let query = supabase
       .from('trucks')
       .select('*, gps_devices(device_id, device_name)', { count: 'exact' })
@@ -71,6 +98,17 @@ export const getTrucks = async (
  */
 export const getTruckById = async (id: string): Promise<ApiResponse<Truck>> => {
   try {
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured()) {
+      const demoTruck = getDemoTruckById(id);
+      
+      if (!demoTruck) {
+        return { error: 'Truck not found' };
+      }
+
+      return { data: demoTruck };
+    }
+
     const { data, error } = await supabase
       .from('trucks')
       .select(`

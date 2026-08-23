@@ -51,8 +51,8 @@ export const StatusChip: React.FC<StatusChipProps> = ({
         };
       case 'neutral':
         return {
-          container: { backgroundColor: theme.colors.surface.secondary },
-          text: { color: theme.colors.text.secondary },
+          container: { backgroundColor: theme.colors.backgroundSecondary },
+          text: { color: theme.colors.textSecondary },
         };
       default:
         return {

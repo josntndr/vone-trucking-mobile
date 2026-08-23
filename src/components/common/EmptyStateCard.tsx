@@ -28,7 +28,7 @@ export default function EmptyStateCard({
   onActionPress,
   style,
 }: EmptyStateCardProps) {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
 
   return (
     <View
@@ -59,8 +59,8 @@ export default function EmptyStateCard({
           styles.title,
           {
             color: colors.text,
-            fontSize: typography.fontSize.lg,
-            fontWeight: typography.fontWeight.semibold,
+            fontSize: fontSizes.lg,
+            fontWeight: fontWeights.semibold,
             marginTop: spacing[4],
           },
         ]}
@@ -74,7 +74,7 @@ export default function EmptyStateCard({
           styles.description,
           {
             color: colors.textSecondary,
-            fontSize: typography.fontSize.base,
+            fontSize: fontSizes.base,
             marginTop: spacing[2],
           },
         ]}

@@ -33,13 +33,13 @@ export const Card: React.FC<CardProps> = ({
         };
       case 'outlined':
         return {
-          backgroundColor: theme.colors.surface.primary,
+          backgroundColor: theme.colors.surface,
           borderWidth: 1,
-          borderColor: theme.colors.border.medium,
+          borderColor: theme.colors.border,
         };
       case 'filled':
         return {
-          backgroundColor: theme.colors.surface.secondary,
+          backgroundColor: theme.colors.backgroundSecondary,
         };
       default:
         return {};

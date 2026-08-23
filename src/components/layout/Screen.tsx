@@ -36,7 +36,7 @@ export const Screen: React.FC<ScreenProps> = ({
 
   const baseStyle: ViewStyle = {
     flex: 1,
-    backgroundColor: theme.colors.background.primary,
+    backgroundColor: theme.colors.background,
   };
 
   const paddingStyle: ViewStyle = padding

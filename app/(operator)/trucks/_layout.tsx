@@ -8,7 +8,7 @@ export default function TrucksLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerBackTitle: 'Back',
       }}
     >
@@ -16,13 +16,14 @@ export default function TrucksLayout() {
         name="index"
         options={{
           title: 'Trucks',
-          headerLargeTitle: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="[id]"
         options={{
           title: 'Truck Details',
+          headerShown: true,
         }}
       />
       <Stack.Screen
@@ -30,6 +31,7 @@ export default function TrucksLayout() {
         options={{
           title: 'Add Truck',
           presentation: 'modal',
+          headerShown: true,
         }}
       />
       <Stack.Screen
@@ -37,6 +39,7 @@ export default function TrucksLayout() {
         options={{
           title: 'Edit Truck',
           presentation: 'modal',
+          headerShown: true,
         }}
       />
     </Stack>

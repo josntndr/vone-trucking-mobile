@@ -63,7 +63,7 @@ export interface FieldMetadata {
 export interface ColumnMapping {
   spreadsheet_column: string; // e.g., "A", "B", "Delivery Date"
   spreadsheet_column_index: number; // 0-based index
-  vone_field: VoneTruckingField;
+  vone_field: VoneTruckingField | null; // null for unmapped columns
   sample_values?: string[]; // First few values for preview
 }
 

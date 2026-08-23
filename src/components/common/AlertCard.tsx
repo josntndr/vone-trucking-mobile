@@ -27,7 +27,7 @@ export default function AlertCard({
   onDismiss,
   style,
 }: AlertCardProps) {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
 
   const getSeverityConfig = () => {
     switch (severity) {
@@ -98,8 +98,8 @@ export default function AlertCard({
               styles.title,
               {
                 color: config.textColor,
-                fontSize: typography.fontSize.base,
-                fontWeight: typography.fontWeight.semibold,
+                fontSize: fontSizes.base,
+                fontWeight: fontWeights.semibold,
               },
             ]}
           >
@@ -110,7 +110,7 @@ export default function AlertCard({
               styles.message,
               {
                 color: config.textColor,
-                fontSize: typography.fontSize.sm,
+                fontSize: fontSizes.sm,
                 marginTop: spacing[1],
               },
             ]}

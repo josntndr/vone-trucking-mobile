@@ -1,97 +1,29 @@
 /**
  * Application Entry Coordinator
- * Manages splash → onboarding → welcome → auth flow
+ * Private login-only system for Vone Trucking
+ * Flow: splash → MANDATORY login → dashboard
+ * Security: All users must authenticate on every app launch
  */
 
-import React, { useState, useEffect } from 'react';
-import { View } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useState } from 'react';
 import AnimatedSplash from '../src/components/splash/AnimatedSplash';
-import OnboardingScreens from '../src/components/onboarding/OnboardingScreens';
-import WelcomeScreen from '../src/components/welcome/WelcomeScreen';
 import { useRouter } from 'expo-router';
-
-const ONBOARDING_KEY = '@vone_trucking_onboarding_completed';
-
-type AppState = 'splash' | 'onboarding' | 'welcome';
+import { demoSignOut } from '../src/services/demo/demoAuth.service';
 
 export default function EntryScreen() {
   const router = useRouter();
-  const [appState, setAppState] = useState<AppState>('splash');
-
-  useEffect(() => {
-    // Check if onboarding was completed
-    checkOnboardingStatus();
-  }, []);
-
-  const checkOnboardingStatus = async () => {
-    try {
-      const completed = await AsyncStorage.getItem(ONBOARDING_KEY);
-      // Will be set after splash completes
-    } catch (error) {
-      console.error('Error checking onboarding status:', error);
-    }
-  };
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   const handleSplashComplete = async () => {
-    try {
-      const completed = await AsyncStorage.getItem(ONBOARDING_KEY);
-      if (completed === 'true') {
-        setAppState('welcome');
-      } else {
-        setAppState('onboarding');
-      }
-    } catch (error) {
-      // If error, show onboarding to be safe
-      setAppState('onboarding');
-    }
+    // Force login on every app launch
+    // This ensures all users must authenticate before entering the application
+    
+    // Clear any existing session
+    await demoSignOut();
+    
+    setCheckingAuth(false);
+    router.replace('/(auth)/login');
   };
 
-  const handleOnboardingComplete = async () => {
-    try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-      setAppState('welcome');
-    } catch (error) {
-      console.error('Error saving onboarding status:', error);
-      setAppState('welcome');
-    }
-  };
-
-  const handleOnboardingSkip = async () => {
-    try {
-      await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-      setAppState('welcome');
-    } catch (error) {
-      console.error('Error saving onboarding status:', error);
-      setAppState('welcome');
-    }
-  };
-
-  const handleLogin = () => {
-    router.push('/(auth)/login');
-  };
-
-  const handleRegister = () => {
-    router.push('/(auth)/register');
-  };
-
-  if (appState === 'splash') {
-    return <AnimatedSplash onComplete={handleSplashComplete} />;
-  }
-
-  if (appState === 'onboarding') {
-    return (
-      <OnboardingScreens
-        onComplete={handleOnboardingComplete}
-        onSkip={handleOnboardingSkip}
-      />
-    );
-  }
-
-  return (
-    <WelcomeScreen
-      onLogin={handleLogin}
-      onRegister={handleRegister}
-    />
-  );
+  return <AnimatedSplash onComplete={handleSplashComplete} />;
 }

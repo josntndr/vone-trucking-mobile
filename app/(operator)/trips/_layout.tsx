@@ -8,7 +8,7 @@ export default function TripsLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerBackTitle: 'Back',
       }}
     >
@@ -16,13 +16,14 @@ export default function TripsLayout() {
         name="index"
         options={{
           title: 'Trips',
-          headerLargeTitle: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="[id]"
         options={{
           title: 'Trip Details',
+          headerShown: true,
         }}
       />
       <Stack.Screen
@@ -30,6 +31,7 @@ export default function TripsLayout() {
         options={{
           title: 'Create Trip',
           presentation: 'modal',
+          headerShown: true,
         }}
       />
       <Stack.Screen
@@ -37,6 +39,7 @@ export default function TripsLayout() {
         options={{
           title: 'Edit Trip',
           presentation: 'modal',
+          headerShown: true,
         }}
       />
       <Stack.Screen
@@ -44,18 +47,21 @@ export default function TripsLayout() {
         options={{
           title: 'Assign Resources',
           presentation: 'modal',
+          headerShown: true,
         }}
       />
       <Stack.Screen
         name="calendar"
         options={{
           title: 'Trip Calendar',
+          headerShown: true,
         }}
       />
       <Stack.Screen
         name="dispatch"
         options={{
           title: 'Dispatch View',
+          headerShown: true,
         }}
       />
     </Stack>

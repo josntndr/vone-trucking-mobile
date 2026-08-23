@@ -8,7 +8,7 @@ export default function EmployeesLayout() {
   return (
     <Stack
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerBackTitle: 'Back',
       }}
     >
@@ -16,13 +16,14 @@ export default function EmployeesLayout() {
         name="index"
         options={{
           title: 'Employees',
-          headerLargeTitle: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="[id]"
         options={{
           title: 'Employee Details',
+          headerShown: true,
         }}
       />
       <Stack.Screen
@@ -30,6 +31,7 @@ export default function EmployeesLayout() {
         options={{
           title: 'Add Employee',
           presentation: 'modal',
+          headerShown: true,
         }}
       />
       <Stack.Screen
@@ -37,6 +39,7 @@ export default function EmployeesLayout() {
         options={{
           title: 'Edit Employee',
           presentation: 'modal',
+          headerShown: true,
         }}
       />
     </Stack>

@@ -67,7 +67,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     >
       <Text
         style={{
-          color: theme.colors.text.primary,
+          color: theme.colors.text,
           fontSize: theme.fontSizes.base,
           lineHeight: theme.lineHeights.normal * theme.fontSizes.base,
         }}

@@ -53,7 +53,7 @@ interface OnboardingScreensProps {
 }
 
 export default function OnboardingScreens({ onComplete, onSkip }: OnboardingScreensProps) {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -116,9 +116,9 @@ export default function OnboardingScreens({ onComplete, onSkip }: OnboardingScre
             styles.headline,
             {
               color: colors.text,
-              fontSize: typography.fontSize['3xl'],
-              fontWeight: typography.fontWeight.heavy,
-              lineHeight: typography.fontSize['3xl'] * typography.lineHeight.tight,
+              fontSize: fontSizes['3xl'],
+              fontWeight: fontWeights.heavy,
+              lineHeight: fontSizes['3xl'] * lineHeights.tight,
               marginBottom: spacing[4],
             },
           ]}
@@ -132,8 +132,8 @@ export default function OnboardingScreens({ onComplete, onSkip }: OnboardingScre
             styles.description,
             {
               color: colors.textSecondary,
-              fontSize: typography.fontSize.lg,
-              lineHeight: typography.fontSize.lg * typography.lineHeight.relaxed,
+              fontSize: fontSizes.lg,
+              lineHeight: fontSizes.lg * lineHeights.relaxed,
             },
           ]}
         >
@@ -153,8 +153,8 @@ export default function OnboardingScreens({ onComplete, onSkip }: OnboardingScre
               styles.skipText,
               {
                 color: colors.textSecondary,
-                fontSize: typography.fontSize.base,
-                fontWeight: typography.fontWeight.medium,
+                fontSize: fontSizes.base,
+                fontWeight: fontWeights.medium,
               },
             ]}
           >
@@ -218,8 +218,8 @@ export default function OnboardingScreens({ onComplete, onSkip }: OnboardingScre
                   styles.backButtonText,
                   {
                     color: colors.text,
-                    fontSize: typography.fontSize.base,
-                    fontWeight: typography.fontWeight.semibold,
+                    fontSize: fontSizes.base,
+                    fontWeight: fontWeights.semibold,
                   },
                 ]}
               >
@@ -247,8 +247,8 @@ export default function OnboardingScreens({ onComplete, onSkip }: OnboardingScre
                 styles.nextButtonText,
                 {
                   color: colors.textInverse,
-                  fontSize: typography.fontSize.base,
-                  fontWeight: typography.fontWeight.semibold,
+                  fontSize: fontSizes.base,
+                  fontWeight: fontWeights.semibold,
                 },
               ]}
             >

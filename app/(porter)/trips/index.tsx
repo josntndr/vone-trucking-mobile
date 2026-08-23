@@ -98,7 +98,7 @@ export default function PorterTripsScreen() {
             </Text>
           </View>
 
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           <View style={styles.locationRow}>
             <MaterialCommunityIcons
@@ -238,7 +238,6 @@ const styles = StyleSheet.create({
   filterTabs: {
     flexDirection: 'row',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   filterTab: {
     flex: 1,
@@ -315,7 +314,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     height: 1,
-    backgroundColor: '#e0e0e0',
     marginVertical: 8,
   },
   tripFooter: {

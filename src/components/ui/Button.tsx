@@ -25,6 +25,7 @@ export interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
   loading?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  icon?: React.ReactNode; // Alias for leftIcon
   children: React.ReactNode;
   style?: ViewStyle;
   textStyle?: TextStyle;
@@ -37,6 +38,7 @@ export const Button: React.FC<ButtonProps> = ({
   loading = false,
   leftIcon,
   rightIcon,
+  icon, // Alias for leftIcon
   children,
   disabled,
   style,
@@ -114,19 +116,19 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getTextColor = (): string => {
     if (disabled) {
-      return theme.colors.text.disabled;
+      return theme.colors.textDisabled;
     }
 
     switch (variant) {
       case 'primary':
       case 'secondary':
       case 'danger':
-        return theme.colors.text.inverse;
+        return theme.colors.textInverse;
       case 'outline':
       case 'ghost':
         return theme.colors.primary;
       default:
-        return theme.colors.text.primary;
+        return theme.colors.text;
     }
   };
 
@@ -179,7 +181,7 @@ export const Button: React.FC<ButtonProps> = ({
         <ActivityIndicator color={getTextColor()} size="small" />
       ) : (
         <>
-          {leftIcon && <>{leftIcon}</>}
+          {(leftIcon || icon) && <>{leftIcon || icon}</>}
           <Text style={textStyles}>{children}</Text>
           {rightIcon && <>{rightIcon}</>}
         </>

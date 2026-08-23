@@ -28,10 +28,19 @@ export const useAuth = () => {
       setInDemoMode(demoMode);
 
       if (demoMode) {
-        // Load demo user
+        // Load demo user and normalize the structure
         const demoResponse = await DemoAuth.getDemoUser();
         if (demoResponse.data) {
-          setUser(demoResponse.data);
+          // Normalize demo user to match Supabase user structure
+          const normalizedUser = {
+            ...demoResponse.data,
+            user_metadata: {
+              first_name: demoResponse.data.profile.first_name,
+              last_name: demoResponse.data.profile.last_name,
+              phone: demoResponse.data.profile.phone,
+            },
+          };
+          setUser(normalizedUser as any);
         } else {
           setUser(null);
         }

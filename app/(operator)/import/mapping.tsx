@@ -24,13 +24,14 @@ import {
   getColumnMappingPresets,
   saveColumnMappingPreset,
 } from '../../../src/services/api/import.service';
-import type {
-  ColumnMapping,
-  ColumnMappingPreset,
+import {
+  type ColumnMapping,
+  type ColumnMappingPreset,
   VoneTruckingField,
   ImportSource,
+  FIELD_METADATA,
+  getRequiredFields,
 } from '../../../src/types/import.types';
-import { FIELD_METADATA, getRequiredFields } from '../../../src/types/import.types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 
@@ -75,11 +76,11 @@ export default function MappingScreen() {
           (header, index) => ({
             spreadsheet_column: header,
             spreadsheet_column_index: index,
-            vone_field: '' as VoneTruckingField,
-            sample_values: dataResponse.data.rows
+            vone_field: null,
+            sample_values: dataResponse.data?.rows
               .slice(0, 3)
               .map((row) => row[index])
-              .filter(Boolean),
+              .filter(Boolean) || [],
           })
         );
         setMappings(initialMappings);
@@ -105,7 +106,7 @@ export default function MappingScreen() {
     const autoMapped = initialMappings.map((mapping) => {
       const columnName = mapping.spreadsheet_column.toLowerCase();
       
-      let voneField: VoneTruckingField | '' = '';
+      let voneField: VoneTruckingField | null = null;
 
       if (columnName.includes('delivery') && columnName.includes('ref')) {
         voneField = 'delivery_reference' as VoneTruckingField;
@@ -149,7 +150,7 @@ export default function MappingScreen() {
     setMappings(autoMapped);
   };
 
-  const handleMappingChange = (index: number, field: VoneTruckingField | '') => {
+  const handleMappingChange = (index: number, field: VoneTruckingField | null) => {
     const newMappings = [...mappings];
     newMappings[index].vone_field = field;
     setMappings(newMappings);
@@ -165,7 +166,7 @@ export default function MappingScreen() {
       return {
         spreadsheet_column: header,
         spreadsheet_column_index: index,
-        vone_field: presetMapping?.vone_field || ('' as VoneTruckingField),
+        vone_field: presetMapping?.vone_field || null,
         sample_values: sampleRows
           .map((row) => row[index])
           .filter(Boolean),
@@ -402,11 +403,12 @@ export default function MappingScreen() {
       {/* Continue Button */}
       <View style={[styles.footer, { backgroundColor: colors.surface }]}>
         <Button
-          title="Continue to Preview"
           onPress={handleContinue}
           fullWidth
           disabled={requiredMappedCount < requiredFieldsCount}
-        />
+        >
+          Continue to Preview
+        </Button>
       </View>
 
       {/* Load Preset Modal */}
@@ -514,11 +516,12 @@ export default function MappingScreen() {
               </Text>
 
               <Button
-                title="Save Preset"
                 onPress={handleSavePreset}
                 fullWidth
                 disabled={!presetName.trim()}
-              />
+              >
+                Save Preset
+              </Button>
             </View>
           </View>
         </View>

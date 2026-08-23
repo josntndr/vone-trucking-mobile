@@ -1,9 +1,10 @@
 /**
  * Application-wide constants
+ * Private internal management system for Vone Trucking
  */
 
 export const APP_NAME = 'Vone Trucking';
-export const APP_TAGLINE = 'Track Every Trip. Manage Every Move.';
+export const APP_TAGLINE = 'Vone Trucking operations, all in one place.';
 
 // API Configuration
 export const API_TIMEOUT = 30000; // 30 seconds

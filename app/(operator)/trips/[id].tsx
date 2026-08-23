@@ -515,32 +515,17 @@ export default function TripDetailScreen() {
 
       {/* Cancel Dialog */}
       <ConfirmDialog
-        visible={cancelDialogVisible}
-        title="Cancel Trip"
-        message="Please provide a reason for cancellation:"
-        onConfirm={handleCancelTrip}
-        onCancel={() => {
+        isOpen={cancelDialogVisible}
+        onClose={() => {
           setCancelDialogVisible(false);
           setCancellationReason('');
         }}
-        confirmText="Cancel Trip"
-        confirmColor={colors.error}
-      >
-        <input
-          style={{
-            width: '100%',
-            padding: 12,
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: colors.border,
-            marginTop: 12,
-          }}
-          placeholder="Enter cancellation reason (min 10 characters)"
-          value={cancellationReason}
-          onChange={(e) => setCancellationReason(e.target.value)}
-          multiline
-        />
-      </ConfirmDialog>
+        title="Cancel Trip"
+        message={`Please provide a reason for cancellation (min 10 characters):\n\nReason: ${cancellationReason || '(not entered)'}`}
+        onConfirm={handleCancelTrip}
+        confirmLabel="Cancel Trip"
+        isDestructive={true}
+      />
     </Screen>
   );
 }

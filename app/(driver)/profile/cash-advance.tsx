@@ -185,11 +185,12 @@ export default function CashAdvanceScreen() {
       {/* Request Button */}
       <View style={[styles.footer, { backgroundColor: colors.surface }]}>
         <Button
-          title="Request Cash Advance"
           onPress={() => setShowRequestModal(true)}
           fullWidth
           icon={<MaterialCommunityIcons name="plus" size={24} color="#fff" />}
-        />
+        >
+          Request Cash Advance
+        </Button>
       </View>
 
       {/* Request Modal */}
@@ -243,7 +244,6 @@ export default function CashAdvanceScreen() {
               </Text>
 
               <Button
-                title={submitting ? 'Submitting...' : 'Submit Request'}
                 onPress={handleSubmitRequest}
                 fullWidth
                 disabled={submitting}
@@ -254,7 +254,9 @@ export default function CashAdvanceScreen() {
                     <MaterialCommunityIcons name="send" size={24} color="#fff" />
                   )
                 }
-              />
+              >
+                {submitting ? 'Submitting...' : 'Submit Request'}
+              </Button>
             </View>
           </View>
         </View>

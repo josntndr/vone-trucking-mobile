@@ -1,92 +1,49 @@
 /**
  * Vone Trucking Color System
- * Brand Identity: Deep navy primary with orange/amber accent
+ * Consistent colors per specification
  */
 
-export const colors = {
-  // Primary - Deep Navy
-  primary: {
-    50: '#E8EAF6',
-    100: '#C5CAE9',
-    200: '#9FA8DA',
-    300: '#7986CB',
-    400: '#5C6BC0',
-    500: '#1A237E', // Main deep navy
-    600: '#161F6E',
-    700: '#12195E',
-    800: '#0E144E',
-    900: '#0A0F3E',
-  },
+// Brand Colors
+export const brandColors = {
+  // Primary Navy: #192A4A
+  primary: '#192A4A',
+  primaryLight: '#2D4166',
+  primaryDark: '#0F1A2E',
   
-  // Accent - Orange/Amber
-  accent: {
-    50: '#FFF8E1',
-    100: '#FFECB3',
-    200: '#FFE082',
-    300: '#FFD54F',
-    400: '#FFCA28',
-    500: '#FFA000', // Main orange/amber
-    600: '#FF8F00',
-    700: '#FF6F00',
-    800: '#E65100',
-    900: '#BF360C',
-  },
+  // Accent Orange: #D87532
+  accent: '#D87532',
+  accentLight: '#E89358',
+  accentDark: '#B65E23',
   
-  // Success - Green
-  success: {
-    50: '#E8F5E9',
-    100: '#C8E6C9',
-    200: '#A5D6A7',
-    300: '#81C784',
-    400: '#66BB6A',
-    500: '#4CAF50', // Main success
-    600: '#43A047',
-    700: '#388E3C',
-    800: '#2E7D32',
-    900: '#1B5E20',
-  },
+  // Warm Background: #F7F4EF
+  warmBackground: '#F7F4EF',
   
-  // Error/Warning - Red
-  error: {
-    50: '#FFEBEE',
-    100: '#FFCDD2',
-    200: '#EF9A9A',
-    300: '#E57373',
-    400: '#EF5350',
-    500: '#F44336', // Main error
-    600: '#E53935',
-    700: '#D32F2F',
-    800: '#C62828',
-    900: '#B71C1C',
-  },
+  // Main Surface: #FFFDFC
+  surface: '#FFFDFC',
   
-  // Warning - Amber
-  warning: {
-    50: '#FFF3E0',
-    100: '#FFE0B2',
-    200: '#FFCC80',
-    300: '#FFB74D',
-    400: '#FFA726',
-    500: '#FF9800', // Main warning
-    600: '#FB8C00',
-    700: '#F57C00',
-    800: '#EF6C00',
-    900: '#E65100',
-  },
+  // Text Colors
+  textPrimary: '#24211F',
+  textSecondary: '#746B63',
   
-  // Grayscale
-  gray: {
-    50: '#FAFAFA',
-    100: '#F5F5F5',
-    200: '#EEEEEE',
-    300: '#E0E0E0',
-    400: '#BDBDBD',
-    500: '#9E9E9E',
-    600: '#757575',
-    700: '#616161',
-    800: '#424242',
-    900: '#212121',
-  },
+  // Border: #E5DDD5
+  border: '#E5DDD5',
+  
+  // Status Colors
+  success: '#4F956E',
+  successLight: '#6BAA85',
+  successDark: '#3A7053',
+  
+  warning: '#C68A24',
+  warningLight: '#D4A450',
+  warningDark: '#9A6B1B',
+  
+  error: '#C44C47',
+  errorLight: '#D37169',
+  errorDark: '#9B3A36',
+  
+  info: '#4D728C',
+  infoLight: '#6B8EA4',
+  infoDark: '#3A5669',
   
   // Base colors
   white: '#FFFFFF',
@@ -94,67 +51,146 @@ export const colors = {
   transparent: 'transparent',
 } as const;
 
-// Theme-specific color mappings
+// Light Theme
 export const lightTheme = {
-  background: {
-    primary: colors.white,
-    secondary: colors.gray[50],
-    tertiary: colors.gray[100],
-  },
-  surface: {
-    primary: colors.white,
-    secondary: colors.gray[50],
-    elevated: colors.white,
-  },
-  text: {
-    primary: colors.gray[900],
-    secondary: colors.gray[600],
-    tertiary: colors.gray[500],
-    disabled: colors.gray[400],
-    inverse: colors.white,
-  },
-  border: {
-    light: colors.gray[200],
-    medium: colors.gray[300],
-    heavy: colors.gray[400],
-  },
-  primary: colors.primary[500],
-  accent: colors.accent[500],
-  success: colors.success[500],
-  error: colors.error[500],
-  warning: colors.warning[500],
+  // Backgrounds
+  background: brandColors.warmBackground,
+  backgroundSecondary: brandColors.surface,
+  
+  // Surfaces
+  surface: brandColors.surface,
+  surfaceElevated: brandColors.white,
+  
+  // Text
+  text: brandColors.textPrimary,
+  textSecondary: brandColors.textSecondary,
+  textTertiary: '#B4ADA5',
+  textInverse: brandColors.white,
+  textDisabled: '#B4ADA5',
+  
+  // Brand
+  primary: brandColors.primary,
+  primaryLight: brandColors.primaryLight,
+  primaryDark: brandColors.primaryDark,
+  
+  accent: brandColors.accent,
+  accentLight: brandColors.accentLight,
+  accentDark: brandColors.accentDark,
+  
+  // Status
+  success: brandColors.success,
+  successLight: brandColors.successLight,
+  successDark: brandColors.successDark,
+  
+  warning: brandColors.warning,
+  warningLight: brandColors.warningLight,
+  warningDark: brandColors.warningDark,
+  
+  error: brandColors.error,
+  errorLight: brandColors.errorLight,
+  errorDark: brandColors.errorDark,
+  
+  info: brandColors.info,
+  infoLight: brandColors.infoLight,
+  infoDark: brandColors.infoDark,
+  
+  // Borders
+  border: brandColors.border,
+  borderLight: '#EFE9E3',
+  borderDark: '#D0C7BD',
+  
+  // Overlay
+  overlay: 'rgba(0, 0, 0, 0.5)',
+  overlayLight: 'rgba(0, 0, 0, 0.25)',
+  
+  // Base
+  white: brandColors.white,
+  black: brandColors.black,
+  transparent: brandColors.transparent,
 } as const;
 
+// Dark Theme (if needed later)
 export const darkTheme = {
-  background: {
-    primary: '#121212',
-    secondary: '#1E1E1E',
-    tertiary: '#2C2C2C',
-  },
-  surface: {
-    primary: '#1E1E1E',
-    secondary: '#2C2C2C',
-    elevated: '#383838',
-  },
-  text: {
-    primary: colors.gray[50],
-    secondary: colors.gray[300],
-    tertiary: colors.gray[400],
-    disabled: colors.gray[600],
-    inverse: colors.gray[900],
-  },
-  border: {
-    light: colors.gray[800],
-    medium: colors.gray[700],
-    heavy: colors.gray[600],
-  },
-  primary: colors.primary[300],
-  accent: colors.accent[400],
-  success: colors.success[400],
-  error: colors.error[400],
-  warning: colors.warning[400],
+  // Backgrounds
+  background: '#1A1614',
+  backgroundSecondary: '#242220',
+  
+  // Surfaces
+  surface: '#2A2826',
+  surfaceElevated: '#342F2D',
+  
+  // Text
+  text: '#F7F4EF',
+  textSecondary: '#B4ADA5',
+  textTertiary: '#746B63',
+  textInverse: '#24211F',
+  textDisabled: '#746B63',
+  
+  // Brand (adjusted for dark mode)
+  primary: '#4D6B99',
+  primaryLight: '#6685B3',
+  primaryDark: '#3A5273',
+  
+  accent: '#E89358',
+  accentLight: '#F0A976',
+  accentDark: '#D87532',
+  
+  // Status
+  success: '#6BAA85',
+  successLight: '#88BFA0',
+  successDark: '#4F956E',
+  
+  warning: '#D4A450',
+  warningLight: '#E0B86F',
+  warningDark: '#C68A24',
+  
+  error: '#D37169',
+  errorLight: '#E0918A',
+  errorDark: '#C44C47',
+  
+  info: '#6B8EA4',
+  infoLight: '#88A5B8',
+  infoDark: '#4D728C',
+  
+  // Borders
+  border: '#3E3935',
+  borderLight: '#4A443F',
+  borderDark: '#32302D',
+  
+  // Overlay
+  overlay: 'rgba(0, 0, 0, 0.7)',
+  overlayLight: 'rgba(0, 0, 0, 0.5)',
+  
+  // Base
+  white: brandColors.white,
+  black: brandColors.black,
+  transparent: brandColors.transparent,
 } as const;
 
 export type ColorTheme = typeof lightTheme;
-
 export type ThemeColors = typeof lightTheme | typeof darkTheme;
+
+// Legacy support - map old color structure to new
+export const colors = {
+  primary: brandColors.primary,
+  accent: brandColors.accent,
+  success: brandColors.success,
+  warning: brandColors.warning,
+  error: brandColors.error,
+  info: brandColors.info,
+  white: brandColors.white,
+  black: brandColors.black,
+  transparent: brandColors.transparent,
+  gray: {
+    50: '#FAF9F7',
+    100: '#F7F4EF',
+    200: '#E5DDD5',
+    300: '#D0C7BD',
+    400: '#B4ADA5',
+    500: '#8A827A',
+    600: '#746B63',
+    700: '#5A534D',
+    800: '#3E3935',
+    900: '#24211F',
+  },
+} as const;

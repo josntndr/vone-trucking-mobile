@@ -42,7 +42,7 @@ export const Input: React.FC<InputProps> = ({
   const getBorderColor = (): string => {
     if (error) return theme.colors.error;
     if (isFocused) return theme.colors.primary;
-    return theme.colors.border.medium;
+    return theme.colors.border;
   };
 
   const inputContainerStyle: ViewStyle = {
@@ -51,7 +51,7 @@ export const Input: React.FC<InputProps> = ({
     borderWidth: 2,
     borderColor: getBorderColor(),
     borderRadius: theme.borderRadius.base,
-    backgroundColor: editable ? theme.colors.surface.primary : theme.colors.surface.secondary,
+    backgroundColor: editable ? theme.colors.surface : theme.colors.backgroundSecondary,
     paddingHorizontal: theme.spacing[3],
     minHeight: 48,
   };
@@ -63,7 +63,7 @@ export const Input: React.FC<InputProps> = ({
           style={[
             styles.label,
             {
-              color: theme.colors.text.primary,
+              color: theme.colors.text,
               fontSize: theme.fontSizes.sm,
               fontWeight: theme.fontWeights.medium,
               marginBottom: theme.spacing[1],
@@ -84,11 +84,11 @@ export const Input: React.FC<InputProps> = ({
           style={[
             styles.input,
             {
-              color: theme.colors.text.primary,
+              color: theme.colors.text,
               fontSize: theme.fontSizes.base,
             },
           ]}
-          placeholderTextColor={theme.colors.text.tertiary}
+          placeholderTextColor={theme.colors.textTertiary}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           editable={editable}
@@ -124,7 +124,7 @@ export const Input: React.FC<InputProps> = ({
           style={[
             styles.helperText,
             {
-              color: theme.colors.text.secondary,
+              color: theme.colors.textSecondary,
               fontSize: theme.fontSizes.sm,
               marginTop: theme.spacing[1],
             },

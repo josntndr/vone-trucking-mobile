@@ -48,7 +48,7 @@ export default function AddTruckScreen() {
     setValue,
     watch,
   } = useForm<TruckFormData>({
-    resolver: zodResolver(truckSchema),
+    resolver: zodResolver(truckSchema) as any,
     defaultValues: {
       truck_number: '',
       license_plate: '',
@@ -323,17 +323,19 @@ export default function AddTruckScreen() {
       >
         <View style={[styles.footerContent, { paddingHorizontal: spacing.md }]}>
           <Button
-            title="Cancel"
             onPress={() => router.back()}
             variant="outline"
             style={{ flex: 1, marginRight: spacing.sm }}
-          />
+          >
+            Cancel
+          </Button>
           <Button
-            title={isSubmitting ? 'Creating...' : 'Create Truck'}
-            onPress={handleSubmit(onSubmit)}
+            onPress={handleSubmit((data) => onSubmit(data))}
             loading={isSubmitting}
             style={{ flex: 1 }}
-          />
+          >
+            {isSubmitting ? 'Creating...' : 'Create Truck'}
+          </Button>
         </View>
       </View>
     </Screen>

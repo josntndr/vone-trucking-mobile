@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { TouchableOpacity, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Input, InputProps } from './Input';
 import { useTheme } from '../../hooks';
 
@@ -39,7 +40,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
       autoCorrect={false}
       clearButtonMode="never"
       leftIcon={
-        <Text style={{ fontSize: theme.fontSizes.lg }}>🔍</Text>
+        <Ionicons name="search" size={theme.fontSizes.lg} color={theme.colors.textSecondary} />
       }
       rightIcon={
         shouldShowClear ? (
@@ -52,7 +53,7 @@ export const SearchInput: React.FC<SearchInputProps> = ({
           >
             <Text
               style={{
-                color: theme.colors.text.secondary,
+                color: theme.colors.textSecondary,
                 fontSize: theme.fontSizes.lg,
                 fontWeight: theme.fontWeights.bold,
               }}

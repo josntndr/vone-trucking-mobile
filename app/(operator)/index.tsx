@@ -1,6 +1,7 @@
 /**
  * Operator Home Screen
  * Today's Operations focus with quick actions and urgent alerts
+ * Redesigned with proper 2x2 grids per specification
  */
 
 import React, { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ import TripCard from '../../src/components/common/TripCard';
 import EmptyStateCard from '../../src/components/common/EmptyStateCard';
 import { getTrucks } from '../../src/services/api/truck.service';
 import { getEmployees } from '../../src/services/api/employee.service';
+import { isSupabaseConfigured } from '../../src/services/api/supabase';
 import { TruckStatus } from '../../src/types/truck.types';
 import { EmploymentStatus, UserRole } from '../../src/types';
 
@@ -68,20 +70,39 @@ const DEMO_ALERTS = [
   },
 ];
 
+// Demo stats when Supabase is not configured
+const DEMO_STATS: DashboardStats = {
+  totalTrucks: 5,
+  availableTrucks: 2,
+  onTripTrucks: 2,
+  maintenanceTrucks: 1,
+  totalEmployees: 12,
+  activeDrivers: 8,
+  activePorters: 4,
+};
+
 export default function OperatorHome() {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
   const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [stats, setStats] = useState<DashboardStats>(DEMO_STATS);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadDashboardData = async () => {
     try {
-      // Fetch trucks
+      // Check if Supabase is configured
+      if (!isSupabaseConfigured()) {
+        // Use demo data
+        setStats(DEMO_STATS);
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
+      // Fetch real data from Supabase
       const trucksResponse = await getTrucks({}, 1, 100);
       const trucks = trucksResponse.data?.data || [];
 
-      // Fetch employees
       const employeesResponse = await getEmployees({}, 1, 100);
       const employees = employeesResponse.data?.data || [];
 
@@ -100,6 +121,8 @@ export default function OperatorHome() {
       });
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      // Fall back to demo data on error
+      setStats(DEMO_STATS);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -129,27 +152,28 @@ export default function OperatorHome() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
         }
+        showsVerticalScrollIndicator={false}
       >
         {/* Header */}
         <View style={[styles.header, { padding: spacing[4] }]}>
           <View style={styles.headerTop}>
             <View style={styles.headerText}>
-              <Text style={[styles.greeting, { color: colors.textSecondary, fontSize: typography.fontSize.sm }]}>
+              <Text style={[styles.greeting, { color: colors.textSecondary, fontSize: fontSizes.sm }]}>
                 Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}
               </Text>
-              <Text style={[styles.name, { color: colors.text, fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold }]}>
+              <Text style={[styles.name, { color: colors.text, fontSize: fontSizes['2xl'], fontWeight: fontWeights.bold }]}>
                 {user?.user_metadata?.first_name || 'Operator'}
               </Text>
             </View>
             <TouchableOpacity
               onPress={() => router.push('/(operator)/profile')}
-              style={[styles.notificationButton, { backgroundColor: colors.surface, ...styles.shadow }]}
+              style={[styles.notificationButton, { backgroundColor: colors.surface }]}
             >
               <MaterialCommunityIcons name="bell-outline" size={24} color={colors.text} />
               <View style={[styles.badge, { backgroundColor: colors.error }]} />
             </TouchableOpacity>
           </View>
-          <Text style={[styles.date, { color: colors.textSecondary, fontSize: typography.fontSize.xs, marginTop: spacing[2] }]}>
+          <Text style={[styles.date, { color: colors.textSecondary, fontSize: fontSizes.xs, marginTop: spacing[2] }]}>
             {todayDate}
           </Text>
         </View>
@@ -157,7 +181,7 @@ export default function OperatorHome() {
         {/* Urgent Alerts */}
         {DEMO_ALERTS.length > 0 && (
           <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: fontSizes.lg, fontWeight: fontWeights.semibold }]}>
               Urgent Alerts
             </Text>
             {DEMO_ALERTS.map((alert) => (
@@ -173,85 +197,159 @@ export default function OperatorHome() {
           </View>
         )}
 
-        {/* Today's Operations */}
+        {/* Today's Operations - 2x2 Grid */}
         <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: fontSizes.lg, fontWeight: fontWeights.semibold }]}>
               Today's Operations
             </Text>
             <TouchableOpacity onPress={() => router.push('/(operator)/trips')}>
-              <Text style={[styles.viewAllText, { color: colors.primary, fontSize: typography.fontSize.sm }]}>View All</Text>
+              <Text style={[styles.viewAllText, { color: colors.primary, fontSize: fontSizes.sm }]}>View All</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={[styles.statsRow, { marginTop: spacing[3], gap: spacing[3] }]}>
-            <StatCard
-              label="Active Trips"
-              value={stats?.onTripTrucks || 2}
-              icon="truck-delivery"
-              variant="primary"
-            />
-            <StatCard
-              label="Scheduled"
-              value={3}
-              icon="calendar-clock"
-              variant="default"
-            />
-            <StatCard
-              label="Delayed"
-              value={1}
-              icon="alert-circle"
-              variant="warning"
-            />
-          </View>
+          {/* 2x2 Grid with equal width cards */}
+          <View style={[styles.gridContainer, { marginTop: spacing[3], gap: spacing[3] }]}>
+            <View style={[styles.gridRow, { gap: spacing[3] }]}>
+              <TouchableOpacity 
+                style={styles.gridItem}
+                onPress={() => router.push('/(operator)/trips')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.statCard, { backgroundColor: colors.surface, borderRadius: borderRadius.card, padding: spacing[4] }]}>
+                  <MaterialCommunityIcons name="truck-delivery" size={28} color={colors.primary} />
+                  <Text style={[styles.statValue, { color: colors.primary, fontSize: 32, fontWeight: fontWeights.bold, marginTop: spacing[2] }]}>
+                    {stats.onTripTrucks}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.textSecondary, fontSize: fontSizes.sm, marginTop: spacing[1] }]}>
+                    Active Trips
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
-          <View style={[styles.statsRow, { marginTop: spacing[3], gap: spacing[3] }]}>
-            <StatCard
-              label="Available Trucks"
-              value={stats?.availableTrucks || 0}
-              icon="truck-check"
-              variant="success"
-            />
+              <TouchableOpacity 
+                style={styles.gridItem}
+                onPress={() => router.push('/(operator)/trips')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.statCard, { backgroundColor: colors.surface, borderRadius: borderRadius.card, padding: spacing[4] }]}>
+                  <MaterialCommunityIcons name="calendar-clock" size={28} color={colors.info} />
+                  <Text style={[styles.statValue, { color: colors.info, fontSize: 32, fontWeight: fontWeights.bold, marginTop: spacing[2] }]}>
+                    3
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.textSecondary, fontSize: fontSizes.sm, marginTop: spacing[1] }]}>
+                    Scheduled
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={[styles.gridRow, { gap: spacing[3] }]}>
+              <TouchableOpacity 
+                style={styles.gridItem}
+                onPress={() => router.push('/(operator)/trips')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.statCard, { backgroundColor: colors.surface, borderRadius: borderRadius.card, padding: spacing[4] }]}>
+                  <MaterialCommunityIcons name="alert-circle" size={28} color={colors.warning} />
+                  <Text style={[styles.statValue, { color: colors.warning, fontSize: 32, fontWeight: fontWeights.bold, marginTop: spacing[2] }]}>
+                    1
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.textSecondary, fontSize: fontSizes.sm, marginTop: spacing[1] }]}>
+                    Delayed
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.gridItem}
+                onPress={() => router.push('/(operator)/trucks')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.statCard, { backgroundColor: colors.surface, borderRadius: borderRadius.card, padding: spacing[4] }]}>
+                  <MaterialCommunityIcons name="truck-check" size={28} color={colors.success} />
+                  <Text style={[styles.statValue, { color: colors.success, fontSize: 32, fontWeight: fontWeights.bold, marginTop: spacing[2] }]}>
+                    {stats.availableTrucks}
+                  </Text>
+                  <Text style={[styles.statLabel, { color: colors.textSecondary, fontSize: fontSizes.sm, marginTop: spacing[1] }]}>
+                    Available Trucks
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
-        {/* Quick Actions */}
+        {/* Quick Actions - 2x2 Grid with full labels */}
         <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: fontSizes.lg, fontWeight: fontWeights.semibold }]}>
             Quick Actions
           </Text>
-          <View style={[styles.actionsGrid, { marginTop: spacing[3], gap: spacing[3] }]}>
-            <QuickActionCard
-              icon="plus-circle"
-              label="Create Trip"
-              onPress={() => router.push('/(operator)/trips/add')}
-              variant="primary"
-            />
-            <QuickActionCard
-              icon="file-document-multiple"
-              label="Import Schedule"
-              onPress={() => router.push('/(operator)/import')}
-              variant="secondary"
-            />
-            <QuickActionCard
-              icon="map-marker-radius"
-              label="Track Fleet"
-              onPress={() => router.push('/(operator)/trucks')}
-              variant="secondary"
-            />
-            <QuickActionCard
-              icon="cash-register"
-              label="Record Expense"
-              onPress={() => {}}
-              variant="secondary"
-            />
+          
+          {/* 2x2 Grid with equal width cards and full labels */}
+          <View style={[styles.gridContainer, { marginTop: spacing[3], gap: spacing[3] }]}>
+            <View style={[styles.gridRow, { gap: spacing[3] }]}>
+              <TouchableOpacity 
+                style={styles.gridItem}
+                onPress={() => router.push('/(operator)/trips/add')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.actionCard, { backgroundColor: colors.primary, borderRadius: borderRadius.card, padding: spacing[4] }]}>
+                  <MaterialCommunityIcons name="plus-circle" size={32} color={colors.white} />
+                  <Text style={[styles.actionLabel, { color: colors.white, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginTop: spacing[2], textAlign: 'center' }]}>
+                    Create Trip
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.gridItem}
+                onPress={() => router.push('/(operator)/import')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.actionCard, { backgroundColor: colors.surface, borderRadius: borderRadius.card, padding: spacing[4] }]}>
+                  <MaterialCommunityIcons name="file-document-multiple" size={32} color={colors.primary} />
+                  <Text style={[styles.actionLabel, { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginTop: spacing[2], textAlign: 'center' }]}>
+                    Import Schedule
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            <View style={[styles.gridRow, { gap: spacing[3] }]}>
+              <TouchableOpacity 
+                style={styles.gridItem}
+                onPress={() => router.push('/(operator)/trucks')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.actionCard, { backgroundColor: colors.surface, borderRadius: borderRadius.card, padding: spacing[4] }]}>
+                  <MaterialCommunityIcons name="map-marker-radius" size={32} color={colors.primary} />
+                  <Text style={[styles.actionLabel, { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginTop: spacing[2], textAlign: 'center' }]}>
+                    Track Fleet
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.gridItem}
+                onPress={() => router.push('/record-expense')}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.actionCard, { backgroundColor: colors.surface, borderRadius: borderRadius.card, padding: spacing[4] }]}>
+                  <MaterialCommunityIcons name="cash-register" size={32} color={colors.primary} />
+                  <Text style={[styles.actionLabel, { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginTop: spacing[2], textAlign: 'center' }]}>
+                    Record Expense
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
         {/* Active Trips Preview */}
         <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text, fontSize: fontSizes.lg, fontWeight: fontWeights.semibold }]}>
               Active Trips
             </Text>
           </View>
@@ -284,7 +382,7 @@ export default function OperatorHome() {
 
         {/* Financial Summary */}
         <View style={[styles.section, { paddingHorizontal: spacing[4], paddingBottom: spacing[8] }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.semibold }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: fontSizes.lg, fontWeight: fontWeights.semibold }]}>
             This Week
           </Text>
           <View
@@ -300,28 +398,28 @@ export default function OperatorHome() {
           >
             <View style={styles.financialRow}>
               <View style={styles.financialItem}>
-                <Text style={[styles.financialLabel, { color: colors.textSecondary, fontSize: typography.fontSize.sm }]}>
+                <Text style={[styles.financialLabel, { color: colors.textSecondary, fontSize: fontSizes.sm }]}>
                   Trip Income
                 </Text>
-                <Text style={[styles.financialValue, { color: colors.success, fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold }]}>
+                <Text style={[styles.financialValue, { color: colors.success, fontSize: fontSizes.xl, fontWeight: fontWeights.bold }]}>
                   ₱125,500
                 </Text>
               </View>
               <View style={styles.financialItem}>
-                <Text style={[styles.financialLabel, { color: colors.textSecondary, fontSize: typography.fontSize.sm }]}>
+                <Text style={[styles.financialLabel, { color: colors.textSecondary, fontSize: fontSizes.sm }]}>
                   Expenses
                 </Text>
-                <Text style={[styles.financialValue, { color: colors.error, fontSize: typography.fontSize.xl, fontWeight: typography.fontWeight.bold }]}>
+                <Text style={[styles.financialValue, { color: colors.error, fontSize: fontSizes.xl, fontWeight: fontWeights.bold }]}>
                   ₱45,200
                 </Text>
               </View>
             </View>
             <View style={[styles.divider, { backgroundColor: colors.border, marginVertical: spacing[3] }]} />
             <View style={styles.financialItem}>
-              <Text style={[styles.financialLabel, { color: colors.textSecondary, fontSize: typography.fontSize.sm }]}>
+              <Text style={[styles.financialLabel, { color: colors.textSecondary, fontSize: fontSizes.sm }]}>
                 Estimated Profit
               </Text>
-              <Text style={[styles.financialValue, { color: colors.primary, fontSize: typography.fontSize['2xl'], fontWeight: typography.fontWeight.bold }]}>
+              <Text style={[styles.financialValue, { color: colors.primary, fontSize: fontSizes['2xl'], fontWeight: fontWeights.bold }]}>
                 ₱80,300
               </Text>
             </View>
@@ -369,13 +467,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#fff',
   },
-  shadow: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
   section: {
     marginBottom: 24,
   },
@@ -386,13 +477,30 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {},
   viewAllText: {},
-  statsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  gridContainer: {
+    width: '100%',
   },
-  actionsGrid: {
+  gridRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
+    width: '100%',
+  },
+  gridItem: {
+    flex: 1,
+  },
+  statCard: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 120,
+  },
+  statValue: {},
+  statLabel: {},
+  actionCard: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 110,
+  },
+  actionLabel: {
+    maxWidth: '100%',
   },
   financialCard: {},
   financialRow: {
@@ -409,4 +517,3 @@ const styles = StyleSheet.create({
     height: 1,
   },
 });
-

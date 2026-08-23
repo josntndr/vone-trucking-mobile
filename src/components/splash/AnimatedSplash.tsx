@@ -14,7 +14,10 @@ interface AnimatedSplashProps {
 }
 
 export default function AnimatedSplash({ onComplete }: AnimatedSplashProps) {
-  const { colors, typography, spacing } = useTheme();
+  const theme = useTheme();
+  const colors = theme.colors;
+  const typography = theme.typography;
+  const spacing = theme.spacing;
   
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -71,13 +74,13 @@ export default function AnimatedSplash({ onComplete }: AnimatedSplashProps) {
   });
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.primary }]}>
+    <View style={[styles.container, { backgroundColor: colors?.primary || '#192A4A' }]}>
       {/* Animated Route Line - Abstract */}
       <Animated.View
         style={[
           styles.routeLine,
           {
-            backgroundColor: colors.accent,
+            backgroundColor: colors?.accent || '#D87532',
             transform: [{ translateX: lineTranslateX }],
             opacity: lineAnim,
           },
@@ -95,11 +98,11 @@ export default function AnimatedSplash({ onComplete }: AnimatedSplashProps) {
         ]}
       >
         {/* Icon Container */}
-        <View style={[styles.iconCircle, { backgroundColor: colors.accent }]}>
+        <View style={[styles.iconCircle, { backgroundColor: colors?.accent || '#D87532' }]}>
           <MaterialCommunityIcons 
             name="truck-fast-outline" 
             size={64} 
-            color={colors.textInverse} 
+            color={colors?.textInverse || colors?.white || '#FFFFFF'} 
           />
         </View>
 
@@ -108,10 +111,10 @@ export default function AnimatedSplash({ onComplete }: AnimatedSplashProps) {
           style={[
             styles.brandName,
             {
-              color: colors.textInverse,
-              fontSize: typography.fontSize['4xl'],
-              fontWeight: typography.fontWeight.heavy,
-              marginTop: spacing[6],
+              color: colors?.textInverse || colors?.white || '#FFFFFF',
+              fontSize: typography?.fontSize?.['4xl'] || 44,
+              fontWeight: (typography?.fontWeight?.heavy || '800') as any,
+              marginTop: spacing?.[6] || 24,
             },
           ]}
         >
@@ -123,15 +126,15 @@ export default function AnimatedSplash({ onComplete }: AnimatedSplashProps) {
           style={[
             styles.tagline,
             {
-              color: colors.accent,
-              fontSize: typography.fontSize.base,
-              fontWeight: typography.fontWeight.medium,
-              marginTop: spacing[3],
+              color: colors?.accent || '#D87532',
+              fontSize: typography?.fontSize?.base || 16,
+              fontWeight: (typography?.fontWeight?.medium || '500') as any,
+              marginTop: spacing?.[3] || 12,
               opacity: taglineAnim,
             },
           ]}
         >
-          Track Every Trip. Manage Every Move.
+          Vone Trucking operations, all in one place.
         </Animated.Text>
       </Animated.View>
     </View>

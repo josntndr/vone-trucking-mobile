@@ -29,7 +29,7 @@ export default function StatCard({
   onPress,
   style,
 }: StatCardProps) {
-  const { colors, typography, spacing, borderRadius, shadows } = useTheme();
+  const { colors, fontSizes, fontWeights, spacing, borderRadius, shadows } = useTheme();
 
   const getVariantColor = () => {
     switch (variant) {
@@ -91,8 +91,8 @@ export default function StatCard({
           styles.value,
           {
             color: valueColor,
-            fontSize: typography.fontSize['3xl'],
-            fontWeight: typography.fontWeight.bold,
+            fontSize: fontSizes['3xl'],
+            fontWeight: fontWeights.bold,
           },
         ]}
       >
@@ -105,7 +105,7 @@ export default function StatCard({
             styles.label,
             {
               color: colors.textSecondary,
-              fontSize: typography.fontSize.sm,
+              fontSize: fontSizes.sm,
               marginTop: spacing[1],
             },
           ]}
@@ -125,7 +125,7 @@ export default function StatCard({
                 styles.trendValue,
                 {
                   color: trendConfig.color,
-                  fontSize: typography.fontSize.xs,
+                  fontSize: fontSizes.xs,
                   marginLeft: 2,
                 },
               ]}

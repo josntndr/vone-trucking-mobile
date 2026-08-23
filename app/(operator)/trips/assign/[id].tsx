@@ -330,7 +330,7 @@ export default function TripAssignmentScreen() {
                       </View>
                       {conflict && (
                         <View style={[styles.conflictBadge, { backgroundColor: colors.error }]}>
-                          <Iconicons name="warning" size={12} color="#FFFFFF" />
+                          <Ionicons name="warning" size={12} color="#FFFFFF" />
                           <Text style={styles.conflictText}>Conflict</Text>
                         </View>
                       )}
@@ -438,18 +438,20 @@ export default function TripAssignmentScreen() {
       >
         <View style={[styles.footerContent, { paddingHorizontal: spacing.md }]}>
           <Button
-            title="Cancel"
             onPress={() => router.back()}
             variant="outline"
             style={{ flex: 1, marginRight: spacing.sm }}
-          />
+          >
+            Cancel
+          </Button>
           <Button
-            title={checking ? 'Checking...' : 'Assign Resources'}
             onPress={checkForConflicts}
             loading={checking || saving}
             disabled={!selectedTruckId && !selectedDriverId && selectedPorterIds.length === 0}
             style={{ flex: 1 }}
-          />
+          >
+            {checking ? 'Checking...' : 'Assign Resources'}
+          </Button>
         </View>
       </View>
     </Screen>

@@ -220,17 +220,17 @@ export class LocationPermissionManager {
   static showPrivacyExplanation(): void {
     Alert.alert(
       'Your Privacy Matters',
-      '📍 Location tracking during work trips:\n' +
+      'Location tracking during work trips:\n' +
       '• ONLY active during assigned deliveries\n' +
       '• Automatically stops when trip ends\n' +
       '• Never tracked during personal time\n' +
       '• Never tracked outside work hours\n\n' +
-      '🔒 Your data is secure:\n' +
+      'Your data is secure:\n' +
       '• Location sent over encrypted connection\n' +
       '• Only visible to authorized dispatch\n' +
       '• Used only for delivery coordination\n' +
       '• Automatically deleted after 90 days\n\n' +
-      '🔋 Battery optimization:\n' +
+      'Battery optimization:\n' +
       '• Smart tracking reduces battery use\n' +
       '• Updates only when moving\n' +
       '• Efficient background processing',

@@ -20,15 +20,17 @@ export type StatusType =
   | 'error'
   | 'info';
 
-interface StatusChipProps {
-  status: StatusType;
+export interface StatusChipProps {
+  status?: StatusType; // Optional when color is provided
   label: string;
   size?: 'sm' | 'md' | 'lg';
   style?: ViewStyle;
+  color?: string; // Optional custom color override
+  icon?: string; // Optional icon name (not rendered yet, reserved for future)
 }
 
-export default function StatusChip({ status, label, size = 'md', style }: StatusChipProps) {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+export default function StatusChip({ status, label, size = 'md', style, color, icon }: StatusChipProps) {
+  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
 
   const getStatusColors = () => {
     switch (status) {
@@ -58,33 +60,37 @@ export default function StatusChip({ status, label, size = 'md', style }: Status
         return {
           paddingHorizontal: spacing[2],
           paddingVertical: spacing[1],
-          fontSize: typography.fontSize.xs,
+          fontSize: fontSizes.xs,
         };
       case 'lg':
         return {
           paddingHorizontal: spacing[4],
           paddingVertical: spacing[2],
-          fontSize: typography.fontSize.base,
+          fontSize: fontSizes.base,
         };
       case 'md':
       default:
         return {
           paddingHorizontal: spacing[3],
           paddingVertical: spacing[1],
-          fontSize: typography.fontSize.sm,
+          fontSize: fontSizes.sm,
         };
     }
   };
 
-  const statusColors = getStatusColors();
+  const statusColors = status ? getStatusColors() : { background: colors.borderLight, text: colors.text };
   const sizeStyles = getSizeStyles();
+
+  // Use custom color if provided, otherwise use status-based colors
+  const backgroundColor = color ? color + '20' : statusColors.background;
+  const textColor = color || statusColors.text;
 
   return (
     <View
       style={[
         styles.container,
         {
-          backgroundColor: statusColors.background,
+          backgroundColor,
           paddingHorizontal: sizeStyles.paddingHorizontal,
           paddingVertical: sizeStyles.paddingVertical,
           borderRadius: borderRadius.base,
@@ -96,9 +102,9 @@ export default function StatusChip({ status, label, size = 'md', style }: Status
         style={[
           styles.label,
           {
-            color: statusColors.text,
+            color: textColor,
             fontSize: sizeStyles.fontSize,
-            fontWeight: typography.fontWeight.medium,
+            fontWeight: fontWeights.medium,
           },
         ]}
       >

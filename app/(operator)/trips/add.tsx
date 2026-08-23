@@ -22,7 +22,20 @@ import { createTripSchema, CreateTripFormData } from '../../../src/validation/sc
 import { TripStatus } from '../../../src/types/trip.types';
 
 export default function AddTripScreen() {
-  const { colors, spacing } = useTheme();
+  // Force light theme for operator/admin
+  const themeObj = useTheme();
+  const colors = {
+    background: '#F7F4EF',
+    surface: '#FFFDFC',
+    text: '#24211F',
+    textSecondary: '#746B63',
+    border: '#E5DDD5',
+    primary: '#192A4A',
+    success: '#4F956E',
+    error: '#C44C47',
+    white: '#FFFFFF',
+  };
+  const { spacing } = themeObj;
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -30,7 +43,7 @@ export default function AddTripScreen() {
     handleSubmit,
     formState: { errors },
   } = useForm<CreateTripFormData>({
-    resolver: zodResolver(createTripSchema),
+    resolver: zodResolver(createTripSchema) as any,
     defaultValues: {
       delivery_reference: '',
       delivery_date: '',
@@ -49,7 +62,6 @@ export default function AddTripScreen() {
       special_instructions: '',
       delivery_instructions: '',
       internal_notes: '',
-      status: TripStatus.DRAFT,
     },
   });
 
@@ -134,7 +146,7 @@ export default function AddTripScreen() {
 
   return (
     <Screen>
-      <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+      <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={{ paddingBottom: 40 }}>
         <View style={{ paddingHorizontal: spacing.md }}>
           {/* Basic Information */}
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Basic Information</Text>
@@ -244,18 +256,20 @@ export default function AddTripScreen() {
       >
         <View style={[styles.footerContent, { paddingHorizontal: spacing.md }]}>
           <Button
-            title="Save as Draft"
             onPress={handleSubmit((data) => onSubmit(data, true))}
             variant="outline"
             loading={isSubmitting}
             style={{ flex: 1, marginRight: spacing.sm }}
-          />
+          >
+            Save as Draft
+          </Button>
           <Button
-            title="Create Trip"
             onPress={handleSubmit((data) => onSubmit(data, false))}
             loading={isSubmitting}
             style={{ flex: 1 }}
-          />
+          >
+            Create Trip
+          </Button>
         </View>
       </View>
     </Screen>

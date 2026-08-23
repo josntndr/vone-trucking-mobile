@@ -415,13 +415,13 @@ export default function TruckDetailScreen() {
       </ScrollView>
 
       <ConfirmDialog
-        visible={archiveDialogVisible}
+        isOpen={archiveDialogVisible}
+        onClose={() => setArchiveDialogVisible(false)}
         title="Archive Truck"
         message="Are you sure you want to archive this truck? It will be marked as inactive."
         onConfirm={handleArchive}
-        onCancel={() => setArchiveDialogVisible(false)}
-        confirmText="Archive"
-        confirmColor={colors.error}
+        confirmLabel="Archive"
+        isDestructive={true}
       />
     </Screen>
   );

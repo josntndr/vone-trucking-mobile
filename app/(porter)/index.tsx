@@ -16,6 +16,7 @@ import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../src/theme/ThemeProvider';
 import { useAuth } from '../../src/hooks';
+import { TripStatus } from '../../src/types/driver-porter.types';
 import StatusChip from '../../src/components/common/StatusChip';
 import EmptyStateCard from '../../src/components/common/EmptyStateCard';
 import StatCard from '../../src/components/common/StatCard';
@@ -25,7 +26,7 @@ import AlertCard from '../../src/components/common/AlertCard';
 const DEMO_CURRENT_ASSIGNMENT = {
   id: '1',
   tripNumber: 'VT-2024-001',
-  status: 'loading' as const, // loading, in-transit, unloading, completed
+  status: TripStatus.LOADING, // loading, in-transit, unloading, completed
   truckNumber: 'ABC-1234',
   driverName: 'Juan Dela Cruz',
   callTime: '06:00 AM',
@@ -57,7 +58,7 @@ const DEMO_UPCOMING_ASSIGNMENTS = [
 ];
 
 export default function PorterHome() {
-  const { colors, typography, spacing, borderRadius } = useTheme();
+  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
   const { user } = useAuth();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
@@ -83,21 +84,21 @@ export default function PorterHome() {
     const status = DEMO_CURRENT_ASSIGNMENT.status;
     
     switch (status) {
-      case 'loading':
+      case TripStatus.LOADING:
         return {
           label: 'Complete Loading',
           icon: 'check-circle' as const,
           color: colors.success,
           onPress: () => {},
         };
-      case 'in-transit':
+      case TripStatus.IN_TRANSIT:
         return {
           label: 'Arrived at Destination',
           icon: 'map-marker-check' as const,
           color: colors.primary,
           onPress: () => {},
         };
-      case 'unloading':
+      case TripStatus.UNLOADING:
         return {
           label: 'Complete Unloading',
           icon: 'check-circle' as const,
@@ -154,8 +155,8 @@ export default function PorterHome() {
                   styles.tripNumber,
                   {
                     color: colors.primary,
-                    fontSize: typography.fontSize.lg,
-                    fontWeight: typography.fontWeight.semibold,
+                    fontSize: fontSizes.lg,
+                    fontWeight: fontWeights.semibold,
                     marginLeft: spacing[2],
                   },
                 ]}
@@ -179,7 +180,7 @@ export default function PorterHome() {
                   styles.detailLabel,
                   {
                     color: colors.textSecondary,
-                    fontSize: typography.fontSize.sm,
+                    fontSize: fontSizes.sm,
                     marginLeft: spacing[2],
                   },
                 ]}
@@ -191,8 +192,8 @@ export default function PorterHome() {
                   styles.detailValue,
                   {
                     color: colors.text,
-                    fontSize: typography.fontSize.sm,
-                    fontWeight: typography.fontWeight.medium,
+                    fontSize: fontSizes.sm,
+                    fontWeight: fontWeights.medium,
                     marginLeft: spacing[1],
                   },
                 ]}
@@ -208,7 +209,7 @@ export default function PorterHome() {
                   styles.detailLabel,
                   {
                     color: colors.textSecondary,
-                    fontSize: typography.fontSize.sm,
+                    fontSize: fontSizes.sm,
                     marginLeft: spacing[2],
                   },
                 ]}
@@ -220,8 +221,8 @@ export default function PorterHome() {
                   styles.detailValue,
                   {
                     color: colors.text,
-                    fontSize: typography.fontSize.sm,
-                    fontWeight: typography.fontWeight.medium,
+                    fontSize: fontSizes.sm,
+                    fontWeight: fontWeights.medium,
                     marginLeft: spacing[1],
                   },
                 ]}
@@ -237,7 +238,7 @@ export default function PorterHome() {
                   styles.detailLabel,
                   {
                     color: colors.textSecondary,
-                    fontSize: typography.fontSize.sm,
+                    fontSize: fontSizes.sm,
                     marginLeft: spacing[2],
                   },
                 ]}
@@ -249,8 +250,8 @@ export default function PorterHome() {
                   styles.detailValue,
                   {
                     color: colors.text,
-                    fontSize: typography.fontSize.sm,
-                    fontWeight: typography.fontWeight.medium,
+                    fontSize: fontSizes.sm,
+                    fontWeight: fontWeights.medium,
                     marginLeft: spacing[1],
                   },
                 ]}
@@ -269,8 +270,8 @@ export default function PorterHome() {
                     styles.progressTitle,
                     {
                       color: colors.text,
-                      fontSize: typography.fontSize.base,
-                      fontWeight: typography.fontWeight.semibold,
+                      fontSize: fontSizes.base,
+                      fontWeight: fontWeights.semibold,
                     },
                   ]}
                 >
@@ -281,8 +282,8 @@ export default function PorterHome() {
                     styles.progressValue,
                     {
                       color: colors.primary,
-                      fontSize: typography.fontSize.base,
-                      fontWeight: typography.fontWeight.bold,
+                      fontSize: fontSizes.base,
+                      fontWeight: fontWeights.bold,
                     },
                   ]}
                 >
@@ -315,7 +316,7 @@ export default function PorterHome() {
                   styles.progressPercentage,
                   {
                     color: colors.textSecondary,
-                    fontSize: typography.fontSize.sm,
+                    fontSize: fontSizes.sm,
                     marginTop: spacing[1],
                   },
                 ]}
@@ -335,7 +336,7 @@ export default function PorterHome() {
                     styles.routeLabel,
                     {
                       color: colors.textSecondary,
-                      fontSize: typography.fontSize.xs,
+                      fontSize: fontSizes.xs,
                     },
                   ]}
                 >
@@ -346,8 +347,8 @@ export default function PorterHome() {
                     styles.routeLocation,
                     {
                       color: colors.text,
-                      fontSize: typography.fontSize.base,
-                      fontWeight: typography.fontWeight.semibold,
+                      fontSize: fontSizes.base,
+                      fontWeight: fontWeights.semibold,
                     },
                   ]}
                 >
@@ -366,7 +367,7 @@ export default function PorterHome() {
                     styles.routeLabel,
                     {
                       color: colors.textSecondary,
-                      fontSize: typography.fontSize.xs,
+                      fontSize: fontSizes.xs,
                     },
                   ]}
                 >
@@ -377,8 +378,8 @@ export default function PorterHome() {
                     styles.routeLocation,
                     {
                       color: colors.text,
-                      fontSize: typography.fontSize.base,
-                      fontWeight: typography.fontWeight.semibold,
+                      fontSize: fontSizes.base,
+                      fontWeight: fontWeights.semibold,
                     },
                   ]}
                 >
@@ -408,8 +409,8 @@ export default function PorterHome() {
                 styles.primaryButtonText,
                 {
                   color: colors.textInverse,
-                  fontSize: typography.fontSize.lg,
-                  fontWeight: typography.fontWeight.semibold,
+                  fontSize: fontSizes.lg,
+                  fontWeight: fontWeights.semibold,
                   marginLeft: spacing[2],
                 },
               ]}
@@ -437,8 +438,8 @@ export default function PorterHome() {
                 styles.secondaryButtonText,
                 {
                   color: colors.text,
-                  fontSize: typography.fontSize.base,
-                  fontWeight: typography.fontWeight.medium,
+                  fontSize: fontSizes.base,
+                  fontWeight: fontWeights.medium,
                   marginLeft: spacing[2],
                 },
               ]}
@@ -466,8 +467,8 @@ export default function PorterHome() {
                 styles.checklistTitle,
                 {
                   color: colors.text,
-                  fontSize: typography.fontSize.base,
-                  fontWeight: typography.fontWeight.semibold,
+                  fontSize: fontSizes.base,
+                  fontWeight: fontWeights.semibold,
                 },
               ]}
             >
@@ -479,8 +480,8 @@ export default function PorterHome() {
                   styles.checklistBadgeText,
                   {
                     color: colors.primary,
-                    fontSize: typography.fontSize.xs,
-                    fontWeight: typography.fontWeight.medium,
+                    fontSize: fontSizes.xs,
+                    fontWeight: fontWeights.medium,
                   },
                 ]}
               >
@@ -526,7 +527,7 @@ export default function PorterHome() {
                     styles.checklistItemLabel,
                     {
                       color: item.completed ? colors.textSecondary : colors.text,
-                      fontSize: typography.fontSize.base,
+                      fontSize: fontSizes.base,
                       marginLeft: spacing[3],
                       textDecorationLine: item.completed ? 'line-through' : 'none',
                     },
@@ -558,7 +559,7 @@ export default function PorterHome() {
                 styles.greeting,
                 {
                   color: colors.textSecondary,
-                  fontSize: typography.fontSize.sm,
+                  fontSize: fontSizes.sm,
                 },
               ]}
             >
@@ -569,8 +570,8 @@ export default function PorterHome() {
                 styles.name,
                 {
                   color: colors.text,
-                  fontSize: typography.fontSize['2xl'],
-                  fontWeight: typography.fontWeight.bold,
+                  fontSize: fontSizes['2xl'],
+                  fontWeight: fontWeights.bold,
                 },
               ]}
             >
@@ -586,8 +587,8 @@ export default function PorterHome() {
               styles.sectionTitle,
               {
                 color: colors.text,
-                fontSize: typography.fontSize.lg,
-                fontWeight: typography.fontWeight.semibold,
+                fontSize: fontSizes.lg,
+                fontWeight: fontWeights.semibold,
                 marginBottom: spacing[3],
               },
             ]}
@@ -605,8 +606,8 @@ export default function PorterHome() {
                 styles.sectionTitle,
                 {
                   color: colors.text,
-                  fontSize: typography.fontSize.lg,
-                  fontWeight: typography.fontWeight.semibold,
+                  fontSize: fontSizes.lg,
+                  fontWeight: fontWeights.semibold,
                   marginBottom: spacing[3],
                 },
               ]}
@@ -628,15 +629,15 @@ export default function PorterHome() {
                 styles.sectionTitle,
                 {
                   color: colors.text,
-                  fontSize: typography.fontSize.lg,
-                  fontWeight: typography.fontWeight.semibold,
+                  fontSize: fontSizes.lg,
+                  fontWeight: fontWeights.semibold,
                 },
               ]}
             >
               Upcoming Trips
             </Text>
             <TouchableOpacity onPress={() => router.push('/(porter)/trips')}>
-              <Text style={[styles.viewAllText, { color: colors.primary, fontSize: typography.fontSize.sm }]}>
+              <Text style={[styles.viewAllText, { color: colors.primary, fontSize: fontSizes.sm }]}>
                 View All
               </Text>
             </TouchableOpacity>
@@ -664,8 +665,8 @@ export default function PorterHome() {
                         styles.upcomingDate,
                         {
                           color: colors.text,
-                          fontSize: typography.fontSize.sm,
-                          fontWeight: typography.fontWeight.medium,
+                          fontSize: fontSizes.sm,
+                          fontWeight: fontWeights.medium,
                           marginLeft: spacing[2],
                         },
                       ]}
@@ -680,8 +681,8 @@ export default function PorterHome() {
                     styles.upcomingTripNumber,
                     {
                       color: colors.primary,
-                      fontSize: typography.fontSize.sm,
-                      fontWeight: typography.fontWeight.medium,
+                      fontSize: fontSizes.sm,
+                      fontWeight: fontWeights.medium,
                       marginTop: spacing[2],
                     },
                   ]}
@@ -695,7 +696,7 @@ export default function PorterHome() {
                       styles.upcomingDestinationText,
                       {
                         color: colors.textSecondary,
-                        fontSize: typography.fontSize.sm,
+                        fontSize: fontSizes.sm,
                         marginLeft: spacing[1],
                       },
                     ]}

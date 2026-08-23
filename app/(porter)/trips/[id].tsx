@@ -26,7 +26,7 @@ import {
   submitDeliveryChecklist,
   uploadPhoto,
 } from '../../../src/services/api/driver-porter.service';
-import type { Assignment, LoadingChecklist, DeliveryChecklist, PorterTimeEntry } from '../../../src/types/driver-porter.types';
+import type { Assignment, LoadingChecklist, DeliveryChecklist, LoadingChecklistSubmission, DeliveryChecklistSubmission, PorterTimeEntry } from '../../../src/types/driver-porter.types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { formatPhilippineDate, formatPhilippineTime } from '../../../src/utils/philippines';
 
@@ -47,28 +47,23 @@ export default function PorterTripDetailScreen() {
   const [timeOut, setTimeOut] = useState<string | null>(null);
 
   // Loading checklist state
-  const [loadingChecklist, setLoadingChecklist] = useState<LoadingChecklist>({
+  const [loadingChecklist, setLoadingChecklist] = useState<Partial<LoadingChecklist>>({
     trip_id: id as string,
-    all_items_loaded: false,
-    items_match_manifest: false,
-    items_properly_secured: false,
-    no_damage_observed: false,
-    quantity_confirmed: 0,
-    notes: '',
-    photo_urls: [],
+    total_items_loaded: 0,
+    items: [],
+    discrepancy_reported: false,
+    loading_photos: [],
   });
 
   // Delivery checklist state
-  const [deliveryChecklist, setDeliveryChecklist] = useState<DeliveryChecklist>({
+  const [deliveryChecklist, setDeliveryChecklist] = useState<Partial<DeliveryChecklist>>({
     trip_id: id as string,
-    all_items_delivered: false,
-    customer_signature_obtained: false,
-    delivery_location_correct: false,
-    no_damage_on_delivery: false,
-    quantity_delivered: 0,
-    customer_notes: '',
-    delivery_notes: '',
-    photo_urls: [],
+    total_items_delivered: 0,
+    items_returned: 0,
+    items_damaged: 0,
+    items: [],
+    discrepancy_reported: false,
+    unloading_photos: [],
   });
 
   useEffect(() => {
@@ -134,20 +129,21 @@ export default function PorterTripDetailScreen() {
   const submitTime = async () => {
     if (!assignment) return;
 
-    const entry: PorterTimeEntry = {
+    const now = new Date().toISOString();
+    const entry: Partial<PorterTimeEntry> = {
       trip_id: assignment.trip_id,
-      time_type: timeType,
-      recorded_at: new Date().toISOString(),
+      porter_id: assignment.porter_id || '',
+      ...(timeType === 'in' ? { time_in: now } : { time_out: now }),
     };
 
-    const response = await recordPorterTime(entry);
+    const response = await recordPorterTime(entry as PorterTimeEntry);
     if (response.error) {
       Alert.alert('Error', response.error);
     } else {
       if (timeType === 'in') {
-        setTimeIn(entry.recorded_at);
+        setTimeIn(now);
       } else {
-        setTimeOut(entry.recorded_at);
+        setTimeOut(now);
       }
       Alert.alert('Success', `Time ${timeType} recorded`);
       setShowTimeModal(false);
@@ -164,26 +160,18 @@ export default function PorterTripDetailScreen() {
     if (type === 'loading') {
       setLoadingChecklist(prev => ({
         ...prev,
-        photo_urls: [...prev.photo_urls, mockPhotoUrl],
+        loading_photos: [...(prev.loading_photos || []), mockPhotoUrl],
       }));
     } else {
       setDeliveryChecklist(prev => ({
         ...prev,
-        photo_urls: [...prev.photo_urls, mockPhotoUrl],
+        unloading_photos: [...(prev.unloading_photos || []), mockPhotoUrl],
       }));
     }
   };
 
   const handleSubmitLoadingChecklist = async () => {
-    if (!loadingChecklist.all_items_loaded ||
-        !loadingChecklist.items_match_manifest ||
-        !loadingChecklist.items_properly_secured ||
-        !loadingChecklist.no_damage_observed) {
-      Alert.alert('Incomplete', 'Please complete all checklist items');
-      return;
-    }
-
-    if (loadingChecklist.quantity_confirmed === 0) {
+    if (!loadingChecklist.total_items_loaded || loadingChecklist.total_items_loaded === 0) {
       Alert.alert('Missing Quantity', 'Please enter the quantity loaded');
       return;
     }
@@ -196,7 +184,7 @@ export default function PorterTripDetailScreen() {
         {
           text: 'Submit',
           onPress: async () => {
-            const response = await submitLoadingChecklist(loadingChecklist);
+            const response = await submitLoadingChecklist(loadingChecklist as LoadingChecklist);
             if (response.error) {
               Alert.alert('Error', response.error);
             } else {
@@ -231,7 +219,27 @@ export default function PorterTripDetailScreen() {
         {
           text: 'Submit',
           onPress: async () => {
-            const response = await submitDeliveryChecklist(deliveryChecklist);
+            // Build proper submission payload
+            const submissionPayload: DeliveryChecklistSubmission = {
+              trip_id: deliveryChecklist.trip_id!,
+              porter_id: assignment?.porter_id || '',
+              items: deliveryChecklist.items || [],
+              total_items_delivered: deliveryChecklist.total_items_delivered || 0,
+              items_returned: deliveryChecklist.items_returned || 0,
+              items_damaged: deliveryChecklist.items_damaged || 0,
+              discrepancy_reported: deliveryChecklist.discrepancy_reported || false,
+              discrepancy_notes: deliveryChecklist.discrepancy_notes,
+              unloading_photos: deliveryChecklist.unloading_photos || [],
+              completed_at: new Date().toISOString(),
+              all_items_delivered: deliveryChecklist.all_items_delivered,
+              customer_signature_obtained: deliveryChecklist.customer_signature_obtained,
+              delivery_location_correct: deliveryChecklist.delivery_location_correct,
+              no_damage_on_delivery: deliveryChecklist.no_damage_on_delivery,
+              quantity_delivered: deliveryChecklist.quantity_delivered,
+              location: deliveryChecklist.location,
+            };
+            
+            const response = await submitDeliveryChecklist(submissionPayload);
             if (response.error) {
               Alert.alert('Error', response.error);
             } else {
@@ -296,7 +304,7 @@ export default function PorterTripDetailScreen() {
           <View style={styles.infoRow}>
             <MaterialCommunityIcons name="calendar" size={20} color={colors.textSecondary} />
             <Text style={[styles.infoText, { color: colors.text }]}>
-              {formatPhilippineDate(trip.trip_date)}
+              {formatPhilippineDate(trip.delivery_date)}
             </Text>
           </View>
           <View style={styles.infoRow}>
@@ -1049,7 +1057,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
   },
   modalHeaderTitle: {
     fontSize: 18,

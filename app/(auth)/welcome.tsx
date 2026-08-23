@@ -30,7 +30,7 @@ export default function WelcomeScreen() {
             style={[
               styles.logoText,
               {
-                color: theme.colors.text.inverse,
+                color: theme.colors.textInverse,
                 fontSize: theme.fontSizes['5xl'],
                 fontWeight: theme.fontWeights.bold,
               },
@@ -44,7 +44,7 @@ export default function WelcomeScreen() {
           style={[
             styles.appName,
             {
-              color: theme.colors.text.primary,
+              color: theme.colors.text,
               fontSize: theme.fontSizes['3xl'],
               fontWeight: theme.fontWeights.bold,
               marginTop: theme.spacing[6],
@@ -58,7 +58,7 @@ export default function WelcomeScreen() {
           style={[
             styles.tagline,
             {
-              color: theme.colors.text.secondary,
+              color: theme.colors.textSecondary,
               fontSize: theme.fontSizes.lg,
               marginTop: theme.spacing[2],
             },

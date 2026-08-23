@@ -21,7 +21,22 @@ interface DayTrips {
 }
 
 export default function TripCalendarScreen() {
-  const { colors, spacing } = useTheme();
+  // Force light theme for operator/admin
+  const themeObj = useTheme();
+  const colors = {
+    background: '#F7F4EF',
+    surface: '#FFFDFC',
+    text: '#24211F',
+    textSecondary: '#746B63',
+    border: '#E5DDD5',
+    primary: '#192A4A',
+    success: '#4F956E',
+    info: '#4D728C',
+    warning: '#C68A24',
+    error: '#C44C47',
+    white: '#FFFFFF',
+  };
+  const { spacing } = themeObj;
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [dayTrips, setDayTrips] = useState<DayTrips[]>([]);
@@ -102,7 +117,9 @@ export default function TripCalendarScreen() {
   if (loading) {
     return (
       <Screen>
-        <LoadingSpinner />
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <LoadingSpinner />
+        </View>
       </Screen>
     );
   }
@@ -110,9 +127,9 @@ export default function TripCalendarScreen() {
   return (
     <Screen>
       <ScrollView
-        style={styles.container}
+        style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={{ paddingBottom: spacing.xl }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
       >
         {/* Month Selector */}
         <View style={[styles.monthSelector, { paddingHorizontal: spacing.md }]}>
@@ -155,6 +172,7 @@ export default function TripCalendarScreen() {
                 <View
                   style={[
                     styles.dayHeader,
+                    { backgroundColor: colors.surface },
                     day.isToday && {
                       backgroundColor: colors.primary + '15',
                       borderLeftColor: colors.primary,
@@ -279,7 +297,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: '#F9FAFB',
     borderRadius: 8,
     marginBottom: 8,
   },

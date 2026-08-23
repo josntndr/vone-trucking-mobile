@@ -15,12 +15,14 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../../src/theme/ThemeProvider';
+import { useAuth } from '../../../src/hooks';
 import { Card } from '../../../src/components/common/Card';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function PorterProfileScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { signOut, user } = useAuth();
 
   const handleCallOperator = () => {
     const operatorPhone = '+639123456789'; // TODO: Get from config
@@ -38,22 +40,15 @@ export default function PorterProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            // TODO: Implement logout
-            Alert.alert('Logged Out', 'You have been logged out');
-          },
-        },
-      ]
-    );
+    // Direct navigation - no confirmation for testing
+    router.replace('/(auth)/login');
   };
+
+  // Get user display name
+  const displayName = user?.user_metadata?.first_name 
+    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
+    : user?.email || 'Porter';
+  const employeeId = user?.user_metadata?.employee_id || 'N/A';
 
   return (
     <ScrollView
@@ -66,13 +61,13 @@ export default function PorterProfileScreen() {
           <MaterialCommunityIcons name="account" size={48} color="#fff" />
         </View>
         <Text style={[styles.userName, { color: colors.text }]}>
-          Juan Dela Cruz
+          {displayName}
         </Text>
         <Text style={[styles.userRole, { color: colors.textSecondary }]}>
           Porter / Helper
         </Text>
         <Text style={[styles.userID, { color: colors.textSecondary }]}>
-          ID: POR-2024-001
+          ID: {employeeId}
         </Text>
       </Card>
 

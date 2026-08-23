@@ -23,16 +23,17 @@ import {
   validateImportData,
   importTrips,
 } from '../../../src/services/api/import.service';
-import type {
-  ValidatedRow,
-  ValidationIssue,
-  ColumnMapping,
-  ImportSession,
-  ValidationSeverity,
+import {
+  type ValidatedRow,
+  type ValidationIssue,
+  type ColumnMapping,
+  type ImportSession,
+  type ValidationSeverity,
   ImportSource,
   ImportStatus,
+  FIELD_METADATA,
+  getFieldLabel,
 } from '../../../src/types/import.types';
-import { FIELD_METADATA, getFieldLabel } from '../../../src/types/import.types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function PreviewScreen() {
@@ -531,11 +532,12 @@ export default function PreviewScreen() {
       {/* Import Button */}
       <View style={[styles.footer, { backgroundColor: colors.surface }]}>
         <Button
-          title={importing ? 'Importing...' : `Import ${selectedRows} Trips`}
           onPress={handleImport}
           fullWidth
           disabled={selectedRows === 0 || importing}
-        />
+        >
+          {importing ? 'Importing...' : `Import ${selectedRows} Trips`}
+        </Button>
       </View>
     </View>
   );

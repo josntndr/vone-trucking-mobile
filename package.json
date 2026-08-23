@@ -26,9 +26,11 @@
     "react": "19.2.3",
     "react-hook-form": "^7.86.0",
     "react-native": "0.86.2",
+    "react-native-chart-kit": "^7.0.2",
     "react-native-dotenv": "^4.1.1",
     "react-native-safe-area-context": "^5.9.1",
     "react-native-screens": "^4.27.0",
+    "react-native-svg": "^15.15.5",
     "react-native-web": "^0.21.2",
     "zod": "^4.4.3"
   },

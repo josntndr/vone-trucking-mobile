@@ -107,7 +107,7 @@ export const Modal: React.FC<ModalProps> = ({
                 style={[
                   styles.title,
                   {
-                    color: theme.colors.text.primary,
+                    color: theme.colors.text,
                     fontSize: theme.fontSizes['2xl'],
                     fontWeight: theme.fontWeights.semibold,
                   },
@@ -126,7 +126,7 @@ export const Modal: React.FC<ModalProps> = ({
                 >
                   <Text
                     style={{
-                      color: theme.colors.text.secondary,
+                      color: theme.colors.textSecondary,
                       fontSize: theme.fontSizes.xl,
                     }}
                   >

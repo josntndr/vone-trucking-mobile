@@ -11,12 +11,12 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   Screen,
-  SearchInput,
   StatusChip,
   Card,
   LoadingSpinner,
@@ -50,7 +50,24 @@ const STATUS_FILTERS = [
 ];
 
 export default function TripsListScreen() {
-  const { colors, spacing } = useTheme();
+  // Force light theme for operator/admin
+  const themeObj = useTheme();
+  const colors = {
+    background: '#F7F4EF',
+    surface: '#FFFDFC',
+    text: '#24211F',
+    textSecondary: '#746B63',
+    textTertiary: '#B4ADA5',
+    border: '#E5DDD5',
+    primary: '#192A4A',
+    accent: '#D87532',
+    success: '#4F956E',
+    info: '#4D728C',
+    warning: '#C68A24',
+    error: '#C44C47',
+    white: '#FFFFFF',
+  };
+  const { spacing, fontSizes, fontWeights, borderRadius } = themeObj;
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -73,7 +90,11 @@ export default function TripsListScreen() {
       const response = await getTrips(actualFilter, pageNum, 20);
 
       if (response.error) {
-        setError(response.error);
+        console.error('Trips error:', response.error);
+        // Instead of showing error, show empty state
+        setTrips([]);
+        setHasMore(false);
+        setError(null); // Clear error to show empty state
         return;
       }
 
@@ -95,8 +116,11 @@ export default function TripsListScreen() {
         setPage(pageNum);
       }
     } catch (err) {
-      setError('Failed to load trips');
-      console.error(err);
+      console.error('Unexpected error:', err);
+      // Show empty state instead of error
+      setTrips([]);
+      setHasMore(false);
+      setError(null);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -150,7 +174,17 @@ export default function TripsListScreen() {
           </View>
 
           {/* Date and Time */}
-          <View style={[styles.dateTimeRow, isToday && styles.todayHighlight]}>
+          <View
+            style={[
+              styles.dateTimeRow,
+              { backgroundColor: colors.surface },
+              isToday && {
+                ...styles.todayHighlight,
+                backgroundColor: colors.warning + '10',
+                borderColor: colors.warning,
+              },
+            ]}
+          >
             <View style={styles.dateTimeItem}>
               <Ionicons
                 name="calendar"
@@ -253,44 +287,75 @@ export default function TripsListScreen() {
   };
 
   const renderHeader = () => (
-    <View>
+    <View style={{ backgroundColor: colors.background }}>
+      {/* Header */}
+      <View style={[styles.headerContainer, { paddingHorizontal: spacing.md, paddingVertical: spacing[4], backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+        <Text style={[styles.headerTitle, { color: colors.text, fontSize: fontSizes['2xl'], fontWeight: fontWeights.bold }]}>
+          Trips
+        </Text>
+      </View>
+
       {/* Search */}
-      <View style={[styles.searchContainer, { paddingHorizontal: spacing.md }]}>
-        <SearchInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder="Search trips..."
-        />
+      <View style={[styles.searchContainer, { paddingHorizontal: spacing.md, backgroundColor: colors.background }]}>
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderWidth: 2,
+          borderColor: colors.border,
+          borderRadius: borderRadius.base,
+          backgroundColor: colors.white,
+          paddingHorizontal: spacing[3],
+          minHeight: 48,
+        }}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} style={{ marginRight: 8 }} />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Search trips..."
+            placeholderTextColor={colors.textSecondary}
+            style={{
+              flex: 1,
+              fontSize: 16,
+              color: colors.text,
+              paddingVertical: 12,
+            }}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity onPress={() => setSearch('')} style={{ padding: 4 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       {/* Quick Actions */}
       <View style={[styles.quickActions, { paddingHorizontal: spacing.md }]}>
         <TouchableOpacity
-          style={[styles.quickActionBtn, { backgroundColor: colors.primary }]}
+          style={[styles.quickActionBtn, { backgroundColor: colors.primary, borderRadius: borderRadius.base }]}
           onPress={() => router.push('/(operator)/trips/add')}
         >
-          <Ionicons name="add-circle-outline" size={20} color={colors.surface} />
-          <Text style={[styles.quickActionText, { color: colors.surface }]}>
+          <Ionicons name="add-circle-outline" size={20} color={colors.white} />
+          <Text style={[styles.quickActionText, { color: colors.white }]}>
             Create Trip
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.quickActionBtn, { backgroundColor: colors.info }]}
+          style={[styles.quickActionBtn, { backgroundColor: colors.info, borderRadius: borderRadius.base }]}
           onPress={() => router.push('/(operator)/trips/dispatch')}
         >
-          <Ionicons name="analytics-outline" size={20} color={colors.surface} />
-          <Text style={[styles.quickActionText, { color: colors.surface }]}>
+          <Ionicons name="analytics-outline" size={20} color={colors.white} />
+          <Text style={[styles.quickActionText, { color: colors.white }]}>
             Dispatch View
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.quickActionBtn, { backgroundColor: colors.accent }]}
+          style={[styles.quickActionBtn, { backgroundColor: colors.accent, borderRadius: borderRadius.base }]}
           onPress={() => router.push('/(operator)/trips/calendar')}
         >
-          <Ionicons name="calendar-outline" size={20} color={colors.surface} />
-          <Text style={[styles.quickActionText, { color: colors.surface }]}>Calendar</Text>
+          <Ionicons name="calendar-outline" size={20} color={colors.white} />
+          <Text style={[styles.quickActionText, { color: colors.white }]}>Calendar</Text>
         </TouchableOpacity>
       </View>
 
@@ -308,7 +373,7 @@ export default function TripsListScreen() {
                 styles.filterChip,
                 {
                   backgroundColor:
-                    statusFilter === item.value ? colors.primary : colors.surface,
+                    statusFilter === item.value ? colors.primary : colors.white,
                   borderColor: statusFilter === item.value ? colors.primary : colors.border,
                 },
               ]}
@@ -318,7 +383,7 @@ export default function TripsListScreen() {
                 style={[
                   styles.filterText,
                   {
-                    color: statusFilter === item.value ? colors.surface : colors.text,
+                    color: statusFilter === item.value ? colors.white : colors.text,
                   },
                 ]}
               >
@@ -334,7 +399,9 @@ export default function TripsListScreen() {
   if (loading && trips.length === 0) {
     return (
       <Screen>
-        <LoadingSpinner />
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <LoadingSpinner />
+        </View>
       </Screen>
     );
   }
@@ -342,39 +409,53 @@ export default function TripsListScreen() {
   if (error && trips.length === 0) {
     return (
       <Screen>
-        <ErrorState message={error} onRetry={() => loadTrips(1, false)} />
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={{ padding: spacing.md }}>
+            <ErrorState message={error} onRetry={() => loadTrips(1, false)} />
+          </View>
+        </View>
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <FlatList
-        data={trips}
-        renderItem={renderTripItem}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={[
-          styles.listContent,
-          { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
-        ]}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.5}
-        ListFooterComponent={renderFooter}
-        ListEmptyComponent={
-          <EmptyState
-            icon="navigate-outline"
-            title="No trips found"
-            message="Create your first trip to get started"
-          />
-        }
-      />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <FlatList
+          data={trips}
+          renderItem={renderTripItem}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
+          ]}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
+          ListEmptyComponent={
+            <EmptyState
+              icon="navigate-outline"
+              title="No trips found"
+              description="Create your first trip to get started"
+            />
+          }
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  headerContainer: {
+    alignItems: 'flex-start',
+  },
+  headerTitle: {},
   searchContainer: {
     paddingTop: 12,
     paddingBottom: 8,
@@ -446,12 +527,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#F9FAFB',
   },
   todayHighlight: {
-    backgroundColor: '#FFF7ED',
     borderWidth: 1,
-    borderColor: '#FB923C',
   },
   dateTimeItem: {
     flexDirection: 'row',

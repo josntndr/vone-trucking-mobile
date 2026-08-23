@@ -241,21 +241,22 @@ export default function ConnectGoogleScreen() {
           {connection ? (
             <>
               <Button
-                title="Continue to Spreadsheets"
                 onPress={handleContinue}
                 fullWidth
-              />
+              >
+                Continue to Spreadsheets
+              </Button>
               <Button
-                title="Disconnect Account"
                 onPress={handleDisconnect}
                 variant="outline"
                 fullWidth
                 style={styles.disconnectButton}
-              />
+              >
+                Disconnect Account
+              </Button>
             </>
           ) : (
             <Button
-              title={loading ? 'Connecting...' : 'Connect Google Account'}
               onPress={handleConnect}
               disabled={loading}
               fullWidth
@@ -266,7 +267,9 @@ export default function ConnectGoogleScreen() {
                   <MaterialCommunityIcons name="google" size={20} color="#fff" />
                 )
               }
-            />
+            >
+              {loading ? 'Connecting...' : 'Connect Google Account'}
+            </Button>
           )}
         </View>
       </View>

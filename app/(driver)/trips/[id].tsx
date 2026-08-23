@@ -36,8 +36,8 @@ import {
   canTransitionStatus,
   getStatusAction,
   requiresLocation,
+  TripStatus,
 } from '../../../src/types/driver-porter.types';
-import type { TripStatus } from '../../../src/types/trip.types';
 
 export default function DriverTripDetailScreen() {
   const { colors } = useTheme();
@@ -217,16 +217,16 @@ export default function DriverTripDetailScreen() {
 
     // Status-based actions
     const transitions: Partial<Record<TripStatus, TripStatus[]>> = {
-      assigned: ['acknowledged'],
-      acknowledged: ['at_warehouse'],
-      at_warehouse: ['loading'],
-      loading: ['dispatched'],
-      dispatched: ['in_transit'],
-      in_transit: ['arrived'],
-      arrived: ['unloading'],
-      unloading: ['delivered'],
-      delivered: ['returning'],
-      returning: ['completed'],
+      [TripStatus.ASSIGNED]: [TripStatus.ACKNOWLEDGED],
+      [TripStatus.ACKNOWLEDGED]: [TripStatus.AT_WAREHOUSE],
+      [TripStatus.AT_WAREHOUSE]: [TripStatus.LOADING],
+      [TripStatus.LOADING]: [TripStatus.DISPATCHED],
+      [TripStatus.DISPATCHED]: [TripStatus.IN_TRANSIT],
+      [TripStatus.IN_TRANSIT]: [TripStatus.ARRIVED],
+      [TripStatus.ARRIVED]: [TripStatus.UNLOADING],
+      [TripStatus.UNLOADING]: [TripStatus.DELIVERED],
+      [TripStatus.DELIVERED]: [TripStatus.RETURNING],
+      [TripStatus.RETURNING]: [TripStatus.COMPLETED],
     };
 
     const availableTransitions = transitions[trip.status as keyof typeof transitions] || [];
@@ -257,15 +257,16 @@ export default function DriverTripDetailScreen() {
       return (
         <Card style={styles.actionsCard}>
           <Button
-            title="Acknowledge Assignment"
             onPress={handleAcknowledge}
             icon={
               <MaterialCommunityIcons name="check-circle" size={24} color="#fff" />
             }
             fullWidth
-            size="large"
+            size="lg"
             disabled={updating}
-          />
+          >
+            Acknowledge Assignment
+          </Button>
           <Text style={[styles.ackNote, { color: colors.textSecondary }]}>
             Tap to confirm you've received this trip assignment
           </Text>
@@ -530,7 +531,7 @@ export default function DriverTripDetailScreen() {
               Truck:
             </Text>
             <Text style={[styles.teamValue, { color: colors.text }]}>
-              {assignment.truck.truck_number} - {assignment.truck.plate_number}
+              {assignment.truck.truck_number} - {assignment.truck.license_plate}
             </Text>
           </View>
         )}

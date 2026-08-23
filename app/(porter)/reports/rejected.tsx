@@ -17,6 +17,7 @@ import { useRouter } from 'expo-router';
 import { useTheme } from '../../../src/theme/ThemeProvider';
 import { Card } from '../../../src/components/common/Card';
 import { submitProductDiscrepancy } from '../../../src/services/api/driver-porter.service';
+import { DiscrepancyType, ProductDiscrepancySubmission } from '../../../src/types/driver-porter.types';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const rejectionReasons = [
@@ -97,16 +98,22 @@ export default function RejectedProductReportScreen() {
   const submitReport = async () => {
     setSubmitting(true);
     try {
-      const response = await submitProductDiscrepancy({
+      const payload: ProductDiscrepancySubmission = {
         trip_id: 'current-trip-id', // TODO: Get from context
-        discrepancy_type: 'returned',
+        discrepancy_type: DiscrepancyType.REJECTED,
         product_name: productName.trim(),
-        expected_quantity: 0,
+        product_description: `Rejected by ${customerName.trim()} - ${rejectionReason}`,
+        expected_quantity: parseInt(quantityRejected),
         actual_quantity: 0,
         quantity_difference: parseInt(quantityRejected),
+        quantity: parseInt(quantityRejected),
+        reason: rejectionReason,
         description: `Rejected by ${customerName.trim()} - ${rejectionReason}: ${description.trim()}`,
         photo_urls: photoUrls,
-      });
+        photos: photoUrls,
+      };
+      
+      const response = await submitProductDiscrepancy(payload);
 
       if (response.error) {
         Alert.alert('Error', response.error);

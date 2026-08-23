@@ -11,16 +11,18 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '../../../src/theme/ThemeProvider';
+import { useAuth } from '../../../src/hooks';
 import { Card } from '../../../src/components/common/Card';
-import { Button } from '../../../src/components/ui/Button';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function DriverProfileScreen() {
   const { colors } = useTheme();
   const router = useRouter();
+  const { signOut, user } = useAuth();
 
   const profileActions = [
     {
@@ -54,9 +56,15 @@ export default function DriverProfileScreen() {
   ];
 
   const handleLogout = () => {
-    // TODO: Implement logout
-    alert('Logout functionality');
+    // Direct navigation - no confirmation for testing
+    router.replace('/(auth)/login');
   };
+
+  // Get user display name
+  const displayName = user?.user_metadata?.first_name 
+    ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
+    : user?.email || 'Driver';
+  const employeeId = user?.user_metadata?.employee_id || 'N/A';
 
   return (
     <ScrollView
@@ -68,10 +76,10 @@ export default function DriverProfileScreen() {
         <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
           <MaterialCommunityIcons name="account" size={48} color="#fff" />
         </View>
-        <Text style={[styles.name, { color: colors.text }]}>Juan Cruz</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{displayName}</Text>
         <Text style={[styles.role, { color: colors.textSecondary }]}>Driver</Text>
         <Text style={[styles.employeeId, { color: colors.textSecondary }]}>
-          EMP-001
+          {employeeId}
         </Text>
       </Card>
 
@@ -122,15 +130,27 @@ export default function DriverProfileScreen() {
       </Card>
 
       {/* Logout */}
-      <Button
-        title="Logout"
+      <TouchableOpacity
         onPress={handleLogout}
-        variant="outline"
-        fullWidth
-        icon={<MaterialCommunityIcons name="logout" size={20} color={colors.error} />}
-        style={{ borderColor: colors.error }}
-        textStyle={{ color: colors.error }}
-      />
+        style={{
+          borderWidth: 2,
+          borderColor: colors.error,
+          borderRadius: 8,
+          padding: 20,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: colors.surface,
+          marginTop: 10,
+          marginBottom: 20,
+        }}
+        activeOpacity={0.7}
+      >
+        <MaterialCommunityIcons name="logout" size={24} color={colors.error} style={{ marginRight: 8 }} />
+        <Text style={{ color: colors.error, fontSize: 18, fontWeight: '700' }}>
+          Logout
+        </Text>
+      </TouchableOpacity>
 
       <View style={styles.version}>
         <Text style={[styles.versionText, { color: colors.textSecondary }]}>

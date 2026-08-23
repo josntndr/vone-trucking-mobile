@@ -34,7 +34,7 @@ export default function TripCard({
   onPress,
   style,
 }: TripCardProps) {
-  const { colors, typography, spacing, borderRadius, shadows } = useTheme();
+  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius, shadows  } = useTheme();
 
   const Container = onPress ? TouchableOpacity : View;
 
@@ -66,8 +66,8 @@ export default function TripCard({
               styles.tripNumber,
               {
                 color: colors.primary,
-                fontSize: typography.fontSize.base,
-                fontWeight: typography.fontWeight.semibold,
+                fontSize: fontSizes.base,
+                fontWeight: fontWeights.semibold,
               },
             ]}
           >
@@ -89,8 +89,8 @@ export default function TripCard({
             styles.destination,
             {
               color: colors.text,
-              fontSize: typography.fontSize.base,
-              fontWeight: typography.fontWeight.medium,
+              fontSize: fontSizes.base,
+              fontWeight: fontWeights.medium,
             },
           ]}
           numberOfLines={1}
@@ -113,7 +113,7 @@ export default function TripCard({
                 styles.detailText,
                 {
                   color: colors.textSecondary,
-                  fontSize: typography.fontSize.sm,
+                  fontSize: fontSizes.sm,
                 },
               ]}
             >
@@ -137,7 +137,7 @@ export default function TripCard({
                 styles.detailText,
                 {
                   color: colors.textSecondary,
-                  fontSize: typography.fontSize.sm,
+                  fontSize: fontSizes.sm,
                 },
               ]}
             >
@@ -158,7 +158,7 @@ export default function TripCard({
                 styles.detailText,
                 {
                   color: colors.textSecondary,
-                  fontSize: typography.fontSize.sm,
+                  fontSize: fontSizes.sm,
                 },
               ]}
             >

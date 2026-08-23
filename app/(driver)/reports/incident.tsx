@@ -358,10 +358,9 @@ export default function IncidentReportScreen() {
 
       {/* Submit Button */}
       <Button
-        title={submitting ? 'Submitting...' : 'Submit Incident Report'}
         onPress={handleSubmit}
         fullWidth
-        size="large"
+        size="lg"
         disabled={submitting || !incidentType || !description.trim()}
         style={{ backgroundColor: colors.error }}
         icon={
@@ -371,7 +370,9 @@ export default function IncidentReportScreen() {
             <MaterialCommunityIcons name="alert-circle" size={24} color="#fff" />
           )
         }
-      />
+      >
+        {submitting ? 'Submitting...' : 'Submit Incident Report'}
+      </Button>
 
       <View style={styles.footer}>
         <MaterialCommunityIcons name="information" size={16} color={colors.error} />

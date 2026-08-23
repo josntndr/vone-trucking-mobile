@@ -51,7 +51,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
         style={[
           styles.message,
           {
-            color: theme.colors.text.secondary,
+            color: theme.colors.textSecondary,
             fontSize: theme.fontSizes.base,
             marginTop: theme.spacing[2],
           },

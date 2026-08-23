@@ -17,25 +17,32 @@ export interface DemoUser {
   profile: UserProfile;
 }
 
-// Demo users with realistic Philippine trucking data
-const DEMO_USERS: Record<string, DemoUser> = {
-  operator: {
-    id: 'demo-operator-001',
-    email: 'operator@vonetrucking.demo',
-    profile: {
-      id: 'demo-operator-001',
-      email: 'operator@vonetrucking.demo',
-      first_name: 'Maria',
-      last_name: 'Santos',
-      phone: '+63 917 123 4567',
-      role: 'operator' as UserRole,
-      employee_number: 'OP-001',
-      hire_date: '2023-01-15',
-      is_active: true,
-      created_at: '2023-01-15T08:00:00Z',
-      updated_at: '2026-08-22T08:00:00Z',
-    },
+// Initial Operator/Admin Account
+// Username: vonetruckingadmin
+// Password: VoneTrucking15
+// NOTE: In production, this must be created via secure backend seed/migration
+// Password must be stored as a hash, never in plaintext
+const INITIAL_OPERATOR: DemoUser = {
+  id: 'vone-admin-001',
+  email: 'admin@vonetrucking.com',
+  profile: {
+    id: 'vone-admin-001',
+    email: 'admin@vonetrucking.com',
+    first_name: 'System',
+    last_name: 'Administrator',
+    phone: '+63 917 000 0000',
+    role: 'operator' as UserRole,
+    employee_number: 'ADMIN-001',
+    hire_date: '2024-01-01',
+    is_active: true,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2026-08-22T08:00:00Z',
   },
+};
+
+// Demo users for development testing
+const DEMO_USERS: Record<string, DemoUser> = {
+  operator: INITIAL_OPERATOR,
   driver: {
     id: 'demo-driver-001',
     email: 'driver@vonetrucking.demo',
@@ -144,7 +151,7 @@ export const getDemoUser = async (): Promise<ApiResponse<DemoUser>> => {
 export const demoSignOut = async (): Promise<ApiResponse<void>> => {
   try {
     await AsyncStorage.removeItem(DEMO_USER_KEY);
-    // Keep demo mode enabled so user can sign in again
+    await disableDemoMode();
     return { data: undefined };
   } catch (error) {
     return { error: 'Failed to sign out' };
@@ -152,27 +159,8 @@ export const demoSignOut = async (): Promise<ApiResponse<void>> => {
 };
 
 /**
- * Get all demo users (for role selection screen)
+ * Get initial operator account for authentication
  */
-export const getDemoUsers = () => {
-  return [
-    {
-      role: 'operator' as const,
-      title: 'Operator / Admin',
-      description: 'Manage trips, fleet, employees, and reports',
-      user: DEMO_USERS.operator,
-    },
-    {
-      role: 'driver' as const,
-      title: 'Driver',
-      description: 'View assigned trips and submit deliveries',
-      user: DEMO_USERS.driver,
-    },
-    {
-      role: 'porter' as const,
-      title: 'Porter / Helper',
-      description: 'Assist with loading and delivery tasks',
-      user: DEMO_USERS.porter,
-    },
-  ];
+export const getInitialOperator = (): DemoUser => {
+  return INITIAL_OPERATOR;
 };

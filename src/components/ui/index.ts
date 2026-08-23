@@ -8,7 +8,7 @@ export * from './Input';
 export * from './PasswordInput';
 export * from './SearchInput';
 export * from './Card';
-export * from './StatusChip';
+// StatusChip moved to common/ - use that one instead
 export * from './LoadingSpinner';
 export * from './EmptyState';
 export * from './ErrorState';

@@ -306,10 +306,9 @@ export default function TruckProblemReportScreen() {
 
       {/* Submit Button */}
       <Button
-        title={submitting ? 'Submitting...' : 'Submit Problem Report'}
         onPress={handleSubmit}
         fullWidth
-        size="large"
+        size="lg"
         disabled={submitting || !problemType || !description.trim()}
         style={{ backgroundColor: colors.error }}
         icon={
@@ -319,7 +318,9 @@ export default function TruckProblemReportScreen() {
             <MaterialCommunityIcons name="send" size={24} color="#fff" />
           )
         }
-      />
+      >
+        {submitting ? 'Submitting...' : 'Submit Problem Report'}
+      </Button>
 
       <View style={styles.footer}>
         <MaterialCommunityIcons name="information" size={16} color={colors.textSecondary} />

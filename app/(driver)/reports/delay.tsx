@@ -226,10 +226,9 @@ export default function DelayReportScreen() {
 
       {/* Submit Button */}
       <Button
-        title={submitting ? 'Submitting...' : 'Submit Delay Report'}
         onPress={handleSubmit}
         fullWidth
-        size="large"
+        size="lg"
         disabled={submitting || !selectedReason}
         icon={
           submitting ? (
@@ -238,7 +237,9 @@ export default function DelayReportScreen() {
             <MaterialCommunityIcons name="send" size={24} color="#fff" />
           )
         }
-      />
+      >
+        {submitting ? 'Submitting...' : 'Submit Delay Report'}
+      </Button>
 
       <View style={styles.footer}>
         <MaterialCommunityIcons name="information" size={16} color={colors.textSecondary} />

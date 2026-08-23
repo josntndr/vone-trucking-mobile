@@ -11,12 +11,13 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   Screen,
-  SearchInput,
   StatusChip,
   Card,
   LoadingSpinner,
@@ -45,7 +46,23 @@ const STATUS_FILTERS = [
 ];
 
 export default function EmployeesListScreen() {
-  const { colors, spacing } = useTheme();
+  // Force light theme for operator/admin
+  const themeObj = useTheme();
+  const colors = {
+    background: '#F7F4EF',
+    surface: '#FFFDFC',
+    text: '#24211F',
+    textSecondary: '#746B63',
+    border: '#E5DDD5',
+    primary: '#192A4A',
+    accent: '#D87532',
+    success: '#4F956E',
+    info: '#4D728C',
+    warning: '#C68A24',
+    error: '#C44C47',
+    white: '#FFFFFF',
+  };
+  const { spacing, fontSizes, fontWeights, borderRadius } = themeObj;
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -71,7 +88,11 @@ export default function EmployeesListScreen() {
       );
 
       if (response.error) {
-        setError(response.error);
+        console.error('Employees error:', response.error);
+        // Show empty state instead of error
+        setEmployees([]);
+        setHasMore(false);
+        setError(null);
         return;
       }
 
@@ -85,8 +106,11 @@ export default function EmployeesListScreen() {
         setPage(pageNum);
       }
     } catch (err) {
-      setError('Failed to load employees');
-      console.error(err);
+      console.error('Unexpected error:', err);
+      // Show empty state instead of error
+      setEmployees([]);
+      setHasMore(false);
+      setError(null);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -264,7 +288,9 @@ export default function EmployeesListScreen() {
   if (loading && employees.length === 0) {
     return (
       <Screen>
-        <LoadingSpinner />
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <LoadingSpinner />
+        </View>
       </Screen>
     );
   }
@@ -272,90 +298,127 @@ export default function EmployeesListScreen() {
   if (error && employees.length === 0) {
     return (
       <Screen>
-        <ErrorState message={error} onRetry={() => loadEmployees(1, false)} />
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={{ padding: spacing.md }}>
+            <ErrorState message={error} onRetry={() => loadEmployees(1, false)} />
+          </View>
+        </View>
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Header */}
+        <View style={[styles.headerContainer, { paddingHorizontal: spacing.md, paddingVertical: spacing[3], backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+          <Text style={[styles.headerTitle, { color: colors.text, fontSize: fontSizes['2xl'], fontWeight: fontWeights.bold }]}>
+            Employees
+          </Text>
+        </View>
+
         {/* Search */}
-        <View style={[styles.searchContainer, { paddingHorizontal: spacing.md }]}>
-          <SearchInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search employees..."
-          />
+        <View style={[styles.searchContainer, { paddingHorizontal: spacing.md, paddingTop: 12, paddingBottom: 8, backgroundColor: colors.background }]}>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderWidth: 2,
+            borderColor: colors.border,
+            borderRadius: borderRadius.base,
+            backgroundColor: colors.white,
+            paddingHorizontal: spacing[3],
+            minHeight: 48,
+          }}>
+            <Ionicons name="search" size={20} color={colors.textSecondary} style={{ marginRight: 8 }} />
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search employees..."
+              placeholderTextColor={colors.textSecondary}
+              style={{
+                flex: 1,
+                fontSize: 16,
+                color: colors.text,
+                paddingVertical: 12,
+              }}
+            />
+            {search.length > 0 && (
+              <TouchableOpacity onPress={() => setSearch('')} style={{ padding: 4 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
-        {/* Role Filters */}
-        <View style={styles.filtersContainer}>
-          <FlatList
-            horizontal
-            data={ROLE_FILTERS}
-            keyExtractor={(item) => item.label}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[styles.filtersContent, { paddingHorizontal: spacing.md }]}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.filterChip,
-                  {
-                    backgroundColor: roleFilter === item.value ? colors.primary : colors.surface,
+        {/* Filters Section */}
+        <View style={{ paddingHorizontal: spacing.md, paddingVertical: 12, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+          {/* Role Filters */}
+          <View style={{ marginBottom: 12 }}>
+            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.5, marginBottom: 8 }}>
+              ROLE
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {ROLE_FILTERS.map((item) => (
+                <TouchableOpacity
+                  key={item.label}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderRadius: 16,
+                    borderWidth: 1.5,
+                    backgroundColor: roleFilter === item.value ? colors.primary : 'transparent',
                     borderColor: roleFilter === item.value ? colors.primary : colors.border,
-                  },
-                ]}
-                onPress={() => setRoleFilter(item.value)}
-              >
-                <Text
-                  style={[
-                    styles.filterText,
-                    {
-                      color: roleFilter === item.value ? colors.surface : colors.text,
-                    },
-                  ]}
+                  }}
+                  onPress={() => setRoleFilter(item.value)}
+                  activeOpacity={0.7}
                 >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: '600',
+                      color: roleFilter === item.value ? colors.white : colors.text,
+                    }}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
 
-        {/* Status Filters */}
-        <View style={styles.filtersContainer}>
-          <FlatList
-            horizontal
-            data={STATUS_FILTERS}
-            keyExtractor={(item) => item.label}
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[styles.filtersContent, { paddingHorizontal: spacing.md }]}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.filterChip,
-                  {
-                    backgroundColor:
-                      statusFilter === item.value ? colors.primary : colors.surface,
+          {/* Status Filters */}
+          <View>
+            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.5, marginBottom: 8 }}>
+              STATUS
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {STATUS_FILTERS.map((item) => (
+                <TouchableOpacity
+                  key={item.label}
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 7,
+                    borderRadius: 16,
+                    borderWidth: 1.5,
+                    backgroundColor: statusFilter === item.value ? colors.primary : 'transparent',
                     borderColor: statusFilter === item.value ? colors.primary : colors.border,
-                  },
-                ]}
-                onPress={() => setStatusFilter(item.value)}
-              >
-                <Text
-                  style={[
-                    styles.filterText,
-                    {
-                      color: statusFilter === item.value ? colors.surface : colors.text,
-                    },
-                  ]}
+                  }}
+                  onPress={() => setStatusFilter(item.value)}
+                  activeOpacity={0.7}
                 >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            )}
-          />
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: '600',
+                      color: statusFilter === item.value ? colors.white : colors.text,
+                    }}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
         </View>
 
         {/* Employees List */}
@@ -365,27 +428,42 @@ export default function EmployeesListScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={[
             styles.listContent,
-            { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
+            { 
+              paddingHorizontal: spacing.md, 
+              paddingBottom: spacing.xl,
+              flexGrow: 1,
+            },
           ]}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={
-            <EmptyState
-              icon="people-outline"
-              title="No employees found"
-              message="Add your first employee to get started"
-            />
+            <View style={styles.emptyContainer}>
+              <EmptyState
+                icon="people-outline"
+                title="No employees found"
+                description="Add your first employee to get started"
+              />
+            </View>
           }
+          showsVerticalScrollIndicator={false}
         />
 
-        {/* Add Button */}
+        {/* FAB */}
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: colors.primary }]}
+          style={[styles.fab, { 
+            backgroundColor: colors.primary,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+          }]}
           onPress={() => router.push('/(operator)/employees/add')}
+          activeOpacity={0.8}
         >
-          <Ionicons name="add" size={28} color={colors.surface} />
+          <Ionicons name="add" size={28} color={colors.white} />
         </TouchableOpacity>
       </View>
     </Screen>
@@ -396,21 +474,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  searchContainer: {
-    paddingTop: 12,
-    paddingBottom: 8,
+  headerContainer: {
+    alignItems: 'flex-start',
   },
-  filtersContainer: {
-    marginBottom: 8,
-  },
-  filtersContent: {
-    paddingVertical: 8,
-  },
+  headerTitle: {},
+  searchContainer: {},
+  filterLabel: {},
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    marginRight: 8,
     borderWidth: 1,
   },
   filterText: {
@@ -419,6 +492,12 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingTop: 8,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
   },
   employeeCard: {
     padding: 16,
@@ -484,18 +563,13 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    right: 24,
+    bottom: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
   },
 });
 

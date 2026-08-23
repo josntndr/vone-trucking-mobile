@@ -11,12 +11,12 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   Screen,
-  SearchInput,
   StatusChip,
   Card,
   LoadingSpinner,
@@ -38,7 +38,22 @@ const STATUS_FILTERS = [
 ];
 
 export default function TrucksListScreen() {
-  const { colors, spacing } = useTheme();
+  // Force light theme for operator/admin
+  const themeObj = useTheme();
+  const colors = {
+    background: '#F7F4EF',
+    surface: '#FFFDFC',
+    text: '#24211F',
+    textSecondary: '#746B63',
+    border: '#E5DDD5',
+    primary: '#192A4A',
+    success: '#4F956E',
+    info: '#4D728C',
+    warning: '#C68A24',
+    error: '#C44C47',
+    white: '#FFFFFF',
+  };
+  const { spacing, fontSizes, fontWeights, borderRadius } = themeObj;
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -170,7 +185,7 @@ export default function TrucksListScreen() {
           )}
         </View>
 
-        <View style={styles.truckFooter}>
+        <View style={[styles.truckFooter, { borderTopColor: colors.border }]}>
           <View style={styles.fuelInfo}>
             <Ionicons name="speedometer" size={14} color={colors.textSecondary} />
             <Text style={[styles.footerText, { color: colors.textSecondary }]}>
@@ -202,7 +217,9 @@ export default function TrucksListScreen() {
   if (loading && trucks.length === 0) {
     return (
       <Screen>
-        <LoadingSpinner />
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <LoadingSpinner />
+        </View>
       </Screen>
     );
   }
@@ -210,21 +227,63 @@ export default function TrucksListScreen() {
   if (error && trucks.length === 0) {
     return (
       <Screen>
-        <ErrorState message={error} onRetry={() => loadTrucks(1, false)} />
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          <View style={{ padding: spacing.md }}>
+            <ErrorState 
+              message={error} 
+              onRetry={() => {
+                setError(null);
+                setLoading(true);
+                loadTrucks(1, false);
+              }}
+            />
+          </View>
+        </View>
       </Screen>
     );
   }
 
   return (
     <Screen>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Header */}
+        <View style={[styles.headerContainer, { paddingHorizontal: spacing.md, paddingVertical: spacing[4], backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
+          <Text style={[styles.headerTitle, { color: colors.text, fontSize: fontSizes['2xl'], fontWeight: fontWeights.bold }]}>
+            Trucks
+          </Text>
+        </View>
+
         {/* Search */}
-        <View style={[styles.searchContainer, { paddingHorizontal: spacing.md }]}>
-          <SearchInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search trucks..."
-          />
+        <View style={[styles.searchContainer, { paddingHorizontal: spacing.md, backgroundColor: colors.background }]}>
+          <View style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderWidth: 2,
+            borderColor: colors.border,
+            borderRadius: borderRadius.base,
+            backgroundColor: colors.white,
+            paddingHorizontal: spacing[3],
+            minHeight: 48,
+          }}>
+            <Ionicons name="search" size={20} color={colors.textSecondary} style={{ marginRight: 8 }} />
+            <TextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search trucks..."
+              placeholderTextColor={colors.textSecondary}
+              style={{
+                flex: 1,
+                fontSize: 16,
+                color: colors.text,
+                paddingVertical: 12,
+              }}
+            />
+            {search.length > 0 && (
+              <TouchableOpacity onPress={() => setSearch('')} style={{ padding: 4 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {/* Status Filters */}
@@ -241,7 +300,7 @@ export default function TrucksListScreen() {
                   styles.filterChip,
                   {
                     backgroundColor:
-                      statusFilter === item.value ? colors.primary : colors.surface,
+                      statusFilter === item.value ? colors.primary : colors.white,
                     borderColor: statusFilter === item.value ? colors.primary : colors.border,
                   },
                 ]}
@@ -251,7 +310,7 @@ export default function TrucksListScreen() {
                   style={[
                     styles.filterText,
                     {
-                      color: statusFilter === item.value ? colors.surface : colors.text,
+                      color: statusFilter === item.value ? colors.white : colors.text,
                     },
                   ]}
                 >
@@ -271,7 +330,7 @@ export default function TrucksListScreen() {
             styles.listContent,
             { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
           ]}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
@@ -279,17 +338,27 @@ export default function TrucksListScreen() {
             <EmptyState
               icon="car-outline"
               title="No trucks found"
-              message="Add your first truck to get started"
+              description="Add your first truck to get started"
             />
           }
+          showsVerticalScrollIndicator={false}
         />
 
-        {/* Add Button */}
+        {/* Floating Action Button */}
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: colors.primary }]}
+          style={[styles.fab, { 
+            backgroundColor: colors.primary, 
+            borderRadius: 30,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 8,
+          }]}
           onPress={() => router.push('/(operator)/trucks/add')}
+          activeOpacity={0.8}
         >
-          <Ionicons name="add" size={28} color={colors.surface} />
+          <MaterialCommunityIcons name="plus" size={28} color={colors.white} />
         </TouchableOpacity>
       </View>
     </Screen>
@@ -300,6 +369,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  headerContainer: {
+    alignItems: 'flex-start',
+  },
+  headerTitle: {},
   searchContainer: {
     paddingTop: 12,
     paddingBottom: 8,
@@ -364,7 +437,6 @@ const styles = StyleSheet.create({
     gap: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: '#f0f0f0',
   },
   fuelInfo: {
     flexDirection: 'row',
@@ -380,18 +452,13 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 20,
-    bottom: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    bottom: 24,
+    right: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
   },
 });
 

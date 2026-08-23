@@ -11,6 +11,12 @@ export interface User {
   id: string;
   email: string;
   profile: UserProfile;
+  user_metadata?: {
+    first_name?: string;
+    last_name?: string;
+    phone?: string;
+    [key: string]: any;
+  };
 }
 
 export interface AuthSession {

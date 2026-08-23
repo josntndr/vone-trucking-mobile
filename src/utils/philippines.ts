@@ -97,6 +97,11 @@ export const formatPeso = (amount: number | string, showSymbol: boolean = true):
 };
 
 /**
+ * Format Philippine currency (Peso) - alias for formatPeso
+ */
+export const formatPhilippinePeso = formatPeso;
+
+/**
  * Parse peso string to number
  */
 export const parsePeso = (amount: string): number => {
@@ -125,6 +130,22 @@ export const formatPhilippineDate = (date: Date | string): string => {
 };
 
 /**
+ * Format Philippine time (12-hour format)
+ */
+export const formatPhilippineTime = (date: Date | string): string => {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  
+  if (isNaN(d.getTime())) return '';
+  
+  const hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  
+  return `${displayHours}:${minutes} ${ampm}`;
+};
+
+/**
  * Format Philippine date and time
  */
 export const formatPhilippineDateTime = (date: Date | string): string => {
@@ -133,12 +154,9 @@ export const formatPhilippineDateTime = (date: Date | string): string => {
   if (isNaN(d.getTime())) return '';
   
   const dateStr = formatPhilippineDate(d);
-  const hours = d.getHours();
-  const minutes = String(d.getMinutes()).padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  const displayHours = hours % 12 || 12;
+  const timeStr = formatPhilippineTime(d);
   
-  return `${dateStr} ${displayHours}:${minutes} ${ampm}`;
+  return `${dateStr} ${timeStr}`;
 };
 
 /**
