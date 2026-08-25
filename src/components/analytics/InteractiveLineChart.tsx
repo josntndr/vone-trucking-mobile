@@ -26,6 +26,10 @@ interface DataPoint {
 interface ChartData {
   thisWeek: DataPoint[];
   lastWeek: DataPoint[];
+  thisMonth?: DataPoint[];
+  lastMonth?: DataPoint[];
+  thisYear?: DataPoint[];
+  lastYear?: DataPoint[];
 }
 
 interface InteractiveLineChartProps {
@@ -34,6 +38,78 @@ interface InteractiveLineChartProps {
   height: number;
   onPeriodChange?: (period: 'week' | 'month' | 'year') => void;
 }
+
+// Data for different periods
+const PERIOD_DATA = {
+  week: {
+    current: [
+      { label: 'Mon', value: 19, fullLabel: 'Monday' },
+      { label: 'Tue', value: 21, fullLabel: 'Tuesday' },
+      { label: 'Wed', value: 18, fullLabel: 'Wednesday' },
+      { label: 'Thu', value: 24, fullLabel: 'Thursday' },
+      { label: 'Fri', value: 22, fullLabel: 'Friday' },
+      { label: 'Sat', value: 26, fullLabel: 'Saturday' },
+      { label: 'Sun', value: 19, fullLabel: 'Sunday' },
+    ],
+    previous: [
+      { label: 'Mon', value: 15, fullLabel: 'Monday' },
+      { label: 'Tue', value: 18, fullLabel: 'Tuesday' },
+      { label: 'Wed', value: 16, fullLabel: 'Wednesday' },
+      { label: 'Thu', value: 20, fullLabel: 'Thursday' },
+      { label: 'Fri', value: 19, fullLabel: 'Friday' },
+      { label: 'Sat', value: 22, fullLabel: 'Saturday' },
+      { label: 'Sun', value: 17, fullLabel: 'Sunday' },
+    ],
+  },
+  month: {
+    current: [
+      { label: 'Jan', value: 380, fullLabel: 'January' },
+      { label: 'Feb', value: 410, fullLabel: 'February' },
+      { label: 'Mar', value: 395, fullLabel: 'March' },
+      { label: 'Apr', value: 430, fullLabel: 'April' },
+      { label: 'May', value: 450, fullLabel: 'May' },
+      { label: 'Jun', value: 420, fullLabel: 'June' },
+      { label: 'Jul', value: 460, fullLabel: 'July' },
+      { label: 'Aug', value: 440, fullLabel: 'August' },
+      { label: 'Sep', value: 415, fullLabel: 'September' },
+      { label: 'Oct', value: 470, fullLabel: 'October' },
+      { label: 'Nov', value: 390, fullLabel: 'November' },
+      { label: 'Dec', value: 405, fullLabel: 'December' },
+    ],
+    previous: [
+      { label: 'Jan', value: 340, fullLabel: 'January' },
+      { label: 'Feb', value: 370, fullLabel: 'February' },
+      { label: 'Mar', value: 355, fullLabel: 'March' },
+      { label: 'Apr', value: 390, fullLabel: 'April' },
+      { label: 'May', value: 410, fullLabel: 'May' },
+      { label: 'Jun', value: 380, fullLabel: 'June' },
+      { label: 'Jul', value: 420, fullLabel: 'July' },
+      { label: 'Aug', value: 400, fullLabel: 'August' },
+      { label: 'Sep', value: 375, fullLabel: 'September' },
+      { label: 'Oct', value: 430, fullLabel: 'October' },
+      { label: 'Nov', value: 350, fullLabel: 'November' },
+      { label: 'Dec', value: 365, fullLabel: 'December' },
+    ],
+  },
+  year: {
+    current: [
+      { label: '2024', value: 3200, fullLabel: '2024' },
+      { label: '2025', value: 4100, fullLabel: '2025' },
+      { label: '2026', value: 4800, fullLabel: '2026' },
+      { label: '2027', value: 5200, fullLabel: '2027' },
+      { label: '2028', value: 5600, fullLabel: '2028' },
+      { label: '2029', value: 6000, fullLabel: '2029' },
+    ],
+    previous: [
+      { label: '2023', value: 2800, fullLabel: '2023' },
+      { label: '2024', value: 3600, fullLabel: '2024' },
+      { label: '2025', value: 4200, fullLabel: '2025' },
+      { label: '2026', value: 4600, fullLabel: '2026' },
+      { label: '2027', value: 5000, fullLabel: '2027' },
+      { label: '2028', value: 5400, fullLabel: '2028' },
+    ],
+  },
+};
 
 const COLORS = {
   primary: '#3A7D8C',
@@ -64,29 +140,75 @@ export default function InteractiveLineChart({
   const chartWidth = width - chartPadding.left - chartPadding.right;
   const chartHeight = height - chartPadding.top - chartPadding.bottom;
 
-  // Calculate scales
-  const thisWeekData = data.thisWeek;
+  // Get current period data
+  const getCurrentData = () => {
+    switch (period) {
+      case 'week':
+        return PERIOD_DATA.week.current;
+      case 'month':
+        return PERIOD_DATA.month.current;
+      case 'year':
+        return PERIOD_DATA.year.current;
+      default:
+        return PERIOD_DATA.week.current;
+    }
+  };
+
+  const getPreviousData = () => {
+    switch (period) {
+      case 'week':
+        return PERIOD_DATA.week.previous;
+      case 'month':
+        return PERIOD_DATA.month.previous;
+      case 'year':
+        return PERIOD_DATA.year.previous;
+      default:
+        return PERIOD_DATA.week.previous;
+    }
+  };
+
+  const currentData = getCurrentData();
+  const previousData = getPreviousData();
+
+  // Calculate scales with auto-scaling Y-axis
   const maxValue = Math.max(
-    ...thisWeekData.map(d => d.value),
-    ...(showLastWeek ? data.lastWeek.map(d => d.value) : [])
+    ...currentData.map(d => d.value),
+    ...(showLastWeek ? previousData.map(d => d.value) : [])
   );
-  const yMax = 30; // Fixed max for consistent scale
-  const yScale = chartHeight / yMax;
-  const xScale = chartWidth / (thisWeekData.length - 1);
+  const minValue = Math.min(
+    ...currentData.map(d => d.value),
+    ...(showLastWeek ? previousData.map(d => d.value) : [])
+  );
+  
+  // Round up to nearest nice number
+  const yMax = Math.ceil(maxValue * 1.1 / 10) * 10;
+  const yMin = 0;
+  const yRange = yMax - yMin;
+  
+  const xScale = chartWidth / (currentData.length - 1);
+
+  // Generate Y-axis grid values
+  const getYAxisValues = () => {
+    const stepCount = 5;
+    const step = yRange / (stepCount - 1);
+    return Array.from({ length: stepCount }, (_, i) => Math.round(yMin + step * i));
+  };
+
+  const yAxisValues = getYAxisValues();
 
   // Generate path data
   const getPathData = (dataPoints: DataPoint[]) => {
     let path = '';
     dataPoints.forEach((point, index) => {
       const x = chartPadding.left + index * xScale;
-      const y = chartPadding.top + (chartHeight - (point.value / yMax) * chartHeight);
+      const y = chartPadding.top + (chartHeight - ((point.value - yMin) / yRange) * chartHeight);
       
       if (index === 0) {
         path += `M ${x} ${y}`;
       } else {
         // Bezier curve for smooth line
         const prevX = chartPadding.left + (index - 1) * xScale;
-        const prevY = chartPadding.top + (chartHeight - (dataPoints[index - 1].value / yMax) * chartHeight);
+        const prevY = chartPadding.top + (chartHeight - ((dataPoints[index - 1].value - yMin) / yRange) * chartHeight);
         const cpX = (prevX + x) / 2;
         path += ` Q ${cpX} ${prevY}, ${x} ${y}`;
       }
@@ -125,7 +247,7 @@ export default function InteractiveLineChart({
     if (adjustedX < 0 || adjustedX > chartWidth) return;
 
     const index = Math.round(adjustedX / xScale);
-    if (index >= 0 && index < thisWeekData.length) {
+    if (index >= 0 && index < currentData.length) {
       setSelectedIndex(index);
       
       // Animate point scale
@@ -162,24 +284,37 @@ export default function InteractiveLineChart({
 
   // Calculate statistics
   const calculateAverage = () => {
-    const sum = thisWeekData.reduce((acc, point) => acc + point.value, 0);
-    return (sum / thisWeekData.length).toFixed(1);
+    const sum = currentData.reduce((acc, point) => acc + point.value, 0);
+    return (sum / currentData.length).toFixed(1);
   };
 
   const calculateTotal = () => {
-    return thisWeekData.reduce((acc, point) => acc + point.value, 0);
+    return currentData.reduce((acc, point) => acc + point.value, 0);
   };
 
   const getChangeFromPrevious = (index: number) => {
     if (index === 0) return null;
-    const current = thisWeekData[index].value;
-    const previous = thisWeekData[index - 1].value;
+    const current = currentData[index].value;
+    const previous = currentData[index - 1].value;
     const change = current - previous;
     return {
       value: Math.abs(change),
       isPositive: change >= 0,
-      label: change >= 0 ? `+${change} from ${thisWeekData[index - 1].label}` : `${change} from ${thisWeekData[index - 1].label}`,
+      label: change >= 0 ? `+${change} from ${currentData[index - 1].label}` : `${change} from ${currentData[index - 1].label}`,
     };
+  };
+
+  const getPeriodLabel = () => {
+    switch (period) {
+      case 'week':
+        return { current: 'This Week', previous: 'Last Week' };
+      case 'month':
+        return { current: 'This Year', previous: 'Last Year' };
+      case 'year':
+        return { current: 'Recent Years', previous: 'Earlier Years' };
+      default:
+        return { current: 'This Week', previous: 'Last Week' };
+    }
   };
 
   const handlePeriodChange = (newPeriod: 'week' | 'month' | 'year') => {
@@ -241,8 +376,8 @@ export default function InteractiveLineChart({
           </Defs>
 
           {/* Y-axis grid lines */}
-          {[0, 6, 13, 19, 25].map((value, index) => {
-            const y = chartPadding.top + (chartHeight - (value / yMax) * chartHeight);
+          {yAxisValues.map((value, index) => {
+            const y = chartPadding.top + (chartHeight - ((value - yMin) / yRange) * chartHeight);
             return (
               <G key={index}>
                 <Line
@@ -268,7 +403,7 @@ export default function InteractiveLineChart({
 
           {/* Gradient fill */}
           <Path
-            d={getGradientPath(thisWeekData)}
+            d={getGradientPath(currentData)}
             fill="url(#gradient)"
             opacity={fadeAnimation}
           />
@@ -276,7 +411,7 @@ export default function InteractiveLineChart({
           {/* Last week line (dashed grey) */}
           {showLastWeek && (
             <Path
-              d={getPathData(data.lastWeek)}
+              d={getPathData(previousData)}
               stroke={COLORS.secondary}
               strokeWidth="2"
               strokeDasharray="5,5"
@@ -286,7 +421,7 @@ export default function InteractiveLineChart({
 
           {/* This week line */}
           <Path
-            d={getPathData(thisWeekData)}
+            d={getPathData(currentData)}
             stroke={COLORS.primary}
             strokeWidth="2"
             fill="none"
@@ -294,9 +429,9 @@ export default function InteractiveLineChart({
           />
 
           {/* Data points */}
-          {thisWeekData.map((point, index) => {
+          {currentData.map((point, index) => {
             const x = chartPadding.left + index * xScale;
-            const y = chartPadding.top + (chartHeight - (point.value / yMax) * chartHeight);
+            const y = chartPadding.top + (chartHeight - ((point.value - yMin) / yRange) * chartHeight);
             const isSelected = selectedIndex === index;
 
             return (
@@ -335,7 +470,7 @@ export default function InteractiveLineChart({
           })}
 
           {/* X-axis labels */}
-          {thisWeekData.map((point, index) => {
+          {currentData.map((point, index) => {
             const x = chartPadding.left + index * xScale;
             const y = chartPadding.top + chartHeight + 20;
             const isSelected = selectedIndex === index;
@@ -345,7 +480,7 @@ export default function InteractiveLineChart({
                 key={index}
                 x={x}
                 y={y}
-                fontSize="10"
+                fontSize="9"
                 fill={isSelected ? COLORS.primary : COLORS.secondary}
                 fontWeight={isSelected ? 'bold' : 'normal'}
                 textAnchor="middle"
@@ -363,16 +498,16 @@ export default function InteractiveLineChart({
               styles.tooltip,
               {
                 left: Math.max(10, Math.min(width - 130, chartPadding.left + selectedIndex * xScale - 60)),
-                top: chartPadding.top + (chartHeight - (thisWeekData[selectedIndex].value / yMax) * chartHeight) - 80,
+                top: chartPadding.top + (chartHeight - ((currentData[selectedIndex].value - yMin) / yRange) * chartHeight) - 80,
               },
             ]}
           >
             <View style={styles.tooltipContent}>
               <Text style={styles.tooltipDay}>
-                {thisWeekData[selectedIndex].fullLabel || thisWeekData[selectedIndex].label}
+                {currentData[selectedIndex].fullLabel || currentData[selectedIndex].label}
               </Text>
               <Text style={styles.tooltipValue}>
-                {thisWeekData[selectedIndex].value} trips
+                {currentData[selectedIndex].value} trips
               </Text>
               {getChangeFromPrevious(selectedIndex) && (
                 <Text
@@ -398,7 +533,7 @@ export default function InteractiveLineChart({
           activeOpacity={1}
         >
           <View style={styles.legendLine} />
-          <Text style={styles.legendText}>This Week</Text>
+          <Text style={styles.legendText}>{getPeriodLabel().current}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -411,7 +546,7 @@ export default function InteractiveLineChart({
         >
           <View style={[styles.legendLine, { backgroundColor: COLORS.secondary }]} />
           <Text style={[styles.legendText, showLastWeek && { color: COLORS.secondary }]}>
-            Last Week
+            {getPeriodLabel().previous}
           </Text>
         </TouchableOpacity>
 
