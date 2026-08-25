@@ -33,7 +33,6 @@ const ROLE_FILTERS = [
   { label: 'All', value: null },
   { label: 'Drivers', value: UserRole.DRIVER },
   { label: 'Porters', value: UserRole.PORTER },
-  { label: 'Operators', value: UserRole.OPERATOR },
 ];
 
 const STATUS_FILTERS = [

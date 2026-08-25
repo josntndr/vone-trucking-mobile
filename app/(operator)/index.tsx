@@ -178,6 +178,79 @@ export default function OperatorHome() {
           </Text>
         </View>
 
+        {/* Analytics Overview */}
+        <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
+          <Text style={[styles.sectionTitle, { color: colors.text, fontSize: fontSizes.lg, fontWeight: fontWeights.semibold, marginBottom: spacing[3] }]}>
+            Analytics Overview
+          </Text>
+          
+          {/* 2x2 Analytics Grid */}
+          <View style={[styles.gridContainer, { gap: spacing[3] }]}>
+            <View style={[styles.gridRow, { gap: spacing[3] }]}>
+              <View style={styles.gridItem}>
+                <View style={[styles.analyticsCard, { backgroundColor: colors.surface, borderRadius: 12, padding: spacing[4], shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }]}>
+                  <MaterialCommunityIcons name="truck-delivery" size={24} color="#1B2A4A" style={{ marginBottom: spacing[2] }} />
+                  <Text style={[styles.analyticsValue, { color: colors.text, fontSize: 28, fontWeight: fontWeights.bold }]}>
+                    45
+                  </Text>
+                  <Text style={[styles.analyticsLabel, { color: colors.textSecondary, fontSize: fontSizes.xs }]}>
+                    Total Trips
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.gridItem}>
+                <View style={[styles.analyticsCard, { backgroundColor: colors.surface, borderRadius: 12, padding: spacing[4], shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }]}>
+                  <MaterialCommunityIcons name="check-circle" size={24} color="#1B2A4A" style={{ marginBottom: spacing[2] }} />
+                  <Text style={[styles.analyticsValue, { color: colors.text, fontSize: 28, fontWeight: fontWeights.bold }]}>
+                    38
+                  </Text>
+                  <Text style={[styles.analyticsLabel, { color: colors.textSecondary, fontSize: fontSizes.xs }]}>
+                    Completed
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={[styles.gridRow, { gap: spacing[3] }]}>
+              <View style={styles.gridItem}>
+                <View style={[styles.analyticsCard, { backgroundColor: colors.surface, borderRadius: 12, padding: spacing[4], shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }]}>
+                  <MaterialCommunityIcons name="account-group" size={24} color="#1B2A4A" style={{ marginBottom: spacing[2] }} />
+                  <Text style={[styles.analyticsValue, { color: colors.text, fontSize: 28, fontWeight: fontWeights.bold }]}>
+                    {stats.totalEmployees}
+                  </Text>
+                  <Text style={[styles.analyticsLabel, { color: colors.textSecondary, fontSize: fontSizes.xs }]}>
+                    Active Employees
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.gridItem}>
+                <View style={[styles.analyticsCard, { backgroundColor: colors.surface, borderRadius: 12, padding: spacing[4], shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }]}>
+                  <MaterialCommunityIcons name="sync" size={24} color="#1B2A4A" style={{ marginBottom: spacing[2] }} />
+                  <Text style={[styles.analyticsValue, { color: colors.text, fontSize: 28, fontWeight: fontWeights.bold }]}>
+                    {stats.onTripTrucks}
+                  </Text>
+                  <Text style={[styles.analyticsLabel, { color: colors.textSecondary, fontSize: fontSizes.xs }]}>
+                    In Progress
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* View Full Analytics Link */}
+          <TouchableOpacity 
+            onPress={() => router.push('/(operator)/analytics')}
+            style={{ marginTop: spacing[3], alignSelf: 'center' }}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.viewAnalyticsLink, { color: colors.primary, fontSize: fontSizes.sm, fontWeight: fontWeights.medium }]}>
+              View Full Analytics →
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Urgent Alerts */}
         {DEMO_ALERTS.length > 0 && (
           <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
@@ -502,6 +575,16 @@ const styles = StyleSheet.create({
   actionLabel: {
     maxWidth: '100%',
   },
+  analyticsCard: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 110,
+  },
+  analyticsValue: {},
+  analyticsLabel: {
+    marginTop: 4,
+  },
+  viewAnalyticsLink: {},
   financialCard: {},
   financialRow: {
     flexDirection: 'row',

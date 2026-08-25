@@ -106,13 +106,6 @@ export default function ProfileScreen() {
 
   const profileSections = [
     {
-      title: 'Analytics & Reports',
-      items: [
-        { icon: 'stats-chart-outline', label: 'Analytics Dashboard', onPress: handleAnalytics },
-        { icon: 'document-text-outline', label: 'Reports', onPress: handleReports },
-      ],
-    },
-    {
       title: 'Account',
       items: [
         { icon: 'person-outline', label: 'Personal Information', onPress: handlePersonalInfo },
@@ -165,6 +158,8 @@ export default function ProfileScreen() {
             height: 88,
             borderRadius: 44,
             marginBottom: spacing[3],
+            borderWidth: 3,
+            borderColor: '#E07B2A',
             ...shadows.base,
           }]}>
             <Text style={[styles.avatarText, { 
@@ -181,23 +176,23 @@ export default function ProfileScreen() {
             fontWeight: fontWeights.bold,
             marginBottom: spacing[1],
           }]}>
-            {user?.email?.split('@')[0] || 'Admin'}
+            {user?.email?.split('@')[0] || 'admin'}
           </Text>
           <Text style={[styles.email, { 
-            color: colors.textSecondary,
-            fontSize: fontSizes.sm,
+            color: '#E07B2A',
+            fontSize: 13,
             marginBottom: spacing[3],
           }]}>
             {user?.email || 'admin@vonetrucking.com'}
           </Text>
           <View style={[styles.roleBadge, { 
-            backgroundColor: colors.primary + '15',
+            backgroundColor: '#1B2A4A',
             paddingHorizontal: spacing[4],
             paddingVertical: spacing[2],
-            borderRadius: borderRadius.full,
+            borderRadius: 6,
           }]}>
             <Text style={[styles.roleText, { 
-              color: colors.primary,
+              color: '#FFFFFF',
               fontSize: fontSizes.sm,
               fontWeight: fontWeights.semibold,
             }]}>
@@ -220,8 +215,12 @@ export default function ProfileScreen() {
               </Text>
               <Card style={{ 
                 backgroundColor: colors.surface,
-                borderRadius: borderRadius.md,
-                ...shadows.sm,
+                borderRadius: 12,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.05,
+                shadowRadius: 2,
+                elevation: 1,
               }}>
                 {section.items.map((item, itemIndex) => (
                   <TouchableOpacity
@@ -263,8 +262,8 @@ export default function ProfileScreen() {
                       <Switch
                         value={item.switchValue}
                         onValueChange={item.onSwitchChange}
-                        trackColor={{ false: colors.border, true: colors.primary + '40' }}
-                        thumbColor={item.switchValue ? colors.primary : colors.textTertiary}
+                        trackColor={{ false: colors.border, true: '#E07B2A' + '40' }}
+                        thumbColor={item.switchValue ? '#E07B2A' : colors.textTertiary}
                         ios_backgroundColor={colors.border}
                       />
                     ) : (
@@ -280,19 +279,21 @@ export default function ProfileScreen() {
           <View style={[styles.section, { marginBottom: spacing[6] }]}>
             <TouchableOpacity
               style={[styles.logoutButton, {
-                backgroundColor: colors.surface,
-                borderWidth: 2,
-                borderColor: colors.error,
-                borderRadius: borderRadius.md,
+                backgroundColor: '#D32F2F',
+                borderRadius: 12,
                 padding: spacing[4],
-                ...shadows.sm,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 2,
               }]}
               onPress={() => setLogoutDialogVisible(true)}
-              activeOpacity={0.7}
+              activeOpacity={0.8}
             >
-              <Ionicons name="log-out-outline" size={20} color={colors.error} />
+              <Ionicons name="log-out-outline" size={20} color="#FFFFFF" />
               <Text style={[styles.logoutText, {
-                color: colors.error,
+                color: '#FFFFFF',
                 fontSize: fontSizes.base,
                 fontWeight: fontWeights.semibold,
                 marginLeft: spacing[2],
@@ -306,17 +307,10 @@ export default function ProfileScreen() {
         {/* Version Info */}
         <View style={[styles.versionContainer, { paddingVertical: spacing[5] }]}>
           <Text style={[styles.versionText, { 
-            color: colors.textTertiary,
-            fontSize: fontSizes.xs,
-            marginBottom: spacing[1],
+            color: '#9E9E9E',
+            fontSize: 10,
           }]}>
-            Vone Trucking v1.0.0
-          </Text>
-          <Text style={[styles.versionText, { 
-            color: colors.textTertiary,
-            fontSize: fontSizes.xs,
-          }]}>
-            © 2026 Vone Trucking. All rights reserved.
+            Vone Trucking v1.0.0 © 2026
           </Text>
         </View>
       </ScrollView>
