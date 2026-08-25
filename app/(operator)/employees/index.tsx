@@ -21,7 +21,6 @@ import {
   StatusChip,
   Card,
   LoadingSpinner,
-  EmptyState,
   ErrorState,
 } from '../../../src/components';
 import { useTheme } from '../../../src/hooks';
@@ -322,12 +321,17 @@ export default function EmployeesListScreen() {
           <View style={{
             flexDirection: 'row',
             alignItems: 'center',
-            borderWidth: 2,
-            borderColor: colors.border,
+            borderWidth: 1,
+            borderColor: '#E0E0E0',
             borderRadius: borderRadius.base,
             backgroundColor: colors.white,
             paddingHorizontal: spacing[3],
-            minHeight: 48,
+            minHeight: 44,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 2,
+            elevation: 1,
           }}>
             <Ionicons name="search" size={20} color={colors.textSecondary} style={{ marginRight: 8 }} />
             <TextInput
@@ -351,30 +355,36 @@ export default function EmployeesListScreen() {
         </View>
 
         {/* Filters Section */}
-        <View style={{ paddingHorizontal: spacing.md, paddingVertical: 12, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        <View style={{ paddingVertical: 12, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }}>
           {/* Role Filters */}
           <View style={{ marginBottom: 12 }}>
-            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.5, marginBottom: 8 }}>
+            <Text style={{ color: '#9E9E9E', fontSize: 11, fontWeight: '500', letterSpacing: 0.5, marginBottom: 8, paddingHorizontal: spacing.md, textTransform: 'uppercase' }}>
               ROLE
             </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: spacing.md, gap: 8 }}
+            >
               {ROLE_FILTERS.map((item) => (
                 <TouchableOpacity
                   key={item.label}
                   style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderRadius: 16,
-                    borderWidth: 1.5,
+                    paddingHorizontal: 18,
+                    paddingVertical: 9,
+                    borderRadius: 20,
+                    borderWidth: 0,
                     backgroundColor: roleFilter === item.value ? colors.primary : 'transparent',
                     borderColor: roleFilter === item.value ? colors.primary : colors.border,
+                    minHeight: 40,
+                    justifyContent: 'center',
                   }}
                   onPress={() => setRoleFilter(item.value)}
                   activeOpacity={0.7}
                 >
                   <Text
                     style={{
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: '600',
                       color: roleFilter === item.value ? colors.white : colors.text,
                     }}
@@ -383,32 +393,38 @@ export default function EmployeesListScreen() {
                   </Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
           </View>
 
           {/* Status Filters */}
           <View>
-            <Text style={{ color: colors.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 0.5, marginBottom: 8 }}>
+            <Text style={{ color: '#9E9E9E', fontSize: 11, fontWeight: '500', letterSpacing: 0.5, marginBottom: 8, paddingHorizontal: spacing.md, textTransform: 'uppercase' }}>
               STATUS
             </Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: spacing.md, gap: 8 }}
+            >
               {STATUS_FILTERS.map((item) => (
                 <TouchableOpacity
                   key={item.label}
                   style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 7,
-                    borderRadius: 16,
-                    borderWidth: 1.5,
+                    paddingHorizontal: 18,
+                    paddingVertical: 9,
+                    borderRadius: 20,
+                    borderWidth: 0,
                     backgroundColor: statusFilter === item.value ? colors.primary : 'transparent',
                     borderColor: statusFilter === item.value ? colors.primary : colors.border,
+                    minHeight: 40,
+                    justifyContent: 'center',
                   }}
                   onPress={() => setStatusFilter(item.value)}
                   activeOpacity={0.7}
                 >
                   <Text
                     style={{
-                      fontSize: 13,
+                      fontSize: 14,
                       fontWeight: '600',
                       color: statusFilter === item.value ? colors.white : colors.text,
                     }}
@@ -417,7 +433,7 @@ export default function EmployeesListScreen() {
                   </Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </ScrollView>
           </View>
         </View>
 
@@ -440,11 +456,15 @@ export default function EmployeesListScreen() {
           ListFooterComponent={renderFooter}
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <EmptyState
-                icon="people-outline"
-                title="No employees found"
-                description="Add your first employee to get started"
-              />
+              <View style={styles.emptyIllustration}>
+                <Ionicons name="people-outline" size={80} color="#1B2A4A" />
+              </View>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
+                No Employees Yet
+              </Text>
+              <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
+                Add your first employee to get started
+              </Text>
             </View>
           }
           showsVerticalScrollIndicator={false}
@@ -498,6 +518,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 60,
+    paddingHorizontal: 32,
+  },
+  emptyIllustration: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
   },
   employeeCard: {
     padding: 16,

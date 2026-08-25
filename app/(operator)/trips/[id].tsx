@@ -33,6 +33,23 @@ import {
   formatPeso,
 } from '../../../src/utils/philippines';
 
+// Theme colors - Vone Trucking Light Theme
+const COLORS = {
+  background: '#F0EDE8',
+  surface: '#FFFCF8',
+  text: '#2C2418',
+  textSecondary: '#6B6256',
+  textTertiary: '#9B9289',
+  border: '#E0D7CC',
+  primary: '#1B2A4A',
+  teal: '#3A7D8C',
+  orange: '#E07B2A',
+  success: '#4F7A5E',
+  error: '#C74C47',
+  warning: '#D89534',
+  white: '#FFFFFF',
+};
+
 export default function TripDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, spacing } = useTheme();
@@ -155,97 +172,137 @@ export default function TripDetailScreen() {
   const canCancel = !['cancelled', 'completed'].includes(trip.status);
 
   return (
-    <Screen>
+    <Screen style={{ backgroundColor: COLORS.background }}>
       <ScrollView
         style={styles.container}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
       >
+        {/* Back Button */}
+        <View style={[styles.backButtonContainer, { backgroundColor: COLORS.surface, borderBottomColor: COLORS.border }]}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+            <Text style={[styles.backButtonText, { color: COLORS.text }]}>Trips</Text>
+          </TouchableOpacity>
+        </View>
+
         {/* Header Card */}
-        <Card style={[styles.headerCard, { marginHorizontal: spacing.md, marginTop: spacing.md }]}>
+        <Card style={[styles.headerCard, { marginHorizontal: 16, marginTop: 16 }]}>
           <View style={styles.headerRow}>
             <View style={styles.headerInfo}>
-              <Text style={[styles.tripNumber, { color: colors.text }]}>{trip.trip_number}</Text>
-              <Text style={[styles.deliveryRef, { color: colors.textSecondary }]}>
+              <Text style={[styles.tripNumber, { color: COLORS.text }]}>{trip.trip_number}</Text>
+              <Text style={[styles.deliveryRef, { color: COLORS.textSecondary }]}>
                 {trip.delivery_reference}
               </Text>
             </View>
-            <StatusChip label={statusInfo.label} color={statusInfo.color} icon={statusInfo.icon} />
+            <View style={[styles.statusBadge, { backgroundColor: statusInfo.color + '15' }]}>
+              <View style={[styles.statusDot, { backgroundColor: statusInfo.color }]} />
+              <Text style={[styles.statusText, { color: statusInfo.color }]}>
+                {statusInfo.label}
+              </Text>
+            </View>
           </View>
         </Card>
 
         {/* Quick Actions */}
-        <View style={[styles.actionsContainer, { paddingHorizontal: spacing.md }]}>
+        <View style={styles.actionsContainer}>
           {canEdit && (
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: colors.primary }]}
+              style={[styles.actionButton, { backgroundColor: COLORS.primary }]}
               onPress={() => router.push(`/(operator)/trips/edit/${trip.id}`)}
+              activeOpacity={0.8}
             >
-              <Ionicons name="create-outline" size={18} color={colors.surface} />
-              <Text style={[styles.actionButtonText, { color: colors.surface }]}>Edit</Text>
+              <Ionicons name="create-outline" size={18} color={COLORS.white} />
+              <Text style={[styles.actionButtonText, { color: COLORS.white }]}>Edit Trip</Text>
             </TouchableOpacity>
           )}
 
           {canAssign && (
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: colors.info }]}
+              style={[styles.actionButton, { backgroundColor: COLORS.teal }]}
               onPress={() => router.push(`/(operator)/trips/assign/${trip.id}`)}
+              activeOpacity={0.8}
             >
-              <Ionicons name="people-outline" size={18} color={colors.surface} />
-              <Text style={[styles.actionButtonText, { color: colors.surface }]}>Assign</Text>
+              <Ionicons name="people-outline" size={18} color={COLORS.white} />
+              <Text style={[styles.actionButtonText, { color: COLORS.white }]}>Assign Team</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.accent }]}
+            style={[styles.actionButton, { backgroundColor: COLORS.orange }]}
             onPress={handleDuplicateTrip}
+            activeOpacity={0.8}
           >
-            <Ionicons name="copy-outline" size={18} color={colors.surface} />
-            <Text style={[styles.actionButtonText, { color: colors.surface }]}>Duplicate</Text>
+            <Ionicons name="copy-outline" size={18} color={COLORS.white} />
+            <Text style={[styles.actionButtonText, { color: COLORS.white }]}>Duplicate</Text>
           </TouchableOpacity>
+
+          {['in_transit', 'loading', 'dispatched'].includes(trip.status) && (
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: COLORS.teal }]}
+              onPress={() => Alert.alert('Track Trip', 'GPS tracking will be available in the next update.')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="navigate-outline" size={18} color={COLORS.white} />
+              <Text style={[styles.actionButtonText, { color: COLORS.white }]}>Track</Text>
+            </TouchableOpacity>
+          )}
 
           {canCancel && (
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: colors.error }]}
+              style={[styles.actionButton, { backgroundColor: COLORS.error }]}
               onPress={() => setCancelDialogVisible(true)}
+              activeOpacity={0.8}
             >
-              <Ionicons name="close-circle-outline" size={18} color={colors.surface} />
-              <Text style={[styles.actionButtonText, { color: colors.surface }]}>Cancel</Text>
+              <Ionicons name="close-circle-outline" size={18} color={COLORS.white} />
+              <Text style={[styles.actionButtonText, { color: COLORS.white }]}>Cancel Trip</Text>
             </TouchableOpacity>
           )}
         </View>
 
         {/* Schedule Information */}
-        <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Schedule</Text>
-          <Card>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: COLORS.text }]}>Schedule</Text>
+          <Card style={{ borderRadius: 16 }}>
             <View style={styles.infoRow}>
-              <Ionicons name="calendar" size={20} color={colors.textSecondary} />
+              <Ionicons name="calendar" size={20} color={COLORS.textSecondary} />
               <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                <Text style={[styles.infoLabel, { color: COLORS.textSecondary }]}>
                   Delivery Date
                 </Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>
+                <Text style={[styles.infoValue, { color: COLORS.text }]}>
                   {formatPhilippineDate(trip.delivery_date)}
                 </Text>
               </View>
             </View>
 
             <View style={styles.infoRow}>
-              <Ionicons name="time" size={20} color={colors.textSecondary} />
+              <Ionicons name="time" size={20} color={COLORS.textSecondary} />
               <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Call Time</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>{trip.call_time}</Text>
+                <Text style={[styles.infoLabel, { color: COLORS.textSecondary }]}>Call Time</Text>
+                <Text style={[styles.infoValue, { color: COLORS.text }]}>{trip.call_time}</Text>
               </View>
             </View>
 
             {trip.estimated_duration_hours && (
               <View style={styles.infoRow}>
-                <Ionicons name="hourglass" size={20} color={colors.textSecondary} />
+                <Ionicons name="hourglass" size={20} color={COLORS.textSecondary} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                  <Text style={[styles.infoLabel, { color: COLORS.textSecondary }]}>
                     Estimated Duration
                   </Text>
-                  <Text style={[styles.infoValue, { color: colors.text }]}>
+                  <Text style={[styles.infoValue, { color: COLORS.text }]}>
                     {trip.estimated_duration_hours} hours
                   </Text>
                 </View>
@@ -255,39 +312,39 @@ export default function TripDetailScreen() {
         </View>
 
         {/* Location Information */}
-        <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Locations</Text>
-          <Card>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: COLORS.text }]}>Route</Text>
+          <Card style={{ borderRadius: 16 }}>
             <View style={styles.locationBlock}>
               <View style={styles.locationHeader}>
-                <Ionicons name="arrow-up-circle" size={20} color={colors.info} />
-                <Text style={[styles.locationLabel, { color: colors.info }]}>Pickup</Text>
+                <Ionicons name="arrow-up-circle" size={20} color={COLORS.teal} />
+                <Text style={[styles.locationLabel, { color: COLORS.teal }]}>Pickup</Text>
               </View>
-              <Text style={[styles.locationName, { color: colors.text }]}>
+              <Text style={[styles.locationName, { color: COLORS.text }]}>
                 {trip.pickup_warehouse}
               </Text>
               {trip.pickup_address && (
-                <Text style={[styles.locationAddress, { color: colors.textSecondary }]}>
+                <Text style={[styles.locationAddress, { color: COLORS.textSecondary }]}>
                   {trip.pickup_address}
                 </Text>
               )}
             </View>
 
-            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+            <View style={[styles.divider, { backgroundColor: COLORS.border }]} />
 
             <View style={styles.locationBlock}>
               <View style={styles.locationHeader}>
-                <Ionicons name="arrow-down-circle" size={20} color={colors.success} />
-                <Text style={[styles.locationLabel, { color: colors.success }]}>Delivery</Text>
+                <Ionicons name="arrow-down-circle" size={20} color={COLORS.success} />
+                <Text style={[styles.locationLabel, { color: COLORS.success }]}>Delivery</Text>
               </View>
-              <Text style={[styles.locationName, { color: colors.text }]}>
+              <Text style={[styles.locationName, { color: COLORS.text }]}>
                 {trip.delivery_destination}
               </Text>
-              <Text style={[styles.locationAddress, { color: colors.textSecondary }]}>
+              <Text style={[styles.locationAddress, { color: COLORS.textSecondary }]}>
                 {trip.delivery_address}
               </Text>
               {trip.store_branch_name && (
-                <Text style={[styles.locationDetail, { color: colors.textSecondary }]}>
+                <Text style={[styles.locationDetail, { color: COLORS.textSecondary }]}>
                   {trip.store_branch_name}
                 </Text>
               )}
@@ -296,10 +353,10 @@ export default function TripDetailScreen() {
         </View>
 
         {/* Cargo Information */}
-        <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Cargo Details</Text>
-          <Card>
-            <Text style={[styles.cargoDescription, { color: colors.text }]}>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: COLORS.text }]}>Cargo Details</Text>
+          <Card style={{ borderRadius: 16 }}>
+            <Text style={[styles.cargoDescription, { color: COLORS.text }]}>
               {trip.cargo_description}
             </Text>
 
@@ -307,24 +364,24 @@ export default function TripDetailScreen() {
               <View style={styles.cargoSpecs}>
                 {trip.cargo_weight_kg && (
                   <View style={styles.cargoSpec}>
-                    <Ionicons name="barbell" size={16} color={colors.textSecondary} />
-                    <Text style={[styles.cargoSpecText, { color: colors.textSecondary }]}>
+                    <Ionicons name="barbell" size={16} color={COLORS.textSecondary} />
+                    <Text style={[styles.cargoSpecText, { color: COLORS.textSecondary }]}>
                       {trip.cargo_weight_kg} kg
                     </Text>
                   </View>
                 )}
                 {trip.cargo_volume_cbm && (
                   <View style={styles.cargoSpec}>
-                    <Ionicons name="cube" size={16} color={colors.textSecondary} />
-                    <Text style={[styles.cargoSpecText, { color: colors.textSecondary }]}>
+                    <Ionicons name="cube" size={16} color={COLORS.textSecondary} />
+                    <Text style={[styles.cargoSpecText, { color: COLORS.textSecondary }]}>
                       {trip.cargo_volume_cbm} m³
                     </Text>
                   </View>
                 )}
                 {trip.number_of_items && (
                   <View style={styles.cargoSpec}>
-                    <Ionicons name="list" size={16} color={colors.textSecondary} />
-                    <Text style={[styles.cargoSpecText, { color: colors.textSecondary }]}>
+                    <Ionicons name="list" size={16} color={COLORS.textSecondary} />
+                    <Text style={[styles.cargoSpecText, { color: COLORS.textSecondary }]}>
                       {trip.number_of_items} items
                     </Text>
                   </View>
@@ -335,24 +392,24 @@ export default function TripDetailScreen() {
         </View>
 
         {/* Assignments */}
-        <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Assignments</Text>
-          <Card>
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: COLORS.text }]}>Team</Text>
+          <Card style={{ borderRadius: 16 }}>
             <View style={styles.infoRow}>
-              <Ionicons name="car" size={20} color={colors.textSecondary} />
+              <Ionicons name="car" size={20} color={COLORS.textSecondary} />
               <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Truck</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>
+                <Text style={[styles.infoLabel, { color: COLORS.textSecondary }]}>Truck</Text>
+                <Text style={[styles.infoValue, { color: COLORS.text }]}>
                   {trip.assigned_truck_number || 'Not assigned'}
                 </Text>
               </View>
             </View>
 
             <View style={styles.infoRow}>
-              <Ionicons name="person" size={20} color={colors.textSecondary} />
+              <Ionicons name="person" size={20} color={COLORS.textSecondary} />
               <View style={styles.infoContent}>
-                <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Driver</Text>
-                <Text style={[styles.infoValue, { color: colors.text }]}>
+                <Text style={[styles.infoLabel, { color: COLORS.textSecondary }]}>Driver</Text>
+                <Text style={[styles.infoValue, { color: COLORS.text }]}>
                   {trip.assigned_driver_name || 'Not assigned'}
                 </Text>
               </View>
@@ -360,24 +417,24 @@ export default function TripDetailScreen() {
 
             {trip.assignments && trip.assignments.length > 0 && (
               <View style={styles.infoRow}>
-                <Ionicons name="people" size={20} color={colors.textSecondary} />
+                <Ionicons name="people" size={20} color={COLORS.textSecondary} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Porters</Text>
+                  <Text style={[styles.infoLabel, { color: COLORS.textSecondary }]}>Helpers</Text>
                   {trip.assignments.filter(a => a.role === 'porter').map((assignment) => (
                     <View key={assignment.id} style={styles.porterRow}>
-                      <Text style={[styles.infoValue, { color: colors.text }]}>
+                      <Text style={[styles.infoValue, { color: COLORS.text }]}>
                         {assignment.employee_name}
                       </Text>
                       {assignment.status === 'acknowledged' && (
-                        <Ionicons name="checkmark-circle" size={16} color={colors.success} />
+                        <Ionicons name="checkmark-circle" size={16} color={COLORS.success} />
                       )}
                       {assignment.status === 'pending' && (
-                        <Ionicons name="time" size={16} color={colors.warning} />
+                        <Ionicons name="time" size={16} color={COLORS.warning} />
                       )}
                     </View>
                   ))}
                   {trip.assignments.filter(a => a.role === 'porter').length === 0 && (
-                    <Text style={[styles.infoValue, { color: colors.text }]}>None assigned</Text>
+                    <Text style={[styles.infoValue, { color: COLORS.text }]}>None assigned</Text>
                   )}
                 </View>
               </View>
@@ -387,16 +444,16 @@ export default function TripDetailScreen() {
 
         {/* Financial */}
         {trip.expected_income && (
-          <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Financial</Text>
-            <Card>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: COLORS.text }]}>Income & Budget</Text>
+            <Card style={{ borderRadius: 16 }}>
               <View style={styles.infoRow}>
-                <Ionicons name="cash" size={20} color={colors.success} />
+                <Ionicons name="cash" size={20} color={COLORS.success} />
                 <View style={styles.infoContent}>
-                  <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                  <Text style={[styles.infoLabel, { color: COLORS.textSecondary }]}>
                     Expected Income
                   </Text>
-                  <Text style={[styles.incomeValue, { color: colors.success }]}>
+                  <Text style={[styles.incomeValue, { color: COLORS.success }]}>
                     {formatPeso(trip.expected_income)}
                   </Text>
                 </View>
@@ -407,15 +464,15 @@ export default function TripDetailScreen() {
 
         {/* Instructions */}
         {(trip.special_instructions || trip.delivery_instructions) && (
-          <View style={[styles.section, { paddingHorizontal: spacing.md }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Instructions</Text>
-            <Card>
+          <View style={styles.section}>
+            <Text style={[styles.sectionTitle, { color: COLORS.text }]}>Instructions</Text>
+            <Card style={{ borderRadius: 16 }}>
               {trip.special_instructions && (
                 <View style={styles.instructionBlock}>
-                  <Text style={[styles.instructionLabel, { color: colors.textSecondary }]}>
+                  <Text style={[styles.instructionLabel, { color: COLORS.textSecondary }]}>
                     Special Instructions
                   </Text>
-                  <Text style={[styles.instructionText, { color: colors.text }]}>
+                  <Text style={[styles.instructionText, { color: COLORS.text }]}>
                     {trip.special_instructions}
                   </Text>
                 </View>
@@ -423,10 +480,10 @@ export default function TripDetailScreen() {
 
               {trip.delivery_instructions && (
                 <View style={styles.instructionBlock}>
-                  <Text style={[styles.instructionLabel, { color: colors.textSecondary }]}>
+                  <Text style={[styles.instructionLabel, { color: COLORS.textSecondary }]}>
                     Delivery Instructions
                   </Text>
-                  <Text style={[styles.instructionText, { color: colors.text }]}>
+                  <Text style={[styles.instructionText, { color: COLORS.text }]}>
                     {trip.delivery_instructions}
                   </Text>
                 </View>
@@ -437,9 +494,9 @@ export default function TripDetailScreen() {
 
         {/* Status Timeline */}
         {trip.status_history && trip.status_history.length > 0 && (
-          <View style={[styles.section, { paddingHorizontal: spacing.md, paddingBottom: spacing.xl }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Status Timeline</Text>
-            <Card>
+          <View style={[styles.section, { paddingBottom: 32 }]}>
+            <Text style={[styles.sectionTitle, { color: COLORS.text }]}>Activity Timeline</Text>
+            <Card style={{ borderRadius: 16 }}>
               {trip.status_history
                 .sort((a, b) => new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime())
                 .map((history, index) => {
@@ -457,31 +514,31 @@ export default function TripDetailScreen() {
                         />
                         <View style={styles.timelineContent}>
                           <View style={styles.timelineHeader}>
-                            <Text style={[styles.timelineStatus, { color: colors.text }]}>
+                            <Text style={[styles.timelineStatus, { color: COLORS.text }]}>
                               {historyStatusInfo.label}
                             </Text>
-                            <Text style={[styles.timelineDate, { color: colors.textSecondary }]}>
+                            <Text style={[styles.timelineDate, { color: COLORS.textSecondary }]}>
                               {formatPhilippineDateTime(history.changed_at)}
                             </Text>
                           </View>
 
                           {history.changed_by_name && (
-                            <Text style={[styles.timelineUser, { color: colors.textSecondary }]}>
+                            <Text style={[styles.timelineUser, { color: COLORS.textSecondary }]}>
                               by {history.changed_by_name}
                             </Text>
                           )}
 
                           {history.location && (
                             <View style={styles.timelineDetail}>
-                              <Ionicons name="location" size={14} color={colors.textSecondary} />
-                              <Text style={[styles.timelineDetailText, { color: colors.textSecondary }]}>
+                              <Ionicons name="location" size={14} color={COLORS.textSecondary} />
+                              <Text style={[styles.timelineDetailText, { color: COLORS.textSecondary }]}>
                                 {history.location}
                               </Text>
                             </View>
                           )}
 
                           {history.notes && (
-                            <Text style={[styles.timelineNotes, { color: colors.textSecondary }]}>
+                            <Text style={[styles.timelineNotes, { color: COLORS.textSecondary }]}>
                               {history.notes}
                             </Text>
                           )}
@@ -490,10 +547,10 @@ export default function TripDetailScreen() {
                             <View
                               style={[
                                 styles.reasonBlock,
-                                { backgroundColor: colors.warning + '15' },
+                                { backgroundColor: COLORS.warning + '15' },
                               ]}
                             >
-                              <Text style={[styles.reasonText, { color: colors.text }]}>
+                              <Text style={[styles.reasonText, { color: COLORS.text }]}>
                                 {history.reason}
                               </Text>
                             </View>
@@ -502,7 +559,7 @@ export default function TripDetailScreen() {
                       </View>
                       {!isLast && (
                         <View
-                          style={[styles.timelineLine, { backgroundColor: colors.border }]}
+                          style={[styles.timelineLine, { backgroundColor: COLORS.border }]}
                         />
                       )}
                     </View>
@@ -534,8 +591,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  backButtonContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  backButtonText: {
+    fontSize: 17,
+    fontWeight: '600',
+  },
   headerCard: {
     padding: 16,
+    borderRadius: 16,
   },
   headerRow: {
     flexDirection: 'row',
@@ -554,30 +626,50 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
+    gap: 6,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
   actionsContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
     marginVertical: 16,
+    paddingHorizontal: 16,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
     gap: 6,
+    minHeight: 48,
   },
   actionButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   section: {
     marginBottom: 20,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
     marginBottom: 12,
   },
   infoRow: {
