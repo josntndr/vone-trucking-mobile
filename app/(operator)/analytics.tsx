@@ -144,20 +144,6 @@ export default function AnalyticsScreen() {
           >
             Analytics
           </Text>
-          <TouchableOpacity
-            onPress={() => {}}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-            activeOpacity={0.6}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name="calendar-outline" size={24} color={colors.text} />
-          </TouchableOpacity>
         </View>
 
         <ScrollView
