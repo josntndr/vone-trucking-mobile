@@ -309,7 +309,7 @@ export default function InteractiveLineChart({
       case 'week':
         return { current: 'This Week', previous: 'Last Week' };
       case 'month':
-        return { current: 'This Year', previous: 'Last Year' };
+        return { current: 'This Month', previous: 'Last Month' };
       case 'year':
         return { current: 'Recent Years', previous: 'Earlier Years' };
       default:
