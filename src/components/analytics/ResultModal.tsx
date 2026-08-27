@@ -11,6 +11,7 @@ import {
   Modal,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, DESIGN_SYSTEM } from '../../theme/designSystem';
@@ -46,9 +47,13 @@ export const ResultModal: React.FC<ResultModalProps> = ({
       animationType="fade"
       transparent={true}
       onRequestClose={type !== 'loading' ? onClose : undefined}
+      presentationStyle="overFullScreen"
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
+        <View style={[
+          styles.modalContainer,
+          Platform.OS === 'web' && styles.modalContainerWeb
+        ]}>
           {/* Icon */}
           <View
             style={[
@@ -157,6 +162,9 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 400,
     alignItems: 'center',
+  },
+  modalContainerWeb: {
+    maxWidth: 380,
   },
   iconContainer: {
     marginBottom: SPACING.md,

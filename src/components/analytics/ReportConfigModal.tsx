@@ -13,6 +13,7 @@ import {
   ScrollView,
   Switch,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS, SPACING, DESIGN_SYSTEM } from '../../theme/designSystem';
@@ -94,9 +95,13 @@ export const ReportConfigModal: React.FC<ReportConfigModalProps> = ({
       animationType="slide"
       transparent={true}
       onRequestClose={onClose}
+      presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'overFullScreen'}
     >
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
+        <View style={[
+          styles.modalContainer,
+          Platform.OS === 'web' && styles.modalContainerWeb
+        ]}>
           {/* Header */}
           <View style={styles.header}>
             <Text style={styles.headerTitle}>Generate Report</Text>
@@ -231,12 +236,24 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+    ...(Platform.OS === 'web' && {
+      alignItems: 'center',
+    }),
   },
   modalContainer: {
     backgroundColor: COLORS.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '90%',
+    ...(Platform.OS === 'web' && {
+      width: '100%',
+    }),
+  },
+  modalContainerWeb: {
+    maxWidth: 430,
+    borderRadius: 20,
+    maxHeight: '85vh',
+    marginVertical: 'auto',
   },
   header: {
     flexDirection: 'row',
