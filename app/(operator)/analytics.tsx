@@ -1,9 +1,10 @@
 /**
  * Operator Analytics Dashboard Screen - Redesigned with Design System
  * Phase 3: Modern premium design with complete DESIGN_SYSTEM integration
+ * Phase 4: Full reporting and export functionality
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,42 +13,248 @@ import {
   TouchableOpacity,
   RefreshControl,
   Dimensions,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen, LoadingSpinner } from '../../src/components';
 import InteractiveLineChart from '../../src/components/analytics/InteractiveLineChart';
+import { ReportConfigModal } from '../../src/components/analytics/ReportConfigModal';
+import { ExportConfigModal } from '../../src/components/analytics/ExportConfigModal';
+import { ResultModal } from '../../src/components/analytics/ResultModal';
 import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../src/theme/designSystem';
+import { useAuth } from '../../src/hooks';
+import {
+  getAnalyticsMetrics,
+  getTripRecords,
+  calculateDateRange,
+} from '../../src/services/analytics/analytics-data.service';
+import {
+  generatePDFReport,
+  sharePDFReport,
+} from '../../src/services/analytics/report-generator.service';
+import {
+  exportToCSV,
+  shareExportedFile,
+} from '../../src/services/analytics/data-export.service';
+import {
+  ReportType,
+  ReportSection,
+  ExportDataset,
+  ExportFormat,
+  AnalyticsMetrics,
+  TripRecord,
+  AnalyticsFilters,
+  ReportConfig,
+} from '../../src/types/reporting.types';
 
 const { width } = Dimensions.get('window');
 const DS = DESIGN_SYSTEM;
 
 export default function AnalyticsScreen() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
+  
+  // Analytics data
+  const [metrics, setMetrics] = useState<AnalyticsMetrics | null>(null);
+  const [tripRecords, setTripRecords] = useState<TripRecord[]>([]);
+  
+  // Modal states
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [exportModalVisible, setExportModalVisible] = useState(false);
+  const [resultModalVisible, setResultModalVisible] = useState(false);
+  const [resultType, setResultType] = useState<'success' | 'error' | 'loading'>('loading');
+  const [resultTitle, setResultTitle] = useState('');
+  const [resultMessage, setResultMessage] = useState('');
+  const [resultFilename, setResultFilename] = useState<string>();
+  const [resultRecordCount, setResultRecordCount] = useState<number>();
+  const [resultFilePath, setResultFilePath] = useState<string>();
+  const [resultShareLabel, setResultShareLabel] = useState('Share');
 
   // Mock data - replace with actual API calls
   const stats = [
-    { label: 'Active Trips', value: '24', icon: 'location', color: COLORS.teal, trend: '+12%', isPositive: true },
-    { label: 'Total Drivers', value: '48', icon: 'people', color: COLORS.navy, trend: '+3', isPositive: true },
-    { label: 'Fleet Size', value: '32', icon: 'car', color: COLORS.orange, trend: '+2', isPositive: true },
-    { label: 'Revenue', value: '₱2.4M', icon: 'cash', color: COLORS.success, trend: '+18%', isPositive: true },
+    { label: 'Active Trips', value: metrics?.inProgressTrips.toString() || '24', icon: 'location', color: COLORS.teal, trend: '+12%', isPositive: true },
+    { label: 'Total Drivers', value: metrics?.activeDrivers.toString() || '48', icon: 'people', color: COLORS.navy, trend: '+3', isPositive: true },
+    { label: 'Fleet Size', value: metrics?.activeTrucks.toString() || '32', icon: 'car', color: COLORS.orange, trend: '+2', isPositive: true },
+    { label: 'Revenue', value: `₱${((metrics?.totalRevenue || 2400000) / 1000000).toFixed(1)}M`, icon: 'cash', color: COLORS.success, trend: '+18%', isPositive: true },
   ];
 
   const quickStats = [
-    { label: 'Completed', subtitle: 'Today', value: '18', color: COLORS.success },
-    { label: 'In Progress', subtitle: 'trips', value: '24', color: COLORS.teal },
-    { label: 'Pending', subtitle: 'trips', value: '12', color: COLORS.orange },
-    { label: 'Issues', subtitle: 'reports', value: '3', color: COLORS.error },
+    { label: 'Completed', subtitle: 'trips', value: metrics?.completedTrips.toString() || '18', color: COLORS.success },
+    { label: 'In Progress', subtitle: 'trips', value: metrics?.inProgressTrips.toString() || '24', color: COLORS.teal },
+    { label: 'Pending', subtitle: 'trips', value: metrics?.pendingTrips.toString() || '12', color: COLORS.orange },
+    { label: 'Issues', subtitle: 'reports', value: metrics?.incidentReports.toString() || '3', color: COLORS.error },
   ];
 
   const performance = [
-    { label: 'On-Time Delivery', value: '94%', percent: 94, icon: 'checkmark-circle', color: COLORS.success },
-    { label: 'Avg Trip Duration', value: '4.2 hrs', percent: 70, icon: 'time', color: COLORS.teal },
-    { label: 'Fuel Efficiency', value: '8.5 km/L', percent: 85, icon: 'speedometer', color: COLORS.orange },
-    { label: 'Customer Rating', value: '4.7', rating: 4.7, icon: 'star', color: COLORS.warning },
+    { label: 'On-Time Delivery', value: `${metrics?.onTimeDeliveryRate.toFixed(0) || '94'}%`, percent: metrics?.onTimeDeliveryRate || 94, icon: 'checkmark-circle', color: COLORS.success },
+    { label: 'Avg Trip Duration', value: `${metrics?.avgTripDurationHours.toFixed(1) || '4.2'} hrs`, percent: 70, icon: 'time', color: COLORS.teal },
+    { label: 'Fuel Efficiency', value: `${metrics?.fuelEfficiency?.toFixed(1) || '8.5'} km/L`, percent: 85, icon: 'speedometer', color: COLORS.orange },
+    { label: 'Customer Rating', value: metrics?.customerRating?.toFixed(1) || '4.7', rating: metrics?.customerRating || 4.7, icon: 'star', color: COLORS.warning },
   ];
+
+  // Load analytics data
+  useEffect(() => {
+    loadAnalyticsData();
+  }, [selectedPeriod]);
+
+  const loadAnalyticsData = async () => {
+    try {
+      setLoading(true);
+
+      const filters: AnalyticsFilters = {
+        period: selectedPeriod,
+      };
+
+      // Fetch metrics
+      const metricsResponse = await getAnalyticsMetrics(filters);
+      if (metricsResponse.data) {
+        setMetrics(metricsResponse.data);
+      }
+
+      // Fetch trip records for potential export
+      const recordsResponse = await getTripRecords(filters);
+      if (recordsResponse.data) {
+        setTripRecords(recordsResponse.data);
+      }
+    } catch (error) {
+      console.error('Error loading analytics data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getDateRangeLabel = (): string => {
+    const dateRange = calculateDateRange(selectedPeriod);
+    const startDate = new Date(dateRange.startDate);
+    const endDate = new Date(dateRange.endDate);
+    
+    const formatDate = (date: Date) => {
+      return date.toLocaleDateString('en-PH', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        timeZone: 'Asia/Manila',
+      });
+    };
+
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+  };
+
+  const handleGenerateReport = async (reportType: ReportType, sections: ReportSection[]) => {
+    if (!metrics || !user) {
+      Alert.alert('Error', 'Unable to generate report. Please try again.');
+      return;
+    }
+
+    try {
+      setReportModalVisible(false);
+      setResultModalVisible(true);
+      setResultType('loading');
+      setResultTitle('Generating Report');
+      setResultMessage('Please wait while we create your PDF report...');
+
+      const dateRange = calculateDateRange(selectedPeriod);
+      const config: ReportConfig = {
+        title: reportType.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+        type: reportType,
+        dateRange,
+        sections,
+        generatedBy: user.email || 'Operator',
+        generatedAt: new Date().toISOString(),
+      };
+
+      const result = await generatePDFReport(config, metrics, sections.find(s => s.id === 'trip_details')?.included ? tripRecords : undefined);
+
+      setResultType('success');
+      setResultTitle('Report Generated');
+      setResultMessage('Your PDF report has been created successfully.');
+      setResultFilename(result.filename);
+      setResultRecordCount(metrics.totalTrips);
+      setResultFilePath(result.filePath);
+      setResultShareLabel('Download PDF');
+    } catch (error) {
+      console.error('Error generating report:', error);
+      setResultType('error');
+      setResultTitle('Generation Failed');
+      setResultMessage('We couldn\'t create this file. Please try again.');
+    }
+  };
+
+  const handleExportData = async (dataset: ExportDataset, format: ExportFormat) => {
+    if (!metrics) {
+      Alert.alert('Error', 'Unable to export data. Please try again.');
+      return;
+    }
+
+    try {
+      setExportModalVisible(false);
+      setResultModalVisible(true);
+      setResultType('loading');
+      setResultTitle('Exporting Data');
+      setResultMessage(`Please wait while we prepare your ${format.toUpperCase()} file...`);
+
+      const dateRange = calculateDateRange(selectedPeriod);
+      const filters: AnalyticsFilters = {
+        period: selectedPeriod,
+        dateRange,
+      };
+
+      const result = await exportToCSV(
+        { dataset, format, dateRange, filters },
+        metrics,
+        tripRecords
+      );
+
+      if (result.recordCount === 0) {
+        setResultType('error');
+        setResultTitle('No Data Available');
+        setResultMessage('No data available for the selected period. Change the date range or filters and try again.');
+        return;
+      }
+
+      setResultType('success');
+      setResultTitle('Export Complete');
+      setResultMessage(`Successfully exported ${result.recordCount.toLocaleString()} record${result.recordCount !== 1 ? 's' : ''}.`);
+      setResultFilename(result.filename);
+      setResultRecordCount(result.recordCount);
+      setResultFilePath(result.filePath);
+      setResultShareLabel('Download File');
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      setResultType('error');
+      setResultTitle('Export Failed');
+      setResultMessage('We couldn\'t create this file. Please try again.');
+    }
+  };
+
+  const handleShare = async () => {
+    if (!resultFilePath || !resultFilename) return;
+
+    try {
+      if (resultShareLabel.includes('PDF')) {
+        await sharePDFReport(resultFilePath, resultFilename);
+      } else {
+        const format = resultFilename.endsWith('.xlsx') ? 'xlsx' : 'csv';
+        await shareExportedFile(resultFilePath, resultFilename, format);
+      }
+    } catch (error) {
+      console.error('Error sharing file:', error);
+      Alert.alert('Error', 'Failed to share file. Please try again.');
+    }
+  };
+
+  const handleRetry = () => {
+    setResultModalVisible(false);
+    // Reopen the appropriate modal based on previous action
+    if (resultShareLabel.includes('PDF')) {
+      setReportModalVisible(true);
+    } else {
+      setExportModalVisible(true);
+    }
+  };
 
   // Chart data for interactive component
   const interactiveChartData = {
@@ -73,13 +280,12 @@ export default function AnalyticsScreen() {
 
   const handlePeriodChange = (period: 'week' | 'month' | 'year') => {
     setSelectedPeriod(period);
-    // TODO: Fetch data for the selected period
   };
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
     setRefreshing(true);
-    // Simulate data refresh
-    setTimeout(() => setRefreshing(false), 1000);
+    await loadAnalyticsData();
+    setRefreshing(false);
   };
 
   if (loading) {
@@ -231,8 +437,11 @@ export default function AnalyticsScreen() {
             <View style={styles.actionsContainer}>
               <TouchableOpacity
                 style={styles.primaryActionButton}
-                onPress={() => {}}
+                onPress={() => setReportModalVisible(true)}
                 activeOpacity={0.8}
+                accessibilityRole="button"
+                accessibilityLabel="Generate analytics report"
+                accessibilityHint="Opens report configuration to generate PDF"
               >
                 <Ionicons name="document-text" size={20} color={COLORS.white} />
                 <Text style={styles.primaryActionText}>Generate Report</Text>
@@ -240,8 +449,11 @@ export default function AnalyticsScreen() {
               
               <TouchableOpacity
                 style={styles.secondaryActionButton}
-                onPress={() => {}}
+                onPress={() => setExportModalVisible(true)}
                 activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Export analytics data"
+                accessibilityHint="Opens export configuration to download data"
               >
                 <Ionicons name="download" size={20} color={COLORS.navy} />
                 <Text style={styles.secondaryActionText}>Export Data</Text>
@@ -249,6 +461,36 @@ export default function AnalyticsScreen() {
             </View>
           </View>
         </ScrollView>
+
+        {/* Report Configuration Modal */}
+        <ReportConfigModal
+          visible={reportModalVisible}
+          dateRangeLabel={getDateRangeLabel()}
+          onClose={() => setReportModalVisible(false)}
+          onGenerate={handleGenerateReport}
+        />
+
+        {/* Export Configuration Modal */}
+        <ExportConfigModal
+          visible={exportModalVisible}
+          dateRangeLabel={getDateRangeLabel()}
+          onClose={() => setExportModalVisible(false)}
+          onExport={handleExportData}
+        />
+
+        {/* Result Modal */}
+        <ResultModal
+          visible={resultModalVisible}
+          type={resultType}
+          title={resultTitle}
+          message={resultMessage}
+          filename={resultFilename}
+          recordCount={resultRecordCount}
+          onClose={() => setResultModalVisible(false)}
+          onShare={resultType === 'success' ? handleShare : undefined}
+          onRetry={resultType === 'error' ? handleRetry : undefined}
+          shareLabel={resultShareLabel}
+        />
       </View>
     </Screen>
   );
