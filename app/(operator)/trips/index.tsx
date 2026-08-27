@@ -1,6 +1,6 @@
 /**
- * Operator Trips List Screen - Redesigned
- * Manage schedules, assignments, and deliveries
+ * Operator Trips List Screen - Redesigned with Design System
+ * Phase 4: Modern premium design with DESIGN_SYSTEM integration
  */
 
 import React, { useEffect, useState, useCallback, useRef } from 'react';
@@ -26,27 +26,12 @@ import {
   Card,
   LoadingSpinner,
 } from '../../../src/components';
-import { useTheme } from '../../../src/hooks';
+import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../../src/theme/designSystem';
 import { getTrips } from '../../../src/services/api/trip.service';
 import { Trip, TripStatus, getTripStatusInfo } from '../../../src/types/trip.types';
 import { formatPhilippineDate, formatPeso } from '../../../src/utils/philippines';
 
-// Theme colors - Vone Trucking Light Theme
-const COLORS = {
-  background: '#F0EDE8',
-  surface: '#FFFCF8',
-  text: '#2C2418',
-  textSecondary: '#6B6256',
-  textTertiary: '#9B9289',
-  border: '#E0D7CC',
-  primary: '#1B2A4A',
-  teal: '#3A7D8C',
-  orange: '#E07B2A',
-  success: '#4F7A5E',
-  error: '#C74C47',
-  warning: '#D89534',
-  white: '#FFFFFF',
-};
+const DS = DESIGN_SYSTEM;
 
 const STATUS_FILTERS = [
   { label: 'All', value: null },
@@ -81,8 +66,6 @@ const SORT_OPTIONS = [
 ];
 
 export default function TripsListScreen() {
-  const { spacing, fontSizes, fontWeights, borderRadius } = useTheme();
-  
   // State
   const [trips, setTrips] = useState<Trip[]>([]);
   const [loading, setLoading] = useState(true);
@@ -161,10 +144,18 @@ export default function TripsListScreen() {
       const response = await getTrips(actualFilter, pageNum, 20);
 
       if (response.error) {
-        console.error('Trips error:', response.error);
-        setTrips([]);
-        setHasMore(false);
-        setError(null);
+        console.error('Trips fetch error:', response.error);
+        
+        // If this is the first page, show error state
+        if (!append) {
+          setError('Couldn\'t load trips. Check your connection and try again.');
+          setTrips([]);
+          setHasMore(false);
+        }
+        // If loading more pages, keep existing trips and stop pagination
+        else {
+          setHasMore(false);
+        }
         return;
       }
 
@@ -187,12 +178,21 @@ export default function TripsListScreen() {
         }
         setHasMore(response.data.hasMore);
         setPage(pageNum);
+        setError(null); // Clear error on success
       }
     } catch (err) {
-      console.error('Unexpected error:', err);
-      setTrips([]);
-      setHasMore(false);
-      setError(null);
+      console.error('Unexpected trips error:', err);
+      
+      // If this is the first page, show error state
+      if (!append) {
+        setError('Couldn\'t load trips. Check your connection and try again.');
+        setTrips([]);
+        setHasMore(false);
+      }
+      // If loading more pages, keep existing trips and stop pagination
+      else {
+        setHasMore(false);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -245,13 +245,13 @@ export default function TripsListScreen() {
   };
 
   const getStatusColor = (status: TripStatus): string => {
-    if (status === TripStatus.DRAFT) return '#6B6256';
+    if (status === TripStatus.DRAFT) return COLORS.textSecondary;
     if ([TripStatus.SCHEDULED, TripStatus.ASSIGNED].includes(status)) return COLORS.teal;
     if ([TripStatus.LOADING, TripStatus.IN_TRANSIT, TripStatus.ARRIVED, TripStatus.UNLOADING].includes(status)) return COLORS.orange;
     if ([TripStatus.DELIVERED, TripStatus.COMPLETED].includes(status)) return COLORS.success;
     if (status === TripStatus.DELAYED) return COLORS.error;
-    if (status === TripStatus.CANCELLED) return '#9B9289';
-    return COLORS.primary;
+    if (status === TripStatus.CANCELLED) return COLORS.textTertiary;
+    return COLORS.navy;
   };
 
   const getContextualAction = (trip: Trip) => {
@@ -298,7 +298,7 @@ export default function TripsListScreen() {
           {/* Route */}
           <View style={styles.routeRow}>
             <Ionicons name="location" size={18} color={COLORS.orange} />
-            <Text style={[styles.routeText, { color: COLORS.text }]} numberOfLines={1}>
+            <Text style={styles.routeText} numberOfLines={1}>
               {route}
             </Text>
           </View>
@@ -307,14 +307,14 @@ export default function TripsListScreen() {
           <View style={styles.dateTimeRow}>
             <View style={styles.dateTimeItem}>
               <Ionicons name="calendar-outline" size={16} color={COLORS.textSecondary} />
-              <Text style={[styles.dateTimeText, { color: COLORS.text }]}>
+              <Text style={styles.dateTimeText}>
                 {formatPhilippineDate(item.delivery_date)}
                 {isToday && <Text style={{ color: COLORS.orange, fontWeight: '700' }}> (Today)</Text>}
               </Text>
             </View>
             <View style={styles.dateTimeItem}>
               <Ionicons name="time-outline" size={16} color={COLORS.textSecondary} />
-              <Text style={[styles.dateTimeText, { color: COLORS.text }]}>
+              <Text style={styles.dateTimeText}>
                 {item.call_time}
               </Text>
             </View>
@@ -323,9 +323,9 @@ export default function TripsListScreen() {
           {/* Team Assignments */}
           <View style={styles.teamRow}>
             {item.assigned_truck_number ? (
-              <View style={[styles.teamBadge, { backgroundColor: COLORS.primary + '10', borderColor: COLORS.primary + '30' }]}>
-                <Ionicons name="car-outline" size={14} color={COLORS.primary} />
-                <Text style={[styles.teamText, { color: COLORS.primary }]}>
+              <View style={[styles.teamBadge, { backgroundColor: COLORS.navy + '10', borderColor: COLORS.navy + '30' }]}>
+                <Ionicons name="car-outline" size={14} color={COLORS.navy} />
+                <Text style={[styles.teamText, { color: COLORS.navy }]}>
                   {item.assigned_truck_number}
                 </Text>
               </View>
@@ -347,7 +347,7 @@ export default function TripsListScreen() {
               </View>
             ) : null}
             {!item.assigned_truck_number && !item.assigned_driver_name && (
-              <Text style={[styles.unassignedText, { color: COLORS.textTertiary }]}>
+              <Text style={styles.unassignedText}>
                 No team assigned
               </Text>
             )}
@@ -356,12 +356,12 @@ export default function TripsListScreen() {
           {/* Contextual Action */}
           {contextualAction && (
             <TouchableOpacity 
-              style={[styles.actionButton, { borderColor: COLORS.border }]}
+              style={styles.actionButton}
               onPress={() => router.push(`/(operator)/trips/${item.id}`)}
               activeOpacity={0.7}
             >
-              <Ionicons name={contextualAction.icon as any} size={16} color={COLORS.primary} />
-              <Text style={[styles.actionText, { color: COLORS.primary }]}>
+              <Ionicons name={contextualAction.icon as any} size={16} color={COLORS.navy} />
+              <Text style={styles.actionText}>
                 {contextualAction.label}
               </Text>
             </TouchableOpacity>
@@ -375,7 +375,7 @@ export default function TripsListScreen() {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={COLORS.primary} />
+        <ActivityIndicator size="small" color={COLORS.navy} />
       </View>
     );
   };
@@ -385,21 +385,21 @@ export default function TripsListScreen() {
       return (
         <View style={styles.emptyState}>
           <Ionicons name="search-outline" size={64} color={COLORS.textTertiary} />
-          <Text style={[styles.emptyTitle, { color: COLORS.text }]}>
+          <Text style={styles.emptyTitle}>
             No matching trips
           </Text>
-          <Text style={[styles.emptyDescription, { color: COLORS.textSecondary }]}>
+          <Text style={styles.emptyDescription}>
             Try changing your search or filters.
           </Text>
           <TouchableOpacity
-            style={[styles.emptyButtonPrimary, { backgroundColor: COLORS.primary }]}
+            style={styles.emptyButtonPrimary}
             onPress={() => {
               setSearch('');
               setStatusFilter(null);
             }}
             activeOpacity={0.8}
           >
-            <Text style={[styles.emptyButtonPrimaryText, { color: COLORS.white }]}>
+            <Text style={styles.emptyButtonPrimaryText}>
               Clear Filters
             </Text>
           </TouchableOpacity>
@@ -413,7 +413,7 @@ export default function TripsListScreen() {
         <View style={styles.emptyIllustration}>
           <View style={styles.tripIllustrationContainer}>
             {/* Navy truck/car icon */}
-            <Ionicons name="car-outline" size={72} color={COLORS.primary} />
+            <Ionicons name="car-outline" size={72} color={COLORS.navy} />
             {/* Orange route path beneath */}
             <View style={styles.routePath}>
               <View style={[styles.routeCircle, { backgroundColor: COLORS.orange }]} />
@@ -427,18 +427,18 @@ export default function TripsListScreen() {
             </View>
           </View>
         </View>
-        <Text style={[styles.emptyTitle, { color: COLORS.text }]}>
+        <Text style={styles.emptyTitle}>
           No trips yet
         </Text>
-        <Text style={[styles.emptyDescription, { color: COLORS.textSecondary }]}>
+        <Text style={styles.emptyDescription}>
           Create your first trip to begin managing deliveries.
         </Text>
         <TouchableOpacity
-          style={[styles.emptyButtonPrimary, { backgroundColor: COLORS.primary }]}
+          style={styles.emptyButtonPrimary}
           onPress={() => router.push('/(operator)/trips/add')}
           activeOpacity={0.8}
         >
-          <Text style={[styles.emptyButtonPrimaryText, { color: COLORS.white }]}>
+          <Text style={styles.emptyButtonPrimaryText}>
             Create Trip
           </Text>
         </TouchableOpacity>
@@ -449,25 +449,25 @@ export default function TripsListScreen() {
   const renderHeader = () => (
     <View style={{ backgroundColor: COLORS.background }}>
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: COLORS.surface, borderBottomColor: COLORS.border }]}>
-        <Text style={[styles.headerTitle, { color: COLORS.text }]}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
           Trips
         </Text>
-        <Text style={[styles.headerSubtitle, { color: COLORS.textSecondary }]}>
+        <Text style={styles.headerSubtitle}>
           Manage schedules, assignments, and deliveries.
         </Text>
       </View>
 
       {/* Search and Filter */}
-      <View style={[styles.searchSection, { backgroundColor: COLORS.background }]}>
-        <View style={[styles.searchContainer, { backgroundColor: COLORS.surface, borderColor: COLORS.border }]}>
+      <View style={styles.searchSection}>
+        <View style={styles.searchContainer}>
           <Ionicons name="search-outline" size={20} color={COLORS.textSecondary} />
           <TextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Search trips, locations, trucks, or employees"
             placeholderTextColor={COLORS.textSecondary}
-            style={[styles.searchInput, { color: COLORS.text }]}
+            style={styles.searchInput}
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -478,17 +478,17 @@ export default function TripsListScreen() {
         
         <View style={styles.filterSortRow}>
           <TouchableOpacity
-            style={[styles.filterButton, { backgroundColor: COLORS.surface }]}
+            style={styles.filterButton}
             onPress={() => setShowFilterModal(true)}
             activeOpacity={0.7}
           >
-            <Ionicons name="funnel-outline" size={18} color={COLORS.primary} />
-            <Text style={[styles.filterButtonText, { color: COLORS.primary }]}>
+            <Ionicons name="funnel-outline" size={18} color={COLORS.navy} />
+            <Text style={styles.filterButtonText}>
               Filter
             </Text>
             {filterCount > 0 && (
-              <View style={[styles.filterBadge, { backgroundColor: COLORS.orange }]}>
-                <Text style={[styles.filterBadgeText, { color: COLORS.white }]}>
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>
                   {filterCount}
                 </Text>
               </View>
@@ -496,12 +496,12 @@ export default function TripsListScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.sortButton, { backgroundColor: COLORS.surface }]}
+            style={styles.sortButton}
             onPress={() => setShowSortModal(true)}
             activeOpacity={0.7}
           >
-            <Ionicons name="swap-vertical-outline" size={18} color={COLORS.primary} />
-            <Text style={[styles.sortButtonText, { color: COLORS.primary }]}>
+            <Ionicons name="swap-vertical-outline" size={18} color={COLORS.navy} />
+            <Text style={styles.sortButtonText}>
               Sort
             </Text>
           </TouchableOpacity>
@@ -509,37 +509,37 @@ export default function TripsListScreen() {
       </View>
 
       {/* Main Actions */}
-      <View style={[styles.actionsSection, { backgroundColor: COLORS.background }]}>
+      <View style={styles.actionsSection}>
         <TouchableOpacity
-          style={[styles.primaryAction, { backgroundColor: COLORS.primary }]}
+          style={styles.primaryAction}
           onPress={() => router.push('/(operator)/trips/add')}
           activeOpacity={0.8}
         >
           <Ionicons name="add-circle-outline" size={20} color={COLORS.white} />
-          <Text style={[styles.primaryActionText, { color: COLORS.white }]}>
+          <Text style={styles.primaryActionText}>
             Create Trip
           </Text>
         </TouchableOpacity>
 
         <View style={styles.secondaryActions}>
           <TouchableOpacity
-            style={[styles.secondaryAction, { backgroundColor: COLORS.surface }]}
+            style={styles.secondaryAction}
             onPress={() => router.push('/(operator)/trips/dispatch')}
             activeOpacity={0.7}
           >
-            <Ionicons name="analytics-outline" size={18} color={COLORS.primary} />
-            <Text style={[styles.secondaryActionText, { color: COLORS.primary }]}>
+            <Ionicons name="analytics-outline" size={18} color={COLORS.navy} />
+            <Text style={styles.secondaryActionText}>
               Dispatch View
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.secondaryAction, { backgroundColor: COLORS.surface }]}
+            style={styles.secondaryAction}
             onPress={() => router.push('/(operator)/trips/calendar')}
             activeOpacity={0.7}
           >
-            <Ionicons name="calendar-outline" size={18} color={COLORS.primary} />
-            <Text style={[styles.secondaryActionText, { color: COLORS.primary }]}>
+            <Ionicons name="calendar-outline" size={18} color={COLORS.navy} />
+            <Text style={styles.secondaryActionText}>
               Calendar
             </Text>
           </TouchableOpacity>
@@ -574,11 +574,9 @@ export default function TripsListScreen() {
                   style={[
                     styles.filterChip,
                     {
-                      backgroundColor: isSelected ? COLORS.primary : COLORS.surface,
-                      shadowColor: '#000',
-                      shadowOffset: { width: 0, height: 2 },
+                      backgroundColor: isSelected ? COLORS.navy : COLORS.white,
+                      ...COMPONENTS.card.shadow,
                       shadowOpacity: isSelected ? 0.15 : 0.05,
-                      shadowRadius: 4,
                       elevation: isSelected ? 3 : 1,
                     },
                   ]}
@@ -613,10 +611,10 @@ export default function TripsListScreen() {
   if (loading && trips.length === 0) {
     return (
       <Screen>
-        <View style={[styles.container, { backgroundColor: COLORS.background }]}>
-          <View style={[styles.header, { backgroundColor: COLORS.surface, borderBottomColor: COLORS.border }]}>
-            <Text style={[styles.headerTitle, { color: COLORS.text }]}>Trips</Text>
-            <Text style={[styles.headerSubtitle, { color: COLORS.textSecondary }]}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Trips</Text>
+            <Text style={styles.headerSubtitle}>
               Manage schedules, assignments, and deliveries.
             </Text>
           </View>
@@ -626,9 +624,50 @@ export default function TripsListScreen() {
     );
   }
 
+  // Error state - show retry option
+  if (error && trips.length === 0) {
+    return (
+      <Screen>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Trips</Text>
+            <Text style={styles.headerSubtitle}>
+              Manage schedules, assignments, and deliveries.
+            </Text>
+          </View>
+          <View style={styles.errorState}>
+            <View style={styles.errorIcon}>
+              <Ionicons name="cloud-offline-outline" size={64} color={COLORS.textMuted} />
+            </View>
+            <Text style={styles.errorTitle}>
+              Couldn't load trips
+            </Text>
+            <Text style={styles.errorMessage}>
+              {error}
+            </Text>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={() => {
+                setError(null);
+                setLoading(true);
+                loadTrips(1, false);
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="refresh" size={20} color={COLORS.white} />
+              <Text style={styles.retryButtonText}>
+                Try Again
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Screen>
+    );
+  }
+
   return (
     <Screen>
-      <View style={[styles.container, { backgroundColor: COLORS.background }]}>
+      <View style={styles.container}>
         <FlatList
           data={trips}
           renderItem={renderTripItem}
@@ -643,8 +682,8 @@ export default function TripsListScreen() {
             <RefreshControl 
               refreshing={refreshing} 
               onRefresh={onRefresh} 
-              colors={[COLORS.primary]}
-              tintColor={COLORS.primary}
+              colors={[COLORS.navy]}
+              tintColor={COLORS.navy}
             />
           }
           onScroll={handleScroll}
@@ -660,7 +699,6 @@ export default function TripsListScreen() {
           style={[
             styles.fab,
             {
-              backgroundColor: COLORS.primary,
               transform: [{ scale: fabScale }],
             },
           ]}
@@ -689,9 +727,9 @@ export default function TripsListScreen() {
             activeOpacity={1}
             onPress={() => setShowSortModal(false)}
           >
-            <View style={[styles.modalContent, { backgroundColor: COLORS.surface }]}>
-              <View style={[styles.modalHeader, { borderBottomColor: COLORS.border }]}>
-                <Text style={[styles.modalTitle, { color: COLORS.text }]}>Sort By</Text>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Sort By</Text>
                 <TouchableOpacity onPress={() => setShowSortModal(false)}>
                   <Ionicons name="close" size={24} color={COLORS.text} />
                 </TouchableOpacity>
@@ -699,18 +737,18 @@ export default function TripsListScreen() {
               {SORT_OPTIONS.map((option) => (
                 <TouchableOpacity
                   key={option.value}
-                  style={[styles.modalOption, { borderBottomColor: COLORS.border }]}
+                  style={styles.modalOption}
                   onPress={() => {
                     setSortBy(option.value);
                     setShowSortModal(false);
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={[styles.modalOptionText, { color: COLORS.text }]}>
+                  <Text style={styles.modalOptionText}>
                     {option.label}
                   </Text>
                   {sortBy === option.value && (
-                    <Ionicons name="checkmark" size={20} color={COLORS.primary} />
+                    <Ionicons name="checkmark" size={20} color={COLORS.navy} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -725,147 +763,155 @@ export default function TripsListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   header: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: DS.typography.fontSize['2xl'],
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.navy,
     marginBottom: 4,
   },
   headerSubtitle: {
     fontSize: 14,
     lineHeight: 20,
+    color: COLORS.textSecondary,
   },
   searchSection: {
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    backgroundColor: COLORS.background,
   },
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: COLORS.white,
     borderWidth: 1.5,
+    borderColor: COLORS.border,
     borderRadius: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: SPACING.sm,
     minHeight: 48,
-    gap: 8,
+    gap: SPACING.xs,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    paddingVertical: 12,
+    color: COLORS.text,
+    paddingVertical: SPACING.sm,
   },
   filterSortRow: {
     flexDirection: 'row',
-    marginTop: 12,
-    gap: 8,
+    marginTop: SPACING.sm,
+    gap: SPACING.xs,
   },
   filterButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.white,
     borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
+    ...COMPONENTS.card.shadow,
   },
   filterButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.navy,
   },
   filterBadge: {
     minWidth: 20,
     height: 20,
     borderRadius: 10,
+    backgroundColor: COLORS.orange,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 6,
   },
   filterBadgeText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.white,
   },
   sortButton: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.white,
     borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
+    ...COMPONENTS.card.shadow,
   },
   sortButtonText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.navy,
   },
   actionsSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.background,
   },
   primaryAction: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.navy,
     borderRadius: 12,
     paddingVertical: 14,
-    gap: 8,
+    gap: SPACING.xs,
     minHeight: 52,
   },
   primaryActionText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.white,
   },
   secondaryActions: {
     flexDirection: 'row',
-    marginTop: 8,
-    gap: 8,
+    marginTop: SPACING.xs,
+    gap: SPACING.xs,
   },
   secondaryAction: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: COLORS.white,
     borderRadius: 12,
-    paddingVertical: 12,
+    paddingVertical: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
-    elevation: 2,
+    ...COMPONENTS.card.shadow,
   },
   secondaryActionText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.navy,
   },
   filtersSection: {
     position: 'relative',
-    paddingVertical: 12,
+    paddingVertical: SPACING.sm,
     backgroundColor: COLORS.background,
   },
   filtersScrollContent: {
-    paddingHorizontal: 16,
-    gap: 8,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.xs,
     paddingRight: 32,
   },
   filterChip: {
@@ -881,7 +927,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
   },
   pulseIndicator: {
     width: 6,
@@ -908,25 +954,26 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: SPACING.md,
     paddingBottom: 100,
   },
   listContentEmpty: {
     flexGrow: 1,
   },
   tripCard: {
-    padding: 16,
-    marginTop: 12,
-    borderRadius: 16,
+    padding: SPACING.md,
+    marginTop: SPACING.sm,
+    borderRadius: COMPONENTS.card.borderRadius,
   },
   tripHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
   },
   deliveryRef: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.navy,
   },
   statusBadge: {
     flexDirection: 'row',
@@ -943,23 +990,24 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: DS.typography.fontWeight.bold,
   },
   routeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 8,
+    marginBottom: SPACING.sm,
+    gap: SPACING.xs,
   },
   routeText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.text,
     flex: 1,
   },
   dateTimeRow: {
     flexDirection: 'row',
-    marginBottom: 12,
-    gap: 16,
+    marginBottom: SPACING.sm,
+    gap: SPACING.md,
   },
   dateTimeItem: {
     flexDirection: 'row',
@@ -968,12 +1016,13 @@ const styles = StyleSheet.create({
   },
   dateTimeText: {
     fontSize: 14,
+    color: COLORS.text,
   },
   teamRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
+    gap: SPACING.xs,
+    marginBottom: SPACING.sm,
   },
   teamBadge: {
     flexDirection: 'row',
@@ -986,17 +1035,19 @@ const styles = StyleSheet.create({
   },
   teamText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
   },
   unassignedText: {
     fontSize: 13,
     fontStyle: 'italic',
+    color: COLORS.textTertiary,
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
+    borderColor: COLORS.border,
     borderRadius: 10,
     paddingVertical: 10,
     gap: 6,
@@ -1004,7 +1055,8 @@ const styles = StyleSheet.create({
   },
   actionText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.navy,
   },
   emptyState: {
     flex: 1,
@@ -1012,6 +1064,47 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 32,
     paddingVertical: 60,
+  },
+  errorState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 60,
+  },
+  errorIcon: {
+    marginBottom: 24,
+  },
+  errorTitle: {
+    fontSize: 22,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  retryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.navy,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    gap: 8,
+    minHeight: 52,
+    minWidth: 160,
+  },
+  retryButtonText: {
+    fontSize: 16,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.white,
   },
   emptyIllustration: {
     alignItems: 'center',
@@ -1050,13 +1143,15 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
     textAlign: 'center',
   },
   emptyDescription: {
     fontSize: 15,
     lineHeight: 22,
+    color: COLORS.textSecondary,
     textAlign: 'center',
     marginBottom: 24,
   },
@@ -1064,15 +1159,16 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderRadius: 10,
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingVertical: SPACING.sm,
     minHeight: 48,
     justifyContent: 'center',
   },
   emptyButtonText: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
   },
   emptyButtonPrimary: {
+    backgroundColor: COLORS.navy,
     borderRadius: 12,
     paddingHorizontal: 32,
     paddingVertical: 14,
@@ -1081,7 +1177,8 @@ const styles = StyleSheet.create({
   },
   emptyButtonPrimaryText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.white,
   },
   footerLoader: {
     paddingVertical: 20,
@@ -1089,11 +1186,12 @@ const styles = StyleSheet.create({
   },
   fab: {
     position: 'absolute',
-    right: 16,
+    right: SPACING.md,
     bottom: Platform.OS === 'ios' ? 90 : 80,
     width: 56,
     height: 56,
     borderRadius: 28,
+    backgroundColor: COLORS.navy,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -1113,6 +1211,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
+    backgroundColor: COLORS.white,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 32,
@@ -1122,23 +1221,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.text,
   },
   modalOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
     minHeight: 56,
   },
   modalOptionText: {
     fontSize: 16,
+    color: COLORS.text,
   },
 });

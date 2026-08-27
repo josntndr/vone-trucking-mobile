@@ -1,5 +1,6 @@
 /**
- * Employees List Screen
+ * Employees List Screen - Redesigned with Design System
+ * Phase 6: Modern premium design with DESIGN_SYSTEM integration
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -13,21 +14,23 @@ import {
   ActivityIndicator,
   TextInput,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   Screen,
-  StatusChip,
   Card,
   LoadingSpinner,
   ErrorState,
 } from '../../../src/components';
-import { useTheme } from '../../../src/hooks';
+import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../../src/theme/designSystem';
 import { getEmployees } from '../../../src/services/api/employee.service';
 import { Employee, EmploymentStatus } from '../../../src/types/employee.types';
 import { UserRole } from '../../../src/types';
 import { formatPhilippinePhone, isExpiringSoon, isExpired } from '../../../src/utils/philippines';
+
+const DS = DESIGN_SYSTEM;
 
 const ROLE_FILTERS = [
   { label: 'All', value: null },
@@ -44,23 +47,6 @@ const STATUS_FILTERS = [
 ];
 
 export default function EmployeesListScreen() {
-  // Force light theme for operator/admin
-  const themeObj = useTheme();
-  const colors = {
-    background: '#F7F4EF',
-    surface: '#FFFDFC',
-    text: '#24211F',
-    textSecondary: '#746B63',
-    border: '#E5DDD5',
-    primary: '#192A4A',
-    accent: '#D87532',
-    success: '#4F956E',
-    info: '#4D728C',
-    warning: '#C68A24',
-    error: '#C44C47',
-    white: '#FFFFFF',
-  };
-  const { spacing, fontSizes, fontWeights, borderRadius } = themeObj;
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -87,7 +73,6 @@ export default function EmployeesListScreen() {
 
       if (response.error) {
         console.error('Employees error:', response.error);
-        // Show empty state instead of error
         setEmployees([]);
         setHasMore(false);
         setError(null);
@@ -105,7 +90,6 @@ export default function EmployeesListScreen() {
       }
     } catch (err) {
       console.error('Unexpected error:', err);
-      // Show empty state instead of error
       setEmployees([]);
       setHasMore(false);
       setError(null);
@@ -138,16 +122,16 @@ export default function EmployeesListScreen() {
   const getStatusColor = (status?: EmploymentStatus) => {
     switch (status) {
       case EmploymentStatus.ACTIVE:
-        return colors.success;
+        return COLORS.success;
       case EmploymentStatus.ON_LEAVE:
-        return colors.warning;
+        return COLORS.warning;
       case EmploymentStatus.SUSPENDED:
-        return colors.error;
+        return COLORS.error;
       case EmploymentStatus.INACTIVE:
       case EmploymentStatus.ARCHIVED:
-        return colors.textSecondary;
+        return COLORS.textSecondary;
       default:
-        return colors.textSecondary;
+        return COLORS.textSecondary;
     }
   };
 
@@ -172,13 +156,13 @@ export default function EmployeesListScreen() {
   const getRoleColor = (role: UserRole) => {
     switch (role) {
       case UserRole.DRIVER:
-        return colors.primary;
+        return COLORS.navy;
       case UserRole.PORTER:
-        return colors.accent;
+        return COLORS.orange;
       case UserRole.OPERATOR:
-        return colors.info;
+        return COLORS.teal;
       default:
-        return colors.textSecondary;
+        return COLORS.textSecondary;
     }
   };
 
@@ -191,44 +175,52 @@ export default function EmployeesListScreen() {
 
   const renderEmployeeItem = ({ item }: { item: Employee }) => {
     const licenseStatus = checkLicenseExpiry(item);
+    const statusColor = getStatusColor(item.employment_status);
 
     return (
-      <TouchableOpacity onPress={() => router.push(`/(operator)/employees/${item.id}`)}>
+      <TouchableOpacity 
+        onPress={() => router.push(`/(operator)/employees/${item.id}`)}
+        activeOpacity={0.7}
+      >
         <Card style={styles.employeeCard}>
+          {/* Header: Avatar + Name + Status */}
           <View style={styles.employeeHeader}>
             <View style={styles.employeeInfo}>
               <View style={styles.nameRow}>
-                <View
-                  style={[styles.roleIconContainer, { backgroundColor: getRoleColor(item.role) + '15' }]}
-                >
+                <View style={[styles.roleIconContainer, { backgroundColor: getRoleColor(item.role) + '15' }]}>
                   <Ionicons name={getRoleIcon(item.role)} size={20} color={getRoleColor(item.role)} />
                 </View>
                 <View style={styles.nameContent}>
-                  <Text style={[styles.employeeName, { color: colors.text }]}>{item.full_name}</Text>
-                  <Text style={[styles.employeeId, { color: colors.textSecondary }]}>
-                    {item.employee_id}
-                  </Text>
+                  <Text style={styles.employeeName}>{item.full_name}</Text>
+                  <Text style={styles.employeeId}>{item.employee_id}</Text>
                 </View>
               </View>
             </View>
-            <StatusChip
-              label={getStatusLabel(item.employment_status)}
-              color={getStatusColor(item.employment_status)}
-            />
+            <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={[styles.statusText, { color: statusColor }]}>
+                {getStatusLabel(item.employment_status)}
+              </Text>
+            </View>
           </View>
 
+          {/* Employee Details */}
           <View style={styles.employeeDetails}>
             <View style={styles.detailRow}>
-              <Ionicons name="briefcase" size={16} color={colors.textSecondary} />
-              <Text style={[styles.detailText, { color: colors.text }]}>
+              <View style={styles.detailIcon}>
+                <Ionicons name="briefcase" size={16} color={COLORS.navy} />
+              </View>
+              <Text style={styles.detailText}>
                 {item.role.charAt(0).toUpperCase() + item.role.slice(1)}
               </Text>
             </View>
 
             {item.phone && (
               <View style={styles.detailRow}>
-                <Ionicons name="call" size={16} color={colors.textSecondary} />
-                <Text style={[styles.detailText, { color: colors.text }]}>
+                <View style={styles.detailIcon}>
+                  <Ionicons name="call" size={16} color={COLORS.teal} />
+                </View>
+                <Text style={styles.detailText}>
                   {formatPhilippinePhone(item.phone)}
                 </Text>
               </View>
@@ -236,8 +228,10 @@ export default function EmployeesListScreen() {
 
             {item.role === UserRole.DRIVER && item.license_number && (
               <View style={styles.detailRow}>
-                <Ionicons name="card" size={16} color={colors.textSecondary} />
-                <Text style={[styles.detailText, { color: colors.text }]}>
+                <View style={styles.detailIcon}>
+                  <Ionicons name="card" size={16} color={COLORS.orange} />
+                </View>
+                <Text style={styles.detailText}>
                   License: {item.license_number}
                 </Text>
                 {licenseStatus && licenseStatus !== 'valid' && (
@@ -246,14 +240,14 @@ export default function EmployeesListScreen() {
                       styles.warningBadge,
                       {
                         backgroundColor:
-                          licenseStatus === 'expired' ? colors.error + '15' : colors.warning + '15',
+                          licenseStatus === 'expired' ? COLORS.error + '15' : COLORS.warning + '15',
                       },
                     ]}
                   >
                     <Ionicons
                       name="warning"
                       size={12}
-                      color={licenseStatus === 'expired' ? colors.error : colors.warning}
+                      color={licenseStatus === 'expired' ? COLORS.error : COLORS.warning}
                     />
                   </View>
                 )}
@@ -262,8 +256,10 @@ export default function EmployeesListScreen() {
 
             {item.assigned_truck_number && (
               <View style={styles.detailRow}>
-                <Ionicons name="car" size={16} color={colors.textSecondary} />
-                <Text style={[styles.detailText, { color: colors.text }]}>
+                <View style={styles.detailIcon}>
+                  <Ionicons name="car" size={16} color={COLORS.success} />
+                </View>
+                <Text style={styles.detailText}>
                   Truck: {item.assigned_truck_number}
                 </Text>
               </View>
@@ -278,7 +274,7 @@ export default function EmployeesListScreen() {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={colors.primary} />
+        <ActivityIndicator size="small" color={COLORS.navy} />
       </View>
     );
   };
@@ -286,7 +282,11 @@ export default function EmployeesListScreen() {
   if (loading && employees.length === 0) {
     return (
       <Screen>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Employees</Text>
+            <Text style={styles.headerSubtitle}>Manage your team members</Text>
+          </View>
           <LoadingSpinner />
         </View>
       </Screen>
@@ -296,8 +296,12 @@ export default function EmployeesListScreen() {
   if (error && employees.length === 0) {
     return (
       <Screen>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <View style={{ padding: spacing.md }}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Employees</Text>
+            <Text style={styles.headerSubtitle}>Manage your team members</Text>
+          </View>
+          <View style={{ padding: SPACING.md }}>
             <ErrorState message={error} onRetry={() => loadEmployees(1, false)} />
           </View>
         </View>
@@ -307,131 +311,112 @@ export default function EmployeesListScreen() {
 
   return (
     <Screen>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.container}>
         {/* Header */}
-        <View style={[styles.headerContainer, { paddingHorizontal: spacing.md, paddingVertical: spacing[3], backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
-          <Text style={[styles.headerTitle, { color: colors.text, fontSize: fontSizes['2xl'], fontWeight: fontWeights.bold }]}>
-            Employees
-          </Text>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Employees</Text>
+          <Text style={styles.headerSubtitle}>Manage your team members</Text>
         </View>
 
         {/* Search */}
-        <View style={[styles.searchContainer, { paddingHorizontal: spacing.md, paddingTop: 12, paddingBottom: 8, backgroundColor: colors.background }]}>
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderWidth: 1,
-            borderColor: '#E0E0E0',
-            borderRadius: borderRadius.base,
-            backgroundColor: colors.white,
-            paddingHorizontal: spacing[3],
-            minHeight: 44,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.05,
-            shadowRadius: 2,
-            elevation: 1,
-          }}>
-            <Ionicons name="search" size={20} color={colors.textSecondary} style={{ marginRight: 8 }} />
+        <View style={styles.searchSection}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
             <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Search employees..."
-              placeholderTextColor={colors.textSecondary}
-              style={{
-                flex: 1,
-                fontSize: 16,
-                color: colors.text,
-                paddingVertical: 12,
-              }}
+              placeholder="Search employees, IDs, or phone numbers"
+              placeholderTextColor={COLORS.textSecondary}
+              style={styles.searchInput}
             />
             {search.length > 0 && (
-              <TouchableOpacity onPress={() => setSearch('')} style={{ padding: 4 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              <TouchableOpacity 
+                onPress={() => setSearch('')} 
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Filters Section */}
-        <View style={{ paddingVertical: 12, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }}>
+        {/* Dual Filter Section */}
+        <View style={styles.filtersWrapper}>
           {/* Role Filters */}
-          <View style={{ marginBottom: 12 }}>
-            <Text style={{ color: '#9E9E9E', fontSize: 11, fontWeight: '500', letterSpacing: 0.5, marginBottom: 8, paddingHorizontal: spacing.md, textTransform: 'uppercase' }}>
-              ROLE
-            </Text>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterLabel}>ROLE</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: spacing.md, gap: 8 }}
+              contentContainerStyle={styles.filterScroll}
             >
-              {ROLE_FILTERS.map((item) => (
-                <TouchableOpacity
-                  key={item.label}
-                  style={{
-                    paddingHorizontal: 18,
-                    paddingVertical: 9,
-                    borderRadius: 20,
-                    borderWidth: 0,
-                    backgroundColor: roleFilter === item.value ? colors.primary : 'transparent',
-                    borderColor: roleFilter === item.value ? colors.primary : colors.border,
-                    minHeight: 40,
-                    justifyContent: 'center',
-                  }}
-                  onPress={() => setRoleFilter(item.value)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: '600',
-                      color: roleFilter === item.value ? colors.white : colors.text,
-                    }}
+              {ROLE_FILTERS.map((item) => {
+                const isSelected = roleFilter === item.value;
+                return (
+                  <TouchableOpacity
+                    key={item.label}
+                    style={[
+                      styles.filterChip,
+                      {
+                        backgroundColor: isSelected ? COLORS.navy : 'transparent',
+                        ...COMPONENTS.card.shadow,
+                        shadowOpacity: isSelected ? 0.15 : 0,
+                        elevation: isSelected ? 2 : 0,
+                      },
+                    ]}
+                    onPress={() => setRoleFilter(item.value)}
+                    activeOpacity={0.7}
                   >
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.filterText,
+                        { color: isSelected ? COLORS.white : COLORS.text },
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
 
           {/* Status Filters */}
-          <View>
-            <Text style={{ color: '#9E9E9E', fontSize: 11, fontWeight: '500', letterSpacing: 0.5, marginBottom: 8, paddingHorizontal: spacing.md, textTransform: 'uppercase' }}>
-              STATUS
-            </Text>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterLabel}>STATUS</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: spacing.md, gap: 8 }}
+              contentContainerStyle={styles.filterScroll}
             >
-              {STATUS_FILTERS.map((item) => (
-                <TouchableOpacity
-                  key={item.label}
-                  style={{
-                    paddingHorizontal: 18,
-                    paddingVertical: 9,
-                    borderRadius: 20,
-                    borderWidth: 0,
-                    backgroundColor: statusFilter === item.value ? colors.primary : 'transparent',
-                    borderColor: statusFilter === item.value ? colors.primary : colors.border,
-                    minHeight: 40,
-                    justifyContent: 'center',
-                  }}
-                  onPress={() => setStatusFilter(item.value)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      fontWeight: '600',
-                      color: statusFilter === item.value ? colors.white : colors.text,
-                    }}
+              {STATUS_FILTERS.map((item) => {
+                const isSelected = statusFilter === item.value;
+                return (
+                  <TouchableOpacity
+                    key={item.label}
+                    style={[
+                      styles.filterChip,
+                      {
+                        backgroundColor: isSelected ? COLORS.navy : 'transparent',
+                        ...COMPONENTS.card.shadow,
+                        shadowOpacity: isSelected ? 0.15 : 0,
+                        elevation: isSelected ? 2 : 0,
+                      },
+                    ]}
+                    onPress={() => setStatusFilter(item.value)}
+                    activeOpacity={0.7}
                   >
-                    {item.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.filterText,
+                        { color: isSelected ? COLORS.white : COLORS.text },
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </ScrollView>
           </View>
         </View>
@@ -441,48 +426,51 @@ export default function EmployeesListScreen() {
           data={employees}
           renderItem={renderEmployeeItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={[
-            styles.listContent,
-            { 
-              paddingHorizontal: spacing.md, 
-              paddingBottom: spacing.xl,
-              flexGrow: 1,
-            },
-          ]}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh} 
+              colors={[COLORS.navy]}
+              tintColor={COLORS.navy}
+            />
+          }
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <View style={styles.emptyIllustration}>
-                <Ionicons name="people-outline" size={80} color="#1B2A4A" />
-              </View>
-              <Text style={[styles.emptyTitle, { color: colors.text }]}>
-                No Employees Yet
+            <View style={styles.emptyState}>
+              <Ionicons name="people-outline" size={64} color={COLORS.textTertiary} />
+              <Text style={styles.emptyTitle}>No employees found</Text>
+              <Text style={styles.emptyDescription}>
+                {search || roleFilter || statusFilter
+                  ? 'Try changing your search or filters.'
+                  : 'Add your first employee to get started.'
+                }
               </Text>
-              <Text style={[styles.emptyDescription, { color: colors.textSecondary }]}>
-                Add your first employee to get started
-              </Text>
+              {!search && !roleFilter && !statusFilter && (
+                <TouchableOpacity
+                  style={styles.emptyButton}
+                  onPress={() => router.push('/(operator)/employees/add')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.emptyButtonText}>Add Employee</Text>
+                </TouchableOpacity>
+              )}
             </View>
           }
           showsVerticalScrollIndicator={false}
         />
 
-        {/* FAB */}
+        {/* Floating Action Button */}
         <TouchableOpacity
-          style={[styles.fab, { 
-            backgroundColor: colors.primary,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }]}
+          style={styles.fab}
           onPress={() => router.push('/(operator)/employees/add')}
           activeOpacity={0.8}
+          accessibilityLabel="Add Employee"
+          accessibilityHint="Opens the add employee form"
         >
-          <Ionicons name="add" size={28} color={colors.white} />
+          <Ionicons name="add" size={28} color={COLORS.white} />
         </TouchableOpacity>
       </View>
     </Screen>
@@ -492,57 +480,100 @@ export default function EmployeesListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
-  headerContainer: {
-    alignItems: 'flex-start',
+  header: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
-  headerTitle: {},
-  searchContainer: {},
-  filterLabel: {},
+  headerTitle: {
+    fontSize: DS.typography.fontSize['2xl'],
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.navy,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.textSecondary,
+  },
+  searchSection: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    backgroundColor: COLORS.background,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: SPACING.sm,
+    minHeight: 48,
+    gap: SPACING.xs,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: COLORS.text,
+    paddingVertical: SPACING.sm,
+  },
+  filtersWrapper: {
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  filterGroup: {
+    marginBottom: SPACING.sm,
+  },
+  filterLabel: {
+    fontSize: 11,
+    fontWeight: DS.typography.fontWeight.medium,
+    color: COLORS.textTertiary,
+    letterSpacing: 0.5,
+    marginBottom: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    textTransform: 'uppercase',
+  },
+  filterScroll: {
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.xs,
+  },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 9,
     borderRadius: 20,
-    borderWidth: 1,
+    borderWidth: 0,
+    minHeight: 40,
+    justifyContent: 'center',
   },
   filterText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
   },
   listContent: {
-    paddingTop: 8,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingTop: 60,
-    paddingHorizontal: 32,
-  },
-  emptyIllustration: {
-    marginBottom: 24,
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptyDescription: {
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.xs,
+    paddingBottom: 100,
+    flexGrow: 1,
   },
   employeeCard: {
-    padding: 16,
-    marginBottom: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+    borderRadius: COMPONENTS.card.borderRadius,
   },
   employeeHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
   },
   employeeInfo: {
     flex: 1,
@@ -557,31 +588,55 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: SPACING.sm,
   },
   nameContent: {
     flex: 1,
   },
   employeeName: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.navy,
     marginBottom: 2,
   },
   employeeId: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: DS.typography.fontWeight.medium,
+    color: COLORS.textSecondary,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 6,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: DS.typography.fontWeight.bold,
   },
   employeeDetails: {
-    marginTop: 8,
+    marginTop: SPACING.xs,
+    gap: SPACING.xs,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    gap: SPACING.xs,
+  },
+  detailIcon: {
+    width: 24,
+    alignItems: 'center',
   },
   detailText: {
     fontSize: 14,
-    marginLeft: 8,
+    color: COLORS.text,
     flex: 1,
   },
   warningBadge: {
@@ -590,21 +645,61 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: SPACING.xs,
   },
   footerLoader: {
     paddingVertical: 20,
     alignItems: 'center',
   },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 60,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.text,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xs,
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  emptyButton: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 12,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    minHeight: 52,
+    justifyContent: 'center',
+  },
+  emptyButtonText: {
+    fontSize: 16,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.white,
+  },
   fab: {
     position: 'absolute',
-    right: 24,
-    bottom: 24,
+    right: SPACING.md,
+    bottom: Platform.OS === 'ios' ? 90 : 80,
     width: 60,
     height: 60,
     borderRadius: 30,
+    backgroundColor: COLORS.navy,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
-

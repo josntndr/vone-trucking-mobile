@@ -135,6 +135,24 @@ export default function OperatorLayout() {
           href: null, // Hidden - accessed via More
         }}
       />
+      <Tabs.Screen
+        name="about"
+        options={{
+          href: null, // Hidden - accessed via More > About
+        }}
+      />
+      <Tabs.Screen
+        name="change-password"
+        options={{
+          href: null, // Hidden - accessed via More > Change Password
+        }}
+      />
+      <Tabs.Screen
+        name="notification-settings"
+        options={{
+          href: null, // Hidden - accessed via More > Notification Settings
+        }}
+      />
     </Tabs>
   );
 }

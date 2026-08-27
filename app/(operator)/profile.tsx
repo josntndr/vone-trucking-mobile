@@ -2,32 +2,42 @@
  * Operator Profile Screen
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Screen, Card, Button, ConfirmDialog } from '../../src/components';
-import { useTheme, useAuth } from '../../src/hooks';
+import { useAuth } from '../../src/hooks';
+import { useThemeContext } from '../../src/contexts/ThemeContext';
+import { loadSettings } from '../../src/services/storage/settings.service';
 
 export default function ProfileScreen() {
-  // Force light theme for operator/admin
-  const themeObj = useTheme();
-  const colors = {
-    background: '#F7F4EF',
-    surface: '#FFFDFC',
-    text: '#24211F',
-    textSecondary: '#746B63',
-    textTertiary: '#9D9690',
-    border: '#E5DDD5',
-    primary: '#192A4A',
-    error: '#C44C47',
-    white: '#FFFFFF',
-  };
-  const { spacing, fontSizes, fontWeights, borderRadius, shadows } = themeObj;
+  const { colors, spacing, fontSizes, fontWeights, borderRadius, shadows, isDarkMode, toggleTheme } = useThemeContext();
   const { user, signOut } = useAuth();
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [loadingSettings, setLoadingSettings] = useState(true);
+
+  // Load notification preferences
+  useEffect(() => {
+    const loadPreferences = async () => {
+      if (!user?.id) {
+        setLoadingSettings(false);
+        return;
+      }
+
+      try {
+        const settings = await loadSettings(user.id);
+        setNotificationsEnabled(settings.notifications.masterEnabled);
+      } catch (error) {
+        console.error('Failed to load settings:', error);
+      } finally {
+        setLoadingSettings(false);
+      }
+    };
+
+    loadPreferences();
+  }, [user?.id]);
 
   const handleLogout = async () => {
     setLogoutDialogVisible(false);
@@ -45,77 +55,46 @@ export default function ProfileScreen() {
     }
   };
 
-  const handlePersonalInfo = () => {
-    Alert.alert(
-      'Personal Information',
-      `Email: ${user?.email || 'admin@vonetrucking.com'}\nRole: Operator/Admin\nAccount Status: Active`,
-      [{ text: 'OK' }]
-    );
-  };
-
   const handleChangePassword = () => {
-    Alert.alert(
-      'Change Password',
-      'Password change functionality will redirect you to a secure form.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Continue', onPress: () => Alert.alert('Info', 'This feature will be available soon.') },
-      ]
-    );
+    router.push('/(operator)/change-password');
   };
 
   const handleNotifications = () => {
-    Alert.alert(
-      'Notification Settings',
-      `Notifications are currently ${notificationsEnabled ? 'enabled' : 'disabled'}.\n\nYou can toggle them using the switch.`,
-      [{ text: 'OK' }]
-    );
+    router.push('/(operator)/notification-settings');
   };
 
-  const handleDarkMode = () => {
-    Alert.alert(
-      'Dark Mode',
-      'Dark mode is currently disabled for operator accounts to maintain consistency across the admin interface.',
-      [{ text: 'OK' }]
-    );
+  const handleDarkModeToggle = async () => {
+    try {
+      await toggleTheme();
+    } catch (error) {
+      console.error('Failed to toggle theme:', error);
+      Alert.alert('Error', 'Failed to change theme. Please try again.');
+    }
   };
 
   const handleAbout = () => {
-    Alert.alert(
-      'About Vone Trucking',
-      'Version: 1.0.0\nBuild: 2026.01\n\nVone Trucking is a comprehensive fleet management solution for trucking operations.\n\n© 2026 Vone Trucking. All rights reserved.',
-      [{ text: 'OK' }]
-    );
-  };
-
-  const handleAnalytics = () => {
-    // Navigate to analytics dashboard
-    router.push('/(operator)/analytics');
-  };
-
-  const handleReports = () => {
-    Alert.alert(
-      'Reports',
-      'View and export detailed reports:\n\n• Trip Reports\n• Driver Performance\n• Fuel Consumption\n• Maintenance Records\n• Financial Summaries',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'View Reports', onPress: () => Alert.alert('Info', 'Reports dashboard coming soon.') },
-      ]
-    );
+    router.push('/(operator)/about');
   };
 
   const profileSections = [
     {
       title: 'Account',
       items: [
-        { icon: 'key-outline', label: 'Change Password', onPress: handleChangePassword },
+        { 
+          icon: 'key-outline', 
+          label: 'Change Password', 
+          onPress: handleChangePassword,
+          hasChevron: true,
+        },
         { 
           icon: 'notifications-outline', 
           label: 'Notifications', 
           onPress: handleNotifications,
           hasSwitch: true,
           switchValue: notificationsEnabled,
-          onSwitchChange: setNotificationsEnabled,
+          onSwitchChange: () => {
+            // Switch is display-only, tapping opens settings
+          },
         },
       ],
     },
@@ -125,12 +104,17 @@ export default function ProfileScreen() {
         { 
           icon: 'moon-outline', 
           label: 'Dark Mode', 
-          onPress: handleDarkMode,
+          onPress: () => {}, // Handler on switch only
           hasSwitch: true,
-          switchValue: darkModeEnabled,
-          onSwitchChange: setDarkModeEnabled,
+          switchValue: isDarkMode,
+          onSwitchChange: handleDarkModeToggle,
         },
-        { icon: 'information-circle-outline', label: 'About', onPress: handleAbout },
+        { 
+          icon: 'information-circle-outline', 
+          label: 'About', 
+          onPress: handleAbout,
+          hasChevron: true,
+        },
       ],
     },
   ];
@@ -152,17 +136,17 @@ export default function ProfileScreen() {
           borderBottomColor: colors.border,
         }]}>
           <View style={[styles.avatarContainer, { 
-            backgroundColor: '#1B2A4A',
+            backgroundColor: colors.primary,
             width: 72,
             height: 72,
             borderRadius: 36,
             marginBottom: spacing[3],
             borderWidth: 3,
-            borderColor: '#E07B2A',
+            borderColor: colors.primary + '40',
             ...shadows.base,
           }]}>
             <Text style={[styles.avatarText, { 
-              color: '#FFFFFF',
+              color: colors.white,
               fontSize: 32,
               fontWeight: fontWeights.bold,
             }]}>
@@ -170,7 +154,7 @@ export default function ProfileScreen() {
             </Text>
           </View>
           <Text style={[styles.name, { 
-            color: '#1B2A4A',
+            color: colors.text,
             fontSize: 18,
             fontWeight: fontWeights.bold,
             marginBottom: 8,
@@ -178,13 +162,13 @@ export default function ProfileScreen() {
             {user?.email?.split('@')[0] || 'admin'}
           </Text>
           <View style={[styles.roleBadge, { 
-            backgroundColor: '#1B2A4A',
+            backgroundColor: colors.primary,
             paddingHorizontal: 16,
             paddingVertical: 6,
             borderRadius: 6,
           }]}>
             <Text style={[styles.roleText, { 
-              color: '#FFFFFF',
+              color: colors.white,
               fontSize: 12,
               fontWeight: fontWeights.semibold,
               letterSpacing: 0.4,
@@ -199,7 +183,7 @@ export default function ProfileScreen() {
           {profileSections.map((section, index) => (
             <View key={index} style={[styles.section, { marginBottom: spacing[5] }]}>
               <Text style={[styles.sectionTitle, { 
-                color: '#9E9E9E',
+                color: colors.textSecondary,
                 fontSize: 12,
                 fontWeight: fontWeights.bold,
                 textTransform: 'uppercase',
@@ -209,7 +193,7 @@ export default function ProfileScreen() {
                 {section.title}
               </Text>
               <Card style={{ 
-                backgroundColor: colors.white,
+                backgroundColor: colors.surface,
                 borderRadius: 14,
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: 1 },
@@ -229,26 +213,36 @@ export default function ProfileScreen() {
                       },
                       itemIndex < section.items.length - 1 && {
                         borderBottomWidth: 1,
-                        borderBottomColor: '#F0F0F0',
+                        borderBottomColor: colors.border + '40',
                       },
                     ]}
-                    onPress={item.onPress}
-                    activeOpacity={0.7}
+                    onPress={item.hasSwitch && !item.hasChevron ? undefined : item.onPress}
+                    activeOpacity={item.hasSwitch && !item.hasChevron ? 1 : 0.7}
+                    disabled={item.hasSwitch && !item.hasChevron}
+                    accessibilityRole={item.hasSwitch ? 'none' : 'button'}
+                    accessibilityLabel={item.label}
+                    accessibilityHint={
+                      item.hasChevron 
+                        ? `Opens ${item.label} screen` 
+                        : item.hasSwitch 
+                        ? undefined 
+                        : `Activates ${item.label}`
+                    }
                   >
                     <View style={styles.menuItemContent}>
                       <View style={[styles.iconContainer, {
                         width: 36,
                         height: 36,
                         borderRadius: 18,
-                        backgroundColor: '#F5F5F5',
+                        backgroundColor: colors.primary + '10',
                         marginRight: 12,
                       }]}>
-                        <Ionicons name={item.icon as any} size={20} color={colors.textSecondary} />
+                        <Ionicons name={item.icon as any} size={20} color={colors.primary} />
                       </View>
                       <Text style={[styles.menuItemText, { 
                         color: colors.text,
                         fontSize: fontSizes.base,
-                        fontWeight: fontWeights.normal,
+                        fontWeight: fontWeights.medium,
                         flex: 1,
                       }]}>
                         {item.label}
@@ -258,13 +252,16 @@ export default function ProfileScreen() {
                       <Switch
                         value={item.switchValue}
                         onValueChange={item.onSwitchChange}
-                        trackColor={{ false: '#E0E0E0', true: '#E07B2A40' }}
-                        thumbColor={item.switchValue ? '#E07B2A' : '#9E9E9E'}
-                        ios_backgroundColor="#E0E0E0"
+                        trackColor={{ false: colors.border, true: colors.primary + '40' }}
+                        thumbColor={item.switchValue ? colors.primary : colors.textTertiary}
+                        ios_backgroundColor={colors.border}
+                        accessibilityRole="switch"
+                        accessibilityLabel={`${item.label} switch`}
+                        accessibilityState={{ checked: item.switchValue }}
                       />
-                    ) : (
-                      <Ionicons name="chevron-forward" size={16} color="#BDBDBD" />
-                    )}
+                    ) : item.hasChevron ? (
+                      <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+                    ) : null}
                   </TouchableOpacity>
                 ))}
               </Card>
@@ -275,7 +272,7 @@ export default function ProfileScreen() {
           <View style={[styles.section, { marginTop: 20, marginBottom: spacing[6] }]}>
             <TouchableOpacity
               style={[styles.logoutButton, {
-                backgroundColor: '#D32F2F',
+                backgroundColor: colors.error,
                 borderRadius: 14,
                 paddingVertical: 16,
                 paddingHorizontal: 20,
@@ -288,10 +285,13 @@ export default function ProfileScreen() {
               }]}
               onPress={() => setLogoutDialogVisible(true)}
               activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel="Logout"
+              accessibilityHint="Signs you out of the app"
             >
-              <Ionicons name="log-out-outline" size={20} color="#FFFFFF" style={{ marginRight: 8 }} />
+              <Ionicons name="log-out-outline" size={20} color={colors.white} style={{ marginRight: 8 }} />
               <Text style={[styles.logoutText, {
-                color: '#FFFFFF',
+                color: colors.white,
                 fontSize: 14,
                 fontWeight: fontWeights.bold,
               }]}>
@@ -304,10 +304,10 @@ export default function ProfileScreen() {
         {/* Version Info */}
         <View style={[styles.versionContainer, { paddingBottom: spacing[5] }]}>
           <Text style={[styles.versionText, { 
-            color: '#BDBDBD',
+            color: colors.textTertiary,
             fontSize: 10,
           }]}>
-            Vone Trucking v1.0.0 © 2026
+            Vone Trucking v1.0.0 © {new Date().getFullYear()}
           </Text>
         </View>
       </ScrollView>

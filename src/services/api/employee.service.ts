@@ -1,11 +1,40 @@
 /**
  * Employee Service
- * Handles employee CRUD operations via Supabase
+ * Handles employee CRUD operations and account management via Supabase
+ * Updated for per-trip compensation and operator-managed accounts
  */
 
 import { supabase } from './supabase';
 import { ApiResponse, PaginatedResponse, UserRole } from '../../types';
-import type { Employee, CreateEmployeeInput, UpdateEmployeeInput, EmployeeFilters } from '../../types/employee.types';
+import type {
+  Employee,
+  CreateEmployeeInput,
+  UpdateEmployeeInput,
+  UpdateEmployeeAccountInput,
+  EmployeeFilters,
+  AccountStatus,
+} from '../../types/employee.types';
+
+/**
+ * Check if username is available
+ */
+export const checkUsernameAvailability = async (username: string): Promise<ApiResponse<boolean>> => {
+  try {
+    const { data, error } = await supabase
+      .from('employee_profiles')
+      .select('id')
+      .eq('username', username.toLowerCase())
+      .maybeSingle();
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { data: !data }; // true if username is available (no data found)
+  } catch (error) {
+    return { error: 'Failed to check username availability' };
+  }
+};
 
 /**
  * Fetch all employees with optional filters
@@ -34,9 +63,14 @@ export const getEmployees = async (
       query = query.eq('is_active', filters.is_active);
     }
 
+    if (filters?.account_status) {
+      query = query.eq('account_status', filters.account_status);
+    }
+
     if (filters?.search) {
+      // Search by employee_id, name, or phone (NOT email)
       query = query.or(
-        `employee_id.ilike.%${filters.search}%,first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,phone.ilike.%${filters.search}%,email.ilike.%${filters.search}%`
+        `employee_id.ilike.%${filters.search}%,first_name.ilike.%${filters.search}%,last_name.ilike.%${filters.search}%,phone.ilike.%${filters.search}%`
       );
     }
 
@@ -105,6 +139,13 @@ export const getEmployeeById = async (id: string): Promise<ApiResponse<Employee>
       ...data,
       full_name: `${data.first_name} ${data.last_name}`,
       assigned_truck_number: data.trucks?.truck_number,
+      account_info: {
+        username: data.username,
+        account_status: data.account_status,
+        require_password_change: data.require_password_change,
+        last_login: data.last_login,
+        created_at: data.created_at,
+      },
     };
 
     return { data: employee };
@@ -114,9 +155,10 @@ export const getEmployeeById = async (id: string): Promise<ApiResponse<Employee>
 };
 
 /**
- * Create a new employee
+ * Create a new employee with operator-managed account
+ * This creates both the employee profile and authentication account as a single transaction
  */
-export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiResponse<Employee>> => {
+export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiResponse<Employee & { temporary_password_shown: string }>> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -124,47 +166,46 @@ export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiRes
       return { error: 'Not authenticated' };
     }
 
-    // First, create user in auth.users
-    const tempPassword = `${input.employee_id}Temp123!`;
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email: input.email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: {
-        first_name: input.first_name,
-        last_name: input.last_name,
+    // Check username availability first
+    const usernameCheck = await checkUsernameAvailability(input.username);
+    if (usernameCheck.error || !usernameCheck.data) {
+      return { error: 'This username is already in use' };
+    }
+
+    // Generate internal email identifier for auth system
+    // This is NEVER shown to the employee or operator UI
+    const internalEmail = `${input.username.toLowerCase()}@vonetrucking.internal`;
+
+    // Create authentication account via edge function or RPC
+    // DO NOT expose auth admin keys in mobile app
+    const { data: authResult, error: authError } = await supabase.functions.invoke('create-employee-account', {
+      body: {
+        username: input.username.toLowerCase(),
+        password: input.temporary_password,
+        internal_email: internalEmail,
+        require_password_change: input.require_password_change,
       },
     });
 
-    if (authError) {
-      if (authError.message.includes('already registered')) {
-        return { error: 'Email already registered' };
-      }
-      return { error: authError.message };
+    if (authError || !authResult?.user_id) {
+      console.error('Auth account creation failed:', authError);
+      return { error: 'Failed to create employee account. Please try again.' };
     }
 
-    if (!authData.user) {
-      return { error: 'Failed to create user account' };
-    }
-
-    // Then create employee profile
-    const { base_salary, daily_rate, trip_rate, ...profileData } = input;
-
-    const compensationConfig = {
-      base_salary,
-      daily_rate,
-      trip_rate,
-      currency: 'PHP',
-    };
+    // Create employee profile with all required fields
+    const { temporary_password, confirm_password, ...profileData } = input;
 
     const { data, error } = await supabase
       .from('employee_profiles')
       .insert({
         ...profileData,
-        id: authData.user.id,
-        employment_status: input.employment_status || 'active',
+        id: authResult.user_id,
+        username: input.username.toLowerCase(),
+        account_status: input.account_status,
+        require_password_change: input.require_password_change,
+        employment_status: input.employment_status,
         is_active: true,
-        compensation_config: compensationConfig,
+        per_trip_rate: input.per_trip_rate,
         created_by: user.id,
         updated_by: user.id,
       })
@@ -173,11 +214,19 @@ export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiRes
 
     if (error) {
       // Rollback: delete the auth user if profile creation fails
-      await supabase.auth.admin.deleteUser(authData.user.id);
+      await supabase.functions.invoke('delete-employee-account', {
+        body: { user_id: authResult.user_id },
+      });
 
       if (error.code === '23505') {
         if (error.message.includes('employee_id')) {
-          return { error: 'Employee number already exists' };
+          return { error: 'Employee ID already exists' };
+        }
+        if (error.message.includes('username')) {
+          return { error: 'This username is already in use' };
+        }
+        if (error.message.includes('phone')) {
+          return { error: 'This phone number is already registered' };
         }
       }
       return { error: error.message };
@@ -187,16 +236,18 @@ export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiRes
       data: {
         ...data,
         full_name: `${data.first_name} ${data.last_name}`,
-      } as Employee,
-      message: `Employee created successfully. Temporary password: ${tempPassword}`,
+        temporary_password_shown: input.temporary_password, // Only shown once
+      } as any,
+      message: 'Employee created successfully',
     };
   } catch (error) {
+    console.error('Create employee error:', error);
     return { error: 'An unexpected error occurred while creating employee' };
   }
 };
 
 /**
- * Update an employee
+ * Update employee profile information (not account credentials)
  */
 export const updateEmployee = async (input: UpdateEmployeeInput): Promise<ApiResponse<Employee>> => {
   try {
@@ -206,27 +257,14 @@ export const updateEmployee = async (input: UpdateEmployeeInput): Promise<ApiRes
       return { error: 'Not authenticated' };
     }
 
-    const { id, base_salary, daily_rate, trip_rate, email, ...updates } = input;
-
-    // Fetch current employee data
-    const { data: currentEmployee } = await supabase
-      .from('employee_profiles')
-      .select('compensation_config')
-      .eq('id', id)
-      .single();
-
-    // Update compensation config
-    const compensationConfig = currentEmployee?.compensation_config || {};
-    if (base_salary !== undefined) compensationConfig.base_salary = base_salary;
-    if (daily_rate !== undefined) compensationConfig.daily_rate = daily_rate;
-    if (trip_rate !== undefined) compensationConfig.trip_rate = trip_rate;
+    const { id, ...updates } = input;
 
     const { data, error } = await supabase
       .from('employee_profiles')
       .update({
         ...updates,
-        compensation_config: compensationConfig,
         updated_by: user.id,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', id)
       .select()
@@ -235,7 +273,10 @@ export const updateEmployee = async (input: UpdateEmployeeInput): Promise<ApiRes
     if (error) {
       if (error.code === '23505') {
         if (error.message.includes('employee_id')) {
-          return { error: 'Employee number already exists' };
+          return { error: 'Employee ID already exists' };
+        }
+        if (error.message.includes('phone')) {
+          return { error: 'This phone number is already registered' };
         }
       }
       return { error: error.message };
@@ -243,11 +284,6 @@ export const updateEmployee = async (input: UpdateEmployeeInput): Promise<ApiRes
 
     if (!data) {
       return { error: 'Employee not found' };
-    }
-
-    // Update email in auth if provided
-    if (email && email !== data.email) {
-      await supabase.auth.admin.updateUserById(id, { email });
     }
 
     return {
@@ -263,7 +299,109 @@ export const updateEmployee = async (input: UpdateEmployeeInput): Promise<ApiRes
 };
 
 /**
- * Archive an employee (soft delete)
+ * Update employee account information (username, password, status)
+ * Operator-only function for account management
+ */
+export const updateEmployeeAccount = async (input: UpdateEmployeeAccountInput): Promise<ApiResponse<void>> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return { error: 'Not authenticated' };
+    }
+
+    const updates: any = {};
+
+    // Check username availability if changing
+    if (input.username) {
+      const { data: existing } = await supabase
+        .from('employee_profiles')
+        .select('id')
+        .eq('username', input.username.toLowerCase())
+        .neq('id', input.employee_id)
+        .maybeSingle();
+
+      if (existing) {
+        return { error: 'This username is already in use' };
+      }
+
+      updates.username = input.username.toLowerCase();
+    }
+
+    if (input.account_status) {
+      updates.account_status = input.account_status;
+    }
+
+    if (input.require_password_change !== undefined) {
+      updates.require_password_change = input.require_password_change;
+    }
+
+    // Update profile
+    if (Object.keys(updates).length > 0) {
+      const { error: profileError } = await supabase
+        .from('employee_profiles')
+        .update({
+          ...updates,
+          updated_by: user.id,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', input.employee_id);
+
+      if (profileError) {
+        return { error: profileError.message };
+      }
+    }
+
+    // Update password or revoke sessions via edge function
+    if (input.temporary_password || input.revoke_sessions) {
+      const { error: authError } = await supabase.functions.invoke('update-employee-account', {
+        body: {
+          user_id: input.employee_id,
+          new_password: input.temporary_password,
+          revoke_sessions: input.revoke_sessions,
+          deactivate: input.account_status === 'deactivated',
+        },
+      });
+
+      if (authError) {
+        return { error: 'Failed to update account credentials' };
+      }
+    }
+
+    return {
+      data: undefined,
+      message: 'Account updated successfully',
+    };
+  } catch (error) {
+    return { error: 'An unexpected error occurred while updating account' };
+  }
+};
+
+/**
+ * Deactivate employee account
+ * Blocks login but preserves all employee data
+ */
+export const deactivateEmployeeAccount = async (employeeId: string): Promise<ApiResponse<void>> => {
+  return updateEmployeeAccount({
+    employee_id: employeeId,
+    account_status: 'deactivated' as AccountStatus,
+    revoke_sessions: true,
+  });
+};
+
+/**
+ * Activate employee account
+ */
+export const activateEmployeeAccount = async (employeeId: string): Promise<ApiResponse<void>> => {
+  return updateEmployeeAccount({
+    employee_id: employeeId,
+    account_status: 'active' as AccountStatus,
+  });
+};
+
+/**
+ * Archive an employee (soft delete - changes employment status)
+ * Does NOT delete account
  */
 export const archiveEmployee = async (id: string): Promise<ApiResponse<void>> => {
   try {
@@ -277,8 +415,9 @@ export const archiveEmployee = async (id: string): Promise<ApiResponse<void>> =>
       .from('employee_profiles')
       .update({
         is_active: false,
-        employment_status: 'archived',
+        employment_status: 'inactive',
         updated_by: user.id,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', id);
 
@@ -312,6 +451,7 @@ export const restoreEmployee = async (id: string): Promise<ApiResponse<void>> =>
         is_active: true,
         employment_status: 'active',
         updated_by: user.id,
+        updated_at: new Date().toISOString(),
       })
       .eq('id', id);
 
@@ -329,16 +469,17 @@ export const restoreEmployee = async (id: string): Promise<ApiResponse<void>> =>
 };
 
 /**
- * Get drivers for assignment
+ * Get drivers for assignment (only active drivers with active accounts)
  */
 export const getDriversForAssignment = async (): Promise<ApiResponse<Employee[]>> => {
   try {
     const { data, error } = await supabase
       .from('employee_profiles')
-      .select('id, employee_id, first_name, last_name, license_number')
+      .select('id, employee_id, first_name, last_name, license_number, phone')
       .eq('role', UserRole.DRIVER)
       .eq('is_active', true)
       .eq('employment_status', 'active')
+      .eq('account_status', 'active')
       .order('employee_id', { ascending: true });
 
     if (error) {
@@ -353,6 +494,35 @@ export const getDriversForAssignment = async (): Promise<ApiResponse<Employee[]>
     return { data: drivers as Employee[] };
   } catch (error) {
     return { error: 'An unexpected error occurred while fetching drivers' };
+  }
+};
+
+/**
+ * Get porters/helpers for assignment (only active porters with active accounts)
+ */
+export const getPortersForAssignment = async (): Promise<ApiResponse<Employee[]>> => {
+  try {
+    const { data, error } = await supabase
+      .from('employee_profiles')
+      .select('id, employee_id, first_name, last_name, phone')
+      .eq('role', UserRole.PORTER)
+      .eq('is_active', true)
+      .eq('employment_status', 'active')
+      .eq('account_status', 'active')
+      .order('employee_id', { ascending: true });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    const porters = (data || []).map((porter: any) => ({
+      ...porter,
+      full_name: `${porter.first_name} ${porter.last_name}`,
+    }));
+
+    return { data: porters as Employee[] };
+  } catch (error) {
+    return { error: 'An unexpected error occurred while fetching porters' };
   }
 };
 

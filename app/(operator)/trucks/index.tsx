@@ -1,5 +1,6 @@
 /**
- * Trucks List Screen
+ * Trucks List Screen - Redesigned with Design System
+ * Phase 5: Modern premium design with DESIGN_SYSTEM integration
  */
 
 import React, { useEffect, useState, useCallback } from 'react';
@@ -12,21 +13,24 @@ import {
   RefreshControl,
   ActivityIndicator,
   TextInput,
+  Animated,
+  Platform,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import {
   Screen,
-  StatusChip,
   Card,
   LoadingSpinner,
   EmptyState,
   ErrorState,
 } from '../../../src/components';
-import { useTheme } from '../../../src/hooks';
+import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../../src/theme/designSystem';
 import { getTrucks } from '../../../src/services/api/truck.service';
 import { Truck, TruckStatus } from '../../../src/types/truck.types';
 import { formatPlatNumber } from '../../../src/utils/philippines';
+
+const DS = DESIGN_SYSTEM;
 
 const STATUS_FILTERS = [
   { label: 'All', value: null },
@@ -38,22 +42,6 @@ const STATUS_FILTERS = [
 ];
 
 export default function TrucksListScreen() {
-  // Force light theme for operator/admin
-  const themeObj = useTheme();
-  const colors = {
-    background: '#F7F4EF',
-    surface: '#FFFDFC',
-    text: '#24211F',
-    textSecondary: '#746B63',
-    border: '#E5DDD5',
-    primary: '#192A4A',
-    success: '#4F956E',
-    info: '#4D728C',
-    warning: '#C68A24',
-    error: '#C44C47',
-    white: '#FFFFFF',
-  };
-  const { spacing, fontSizes, fontWeights, borderRadius } = themeObj;
   const [trucks, setTrucks] = useState<Truck[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -122,19 +110,19 @@ export default function TrucksListScreen() {
   const getStatusColor = (status: TruckStatus) => {
     switch (status) {
       case TruckStatus.AVAILABLE:
-        return colors.success;
+        return COLORS.success;
       case TruckStatus.ON_TRIP:
-        return colors.info;
+        return COLORS.teal;
       case TruckStatus.ASSIGNED:
-        return colors.primary;
+        return COLORS.navy;
       case TruckStatus.RESERVED:
-        return colors.warning;
+        return COLORS.warning;
       case TruckStatus.UNDER_MAINTENANCE:
-        return colors.error;
+        return COLORS.error;
       case TruckStatus.INACTIVE:
-        return colors.textSecondary;
+        return COLORS.textSecondary;
       default:
-        return colors.textSecondary;
+        return COLORS.textSecondary;
     }
   };
 
@@ -142,74 +130,92 @@ export default function TrucksListScreen() {
     return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  const renderTruckItem = ({ item }: { item: Truck }) => (
-    <TouchableOpacity onPress={() => router.push(`/(operator)/trucks/${item.id}`)}>
-      <Card style={styles.truckCard}>
-        <View style={styles.truckHeader}>
-          <View style={styles.truckInfo}>
-            <Text style={[styles.truckNumber, { color: colors.text }]}>{item.truck_number}</Text>
-            <Text style={[styles.plateNumber, { color: colors.textSecondary }]}>
-              {formatPlatNumber(item.license_plate)}
-            </Text>
+  const renderTruckItem = ({ item }: { item: Truck }) => {
+    const statusColor = getStatusColor(item.status);
+    
+    return (
+      <TouchableOpacity 
+        onPress={() => router.push(`/(operator)/trucks/${item.id}`)}
+        activeOpacity={0.7}
+      >
+        <Card style={styles.truckCard}>
+          {/* Header: Truck Number and Status */}
+          <View style={styles.truckHeader}>
+            <View style={styles.truckInfo}>
+              <Text style={styles.truckNumber}>{item.truck_number}</Text>
+              <Text style={styles.plateNumber}>
+                {formatPlatNumber(item.license_plate)}
+              </Text>
+            </View>
+            <View style={[styles.statusBadge, { backgroundColor: statusColor + '15' }]}>
+              <View style={[styles.statusDot, { backgroundColor: statusColor }]} />
+              <Text style={[styles.statusText, { color: statusColor }]}>
+                {getStatusLabel(item.status)}
+              </Text>
+            </View>
           </View>
-          <StatusChip
-            label={getStatusLabel(item.status)}
-            color={getStatusColor(item.status)}
-          />
-        </View>
 
-        <View style={styles.truckDetails}>
-          <View style={styles.detailRow}>
-            <Ionicons name="car-sport" size={16} color={colors.textSecondary} />
-            <Text style={[styles.detailText, { color: colors.text }]}>
-              {item.make} {item.model} ({item.year})
-            </Text>
-          </View>
-
-          {item.truck_type && (
+          {/* Vehicle Details */}
+          <View style={styles.truckDetails}>
             <View style={styles.detailRow}>
-              <Ionicons name="cube" size={16} color={colors.textSecondary} />
-              <Text style={[styles.detailText, { color: colors.text }]}>
-                {item.truck_type} - {item.capacity_kg}kg
+              <View style={styles.detailIcon}>
+                <Ionicons name="car-sport" size={16} color={COLORS.navy} />
+              </View>
+              <Text style={styles.detailText}>
+                {item.make} {item.model} ({item.year})
               </Text>
             </View>
-          )}
 
-          {item.assigned_driver_name && (
-            <View style={styles.detailRow}>
-              <Ionicons name="person" size={16} color={colors.textSecondary} />
-              <Text style={[styles.detailText, { color: colors.text }]}>
-                {item.assigned_driver_name}
-              </Text>
-            </View>
-          )}
-        </View>
+            {item.truck_type && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailIcon}>
+                  <Ionicons name="cube" size={16} color={COLORS.teal} />
+                </View>
+                <Text style={styles.detailText}>
+                  {item.truck_type} - {item.capacity_kg}kg
+                </Text>
+              </View>
+            )}
 
-        <View style={[styles.truckFooter, { borderTopColor: colors.border }]}>
-          <View style={styles.fuelInfo}>
-            <Ionicons name="speedometer" size={14} color={colors.textSecondary} />
-            <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-              {item.current_odometer?.toLocaleString() || 'N/A'} km
-            </Text>
+            {item.assigned_driver_name && (
+              <View style={styles.detailRow}>
+                <View style={styles.detailIcon}>
+                  <Ionicons name="person" size={16} color={COLORS.orange} />
+                </View>
+                <Text style={styles.detailText}>
+                  {item.assigned_driver_name}
+                </Text>
+              </View>
+            )}
           </View>
-          {item.avg_km_per_liter && (
-            <View style={styles.fuelInfo}>
-              <Ionicons name="water" size={14} color={colors.textSecondary} />
-              <Text style={[styles.footerText, { color: colors.textSecondary }]}>
-                {item.avg_km_per_liter} km/L
+
+          {/* Footer: Odometer and Fuel Efficiency */}
+          <View style={styles.truckFooter}>
+            <View style={styles.footerMetric}>
+              <Ionicons name="speedometer" size={14} color={COLORS.textSecondary} />
+              <Text style={styles.footerText}>
+                {item.current_odometer?.toLocaleString() || 'N/A'} km
               </Text>
             </View>
-          )}
-        </View>
-      </Card>
-    </TouchableOpacity>
-  );
+            {item.avg_km_per_liter && (
+              <View style={styles.footerMetric}>
+                <Ionicons name="water" size={14} color={COLORS.textSecondary} />
+                <Text style={styles.footerText}>
+                  {item.avg_km_per_liter} km/L
+                </Text>
+              </View>
+            )}
+          </View>
+        </Card>
+      </TouchableOpacity>
+    );
+  };
 
   const renderFooter = () => {
     if (!loadingMore) return null;
     return (
       <View style={styles.footerLoader}>
-        <ActivityIndicator size="small" color={colors.primary} />
+        <ActivityIndicator size="small" color={COLORS.navy} />
       </View>
     );
   };
@@ -217,7 +223,11 @@ export default function TrucksListScreen() {
   if (loading && trucks.length === 0) {
     return (
       <Screen>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Trucks</Text>
+            <Text style={styles.headerSubtitle}>Manage your fleet vehicles</Text>
+          </View>
           <LoadingSpinner />
         </View>
       </Screen>
@@ -227,8 +237,12 @@ export default function TrucksListScreen() {
   if (error && trucks.length === 0) {
     return (
       <Screen>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          <View style={{ padding: spacing.md }}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <Text style={styles.headerTitle}>Trucks</Text>
+            <Text style={styles.headerSubtitle}>Manage your fleet vehicles</Text>
+          </View>
+          <View style={{ padding: SPACING.md }}>
             <ErrorState 
               message={error} 
               onRetry={() => {
@@ -245,79 +259,70 @@ export default function TrucksListScreen() {
 
   return (
     <Screen>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={styles.container}>
         {/* Header */}
-        <View style={[styles.headerContainer, { paddingHorizontal: spacing.md, paddingVertical: spacing[4], backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
-          <Text style={[styles.headerTitle, { color: colors.text, fontSize: fontSizes['2xl'], fontWeight: fontWeights.bold }]}>
-            Trucks
-          </Text>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Trucks</Text>
+          <Text style={styles.headerSubtitle}>Manage your fleet vehicles</Text>
         </View>
 
         {/* Search */}
-        <View style={[styles.searchContainer, { paddingHorizontal: spacing.md, backgroundColor: colors.background }]}>
-          <View style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderWidth: 2,
-            borderColor: colors.border,
-            borderRadius: borderRadius.base,
-            backgroundColor: colors.white,
-            paddingHorizontal: spacing[3],
-            minHeight: 48,
-          }}>
-            <Ionicons name="search" size={20} color={colors.textSecondary} style={{ marginRight: 8 }} />
+        <View style={styles.searchSection}>
+          <View style={styles.searchContainer}>
+            <Ionicons name="search" size={20} color={COLORS.textSecondary} />
             <TextInput
               value={search}
               onChangeText={setSearch}
-              placeholder="Search trucks..."
-              placeholderTextColor={colors.textSecondary}
-              style={{
-                flex: 1,
-                fontSize: 16,
-                color: colors.text,
-                paddingVertical: 12,
-              }}
+              placeholder="Search trucks, plate numbers, or drivers"
+              placeholderTextColor={COLORS.textSecondary}
+              style={styles.searchInput}
             />
             {search.length > 0 && (
-              <TouchableOpacity onPress={() => setSearch('')} style={{ padding: 4 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              <TouchableOpacity 
+                onPress={() => setSearch('')} 
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="close-circle" size={20} color={COLORS.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Status Filters */}
-        <View style={styles.filtersContainer}>
+        {/* Status Filter Tabs */}
+        <View style={styles.filtersSection}>
           <FlatList
             horizontal
             data={STATUS_FILTERS}
             keyExtractor={item => item.label}
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={[styles.filtersContent, { paddingHorizontal: spacing.md }]}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.filterChip,
-                  {
-                    backgroundColor:
-                      statusFilter === item.value ? colors.primary : colors.white,
-                    borderColor: statusFilter === item.value ? colors.primary : colors.border,
-                  },
-                ]}
-                onPress={() => setStatusFilter(item.value)}
-              >
-                <Text
+            contentContainerStyle={styles.filtersContent}
+            renderItem={({ item }) => {
+              const isSelected = statusFilter === item.value;
+              return (
+                <TouchableOpacity
                   style={[
-                    styles.filterText,
+                    styles.filterChip,
                     {
-                      color: statusFilter === item.value ? colors.white : colors.text,
+                      backgroundColor: isSelected ? COLORS.navy : COLORS.white,
+                      ...COMPONENTS.card.shadow,
+                      shadowOpacity: isSelected ? 0.15 : 0.05,
+                      elevation: isSelected ? 3 : 1,
                     },
                   ]}
+                  onPress={() => setStatusFilter(item.value)}
+                  activeOpacity={0.7}
                 >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            )}
+                  <Text
+                    style={[
+                      styles.filterText,
+                      { color: isSelected ? COLORS.white : COLORS.text },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
           />
         </View>
 
@@ -326,39 +331,51 @@ export default function TrucksListScreen() {
           data={trucks}
           renderItem={renderTruckItem}
           keyExtractor={item => item.id}
-          contentContainerStyle={[
-            styles.listContent,
-            { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
-          ]}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
+          contentContainerStyle={styles.listContent}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={onRefresh} 
+              colors={[COLORS.navy]}
+              tintColor={COLORS.navy}
+            />
+          }
           onEndReached={loadMore}
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={
-            <EmptyState
-              icon="car-outline"
-              title="No trucks found"
-              description="Add your first truck to get started"
-            />
+            <View style={styles.emptyState}>
+              <Ionicons name="car-outline" size={64} color={COLORS.textTertiary} />
+              <Text style={styles.emptyTitle}>No trucks found</Text>
+              <Text style={styles.emptyDescription}>
+                {search || statusFilter 
+                  ? 'Try changing your search or filter.'
+                  : 'Add your first truck to get started.'
+                }
+              </Text>
+              {!search && !statusFilter && (
+                <TouchableOpacity
+                  style={styles.emptyButton}
+                  onPress={() => router.push('/(operator)/trucks/add')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.emptyButtonText}>Add Truck</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           }
           showsVerticalScrollIndicator={false}
         />
 
         {/* Floating Action Button */}
         <TouchableOpacity
-          style={[styles.fab, { 
-            backgroundColor: colors.primary, 
-            borderRadius: 30,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.3,
-            shadowRadius: 8,
-            elevation: 8,
-          }]}
+          style={styles.fab}
           onPress={() => router.push('/(operator)/trucks/add')}
           activeOpacity={0.8}
+          accessibilityLabel="Add Truck"
+          accessibilityHint="Opens the add truck form"
         >
-          <MaterialCommunityIcons name="plus" size={28} color={colors.white} />
+          <MaterialCommunityIcons name="plus" size={28} color={COLORS.white} />
         </TouchableOpacity>
       </View>
     </Screen>
@@ -368,97 +385,206 @@ export default function TrucksListScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
-  headerContainer: {
-    alignItems: 'flex-start',
+  header: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
   },
-  headerTitle: {},
+  headerTitle: {
+    fontSize: DS.typography.fontSize['2xl'],
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.navy,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.textSecondary,
+  },
+  searchSection: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.md,
+    paddingBottom: SPACING.sm,
+    backgroundColor: COLORS.background,
+  },
   searchContainer: {
-    paddingTop: 12,
-    paddingBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: SPACING.sm,
+    minHeight: 48,
+    gap: SPACING.xs,
   },
-  filtersContainer: {
-    marginBottom: 8,
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: COLORS.text,
+    paddingVertical: SPACING.sm,
+  },
+  filtersSection: {
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.background,
   },
   filtersContent: {
-    paddingVertical: 8,
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.xs,
   },
   filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginRight: 8,
-    borderWidth: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 24,
+    borderWidth: 0,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   filterText: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: DS.typography.fontWeight.semibold,
   },
   listContent: {
-    paddingTop: 8,
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.xs,
+    paddingBottom: 100,
   },
   truckCard: {
-    padding: 16,
-    marginBottom: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.sm,
+    borderRadius: COMPONENTS.card.borderRadius,
   },
   truckHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
   },
   truckInfo: {
     flex: 1,
   },
   truckNumber: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.navy,
     marginBottom: 4,
   },
   plateNumber: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.textSecondary,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 6,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 12,
+    fontWeight: DS.typography.fontWeight.bold,
   },
   truckDetails: {
-    marginBottom: 12,
+    marginBottom: SPACING.sm,
+    gap: SPACING.xs,
   },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    gap: SPACING.xs,
+  },
+  detailIcon: {
+    width: 24,
+    alignItems: 'center',
   },
   detailText: {
     fontSize: 14,
-    marginLeft: 8,
+    color: COLORS.text,
+    flex: 1,
   },
   truckFooter: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    gap: 16,
-    paddingTop: 12,
+    gap: SPACING.md,
+    paddingTop: SPACING.sm,
     borderTopWidth: 1,
+    borderTopColor: COLORS.border,
   },
-  fuelInfo: {
+  footerMetric: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
   },
   footerText: {
     fontSize: 12,
+    color: COLORS.textSecondary,
   },
   footerLoader: {
     paddingVertical: 20,
     alignItems: 'center',
   },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    paddingVertical: 60,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.text,
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xs,
+    textAlign: 'center',
+  },
+  emptyDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: COLORS.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  emptyButton: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 12,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    minHeight: 52,
+    justifyContent: 'center',
+  },
+  emptyButtonText: {
+    fontSize: 16,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.white,
+  },
   fab: {
     position: 'absolute',
-    bottom: 24,
-    right: 24,
+    bottom: Platform.OS === 'ios' ? 90 : 80,
+    right: SPACING.md,
     width: 60,
     height: 60,
     borderRadius: 30,
+    backgroundColor: COLORS.navy,
     justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });
-

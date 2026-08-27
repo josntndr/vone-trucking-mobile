@@ -23,6 +23,8 @@ export const DESIGN_SYSTEM = {
     
     // Text Colors
     text: '#2D2D2D',           // Primary body text
+    textSecondary: '#9E9E9E',  // Secondary grey text (alias for textMuted)
+    textTertiary: '#BDBDBD',   // Tertiary light grey text (alias for textLight)
     textMuted: '#9E9E9E',      // Muted grey text for labels
     textLight: '#BDBDBD',      // Light grey for disabled/subtle text
     

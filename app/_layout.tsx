@@ -7,7 +7,7 @@ import React from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import MobileViewportWrapper from '../src/components/layout/MobileViewportWrapper';
-import { ThemeProvider } from '../src/theme/ThemeProvider';
+import { ThemeProvider } from '../src/contexts/ThemeContext';
 
 export default function RootLayout() {
   return (

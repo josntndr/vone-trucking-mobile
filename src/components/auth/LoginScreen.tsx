@@ -1,7 +1,6 @@
 /**
- * Login Screen - Private System Entry Point
- * Vone Trucking internal management system
- * Login-only access for authorized personnel
+ * Login Screen - Private System Entry Point - Redesigned with Design System
+ * Phase 7: Align Auth screens with modern premium design
  * 
  * Security Notes:
  * - "Remember me" persists username only (NOT password)
@@ -26,9 +25,10 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTheme } from '../../theme/ThemeProvider';
+import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../theme/designSystem';
 import { demoSignIn } from '../../services/demo/demoAuth.service';
 
+const DS = DESIGN_SYSTEM;
 const REMEMBER_ME_KEY = '@vone_remember_me';
 const SESSION_TOKEN_KEY = '@vone_session_token';
 
@@ -41,14 +41,6 @@ export default function LoginScreen({
   onLoginSuccess,
   onForgotPassword,
 }: LoginScreenProps) {
-  const theme = useTheme();
-  const colors = theme?.colors || {};
-  const fontSizes = theme?.fontSizes || {};
-  const fontWeights = theme?.fontWeights || {};
-  const spacing = theme?.spacing || {};
-  const borderRadius = theme?.borderRadius || {};
-  const shadows = theme?.shadows || {};
-  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -184,7 +176,7 @@ export default function LoginScreen({
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: colors?.background || '#F7F4EF' }]}
+      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView
@@ -192,144 +184,73 @@ export default function LoginScreen({
         keyboardShouldPersistTaps="handled"
       >
         {/* Header with Logo and Branding */}
-        <View style={[styles.header, { paddingHorizontal: spacing?.[5] || 20 }]}>
-          <View style={[styles.brandingContainer, { marginTop: spacing?.[10] || 40 }]}>
+        <View style={styles.header}>
+          <View style={styles.brandingContainer}>
             {/* Logo */}
-            <View style={[styles.logoContainer, { backgroundColor: colors?.primary || '#192A4A', borderRadius: 22 }]}>
+            <View style={styles.logoContainer}>
               <MaterialCommunityIcons 
                 name="truck-fast-outline" 
                 size={44} 
-                color={colors?.textInverse || colors?.white || '#FFFFFF'} 
+                color={COLORS.white} 
               />
             </View>
             
             {/* Application Name */}
-            <Text
-              style={[
-                styles.appName,
-                {
-                  color: colors?.text || '#24211F',
-                  fontSize: fontSizes?.['3xl'] || 30,
-                  fontWeight: (fontWeights?.extrabold || '800') as any,
-                  marginTop: spacing?.[3] || 12,
-                },
-              ]}
-            >
+            <Text style={styles.appName}>
               Vone Trucking
             </Text>
             
             {/* Main Tagline */}
-            <Text
-              style={[
-                styles.tagline,
-                {
-                  color: colors?.textSecondary || '#746B63',
-                  fontSize: fontSizes?.base || 16,
-                  fontWeight: (fontWeights?.medium || '500') as any,
-                  marginTop: spacing?.[2] || 8,
-                },
-              ]}
-            >
+            <Text style={styles.tagline}>
               Vone Trucking operations, all in one place.
             </Text>
             
             {/* Supporting Text */}
-            <Text
-              style={[
-                styles.supportingText,
-                {
-                  color: colors?.textTertiary || colors?.textSecondary || '#746B63',
-                  fontSize: fontSizes?.sm || 14,
-                  marginTop: spacing?.[2] || 8,
-                },
-              ]}
-            >
+            <Text style={styles.supportingText}>
               Secure access for authorised Vone Trucking personnel.
             </Text>
           </View>
         </View>
 
         {/* Login Form */}
-        <View style={[styles.form, { paddingHorizontal: spacing?.[5] || 20, marginTop: spacing?.[6] || 24 }]}>
+        <View style={styles.form}>
           {/* General Error */}
           {errors.general && (
-            <View
-              style={[
-                styles.errorBanner,
-                {
-                  backgroundColor: colors.errorLight + '20',
-                  borderRadius: borderRadius.base,
-                  padding: spacing[4],
-                  marginBottom: spacing[4],
-                  borderLeftWidth: 4,
-                  borderLeftColor: colors.error,
-                },
-              ]}
-            >
-              <MaterialCommunityIcons name="alert-circle" size={20} color={colors.error} />
-              <Text
-                style={[
-                  styles.errorBannerText,
-                  {
-                    color: colors.error,
-                    fontSize: fontSizes.sm,
-                    marginLeft: spacing[2],
-                  },
-                ]}
-              >
+            <View style={styles.errorBanner}>
+              <MaterialCommunityIcons name="alert-circle" size={20} color={COLORS.error} />
+              <Text style={styles.errorBannerText}>
                 {errors.general}
               </Text>
             </View>
           )}
 
           {/* Username Input */}
-          <View style={[styles.inputContainer, { marginBottom: spacing[4] }]}>
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: colors.text,
-                  fontSize: fontSizes.sm,
-                  fontWeight: fontWeights.semibold,
-                  marginBottom: spacing[2],
-                },
-              ]}
-            >
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>
               Username
             </Text>
             <View
               style={[
                 styles.inputWrapper,
                 {
-                  backgroundColor: colors.surface,
-                  borderRadius: borderRadius.base,
-                  borderWidth: 2,
                   borderColor: usernameFocused
-                    ? colors.accent
+                    ? COLORS.navy
                     : errors.username
-                    ? colors.error
-                    : colors.border,
-                  ...shadows.sm,
+                    ? COLORS.error
+                    : COLORS.border,
                 },
               ]}
             >
               <MaterialCommunityIcons
                 name="account-outline"
                 size={22}
-                color={usernameFocused ? colors.accent : colors.textSecondary}
-                style={{ marginLeft: spacing[4] }}
+                color={usernameFocused ? COLORS.navy : COLORS.textSecondary}
+                style={styles.inputIcon}
               />
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    color: colors.text,
-                    fontSize: fontSizes.base,
-                    paddingHorizontal: spacing[3],
-                  },
-                ]}
+                style={styles.input}
                 placeholder="Enter your username"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={COLORS.textTertiary}
                 value={username}
                 onChangeText={(text) => {
                   setUsername(text);
@@ -345,69 +266,39 @@ export default function LoginScreen({
               />
             </View>
             {errors.username && (
-              <Text
-                style={[
-                  styles.errorText,
-                  {
-                    color: colors.error,
-                    fontSize: fontSizes.xs,
-                    marginTop: spacing[1],
-                  },
-                ]}
-              >
+              <Text style={styles.errorText}>
                 {errors.username}
               </Text>
             )}
           </View>
 
           {/* Password Input */}
-          <View style={[styles.inputContainer, { marginBottom: spacing[2] }]}>
-            <Text
-              style={[
-                styles.label,
-                {
-                  color: colors.text,
-                  fontSize: fontSizes.sm,
-                  fontWeight: fontWeights.semibold,
-                  marginBottom: spacing[2],
-                },
-              ]}
-            >
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>
               Password
             </Text>
             <View
               style={[
                 styles.inputWrapper,
                 {
-                  backgroundColor: colors.surface,
-                  borderRadius: borderRadius.base,
-                  borderWidth: 2,
                   borderColor: passwordFocused
-                    ? colors.accent
+                    ? COLORS.navy
                     : errors.password
-                    ? colors.error
-                    : colors.border,
-                  ...shadows.sm,
+                    ? COLORS.error
+                    : COLORS.border,
                 },
               ]}
             >
               <MaterialCommunityIcons
                 name="lock-outline"
                 size={22}
-                color={passwordFocused ? colors.accent : colors.textSecondary}
-                style={{ marginLeft: spacing[4] }}
+                color={passwordFocused ? COLORS.navy : COLORS.textSecondary}
+                style={styles.inputIcon}
               />
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    color: colors.text,
-                    fontSize: fontSizes.base,
-                    paddingHorizontal: spacing[3],
-                  },
-                ]}
+                style={styles.input}
                 placeholder="Enter your password"
-                placeholderTextColor={colors.textTertiary}
+                placeholderTextColor={COLORS.textTertiary}
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
@@ -424,34 +315,25 @@ export default function LoginScreen({
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
-                style={[styles.showPasswordButton, { paddingRight: spacing[4] }]}
+                style={styles.showPasswordButton}
                 activeOpacity={0.7}
               >
                 <MaterialCommunityIcons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                   size={22}
-                  color={colors.textSecondary}
+                  color={COLORS.textSecondary}
                 />
               </TouchableOpacity>
             </View>
             {errors.password && (
-              <Text
-                style={[
-                  styles.errorText,
-                  {
-                    color: colors.error,
-                    fontSize: fontSizes.xs,
-                    marginTop: spacing[1],
-                  },
-                ]}
-              >
+              <Text style={styles.errorText}>
                 {errors.password}
               </Text>
             )}
           </View>
 
           {/* Remember Me & Forgot Password Row */}
-          <View style={[styles.optionsRow, { marginBottom: spacing[6] }]}>
+          <View style={styles.optionsRow}>
             <TouchableOpacity
               style={styles.checkboxRow}
               onPress={() => setRememberMe(!rememberMe)}
@@ -462,27 +344,15 @@ export default function LoginScreen({
                 style={[
                   styles.checkbox,
                   {
-                    borderColor: colors.border,
-                    backgroundColor: rememberMe ? colors.accent : colors.surface,
-                    borderRadius: 6,
-                    borderWidth: 2,
+                    backgroundColor: rememberMe ? COLORS.navy : COLORS.white,
                   },
                 ]}
               >
                 {rememberMe && (
-                  <MaterialCommunityIcons name="check" size={18} color={colors.textInverse} />
+                  <MaterialCommunityIcons name="check" size={18} color={COLORS.white} />
                 )}
               </View>
-              <Text
-                style={[
-                  styles.checkboxLabel,
-                  {
-                    color: colors.textSecondary,
-                    fontSize: fontSizes.sm,
-                    marginLeft: spacing[2],
-                  },
-                ]}
-              >
+              <Text style={styles.checkboxLabel}>
                 Remember me
               </Text>
             </TouchableOpacity>
@@ -492,16 +362,7 @@ export default function LoginScreen({
               activeOpacity={0.7}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Text
-                style={[
-                  styles.forgotPasswordText,
-                  {
-                    color: colors.accent,
-                    fontSize: fontSizes.sm,
-                    fontWeight: fontWeights.semibold,
-                  },
-                ]}
-              >
+              <Text style={styles.forgotPasswordText}>
                 Forgot password?
               </Text>
             </TouchableOpacity>
@@ -512,10 +373,7 @@ export default function LoginScreen({
             style={[
               styles.loginButton,
               {
-                backgroundColor: loading ? colors.primaryLight : colors.primary,
-                borderRadius: borderRadius.md,
-                paddingVertical: spacing[5],
-                ...shadows.base,
+                opacity: loading ? 0.7 : 1,
               },
             ]}
             onPress={handleLogin}
@@ -523,41 +381,22 @@ export default function LoginScreen({
             activeOpacity={0.8}
           >
             {loading ? (
-              <ActivityIndicator color={colors.textInverse} size="small" />
+              <ActivityIndicator color={COLORS.white} size="small" />
             ) : (
-              <Text
-                style={[
-                  styles.loginButtonText,
-                  {
-                    color: colors.textInverse,
-                    fontSize: fontSizes.lg,
-                    fontWeight: fontWeights.semibold,
-                  },
-                ]}
-              >
+              <Text style={styles.loginButtonText}>
                 Log In
               </Text>
             )}
           </TouchableOpacity>
 
           {/* Support Text */}
-          <Text
-            style={[
-              styles.supportLink,
-              {
-                color: colors.textTertiary,
-                fontSize: fontSizes.xs,
-                textAlign: 'center',
-                marginTop: spacing[6],
-              },
-            ]}
-          >
+          <Text style={styles.supportLink}>
             Need help? Contact your Operator or system administrator.
           </Text>
         </View>
 
         {/* Footer Spacing */}
-        <View style={{ height: spacing[8] }} />
+        <View style={{ height: SPACING['2xl'] }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -566,60 +405,112 @@ export default function LoginScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   scrollContent: {
     flexGrow: 1,
   },
-  header: {},
+  header: {
+    paddingHorizontal: SPACING.lg,
+  },
   brandingContainer: {
     alignItems: 'center',
+    marginTop: SPACING['2xl'] + SPACING.lg,
   },
   logoContainer: {
     width: 88,
     height: 88,
+    backgroundColor: COLORS.navy,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },
   appName: {
+    fontSize: DS.typography.fontSize['3xl'],
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.navy,
     textAlign: 'center',
     letterSpacing: -0.5,
+    marginTop: SPACING.md,
   },
   tagline: {
+    fontSize: DS.typography.fontSize.base,
+    fontWeight: DS.typography.fontWeight.medium,
+    color: COLORS.textSecondary,
     textAlign: 'center',
     maxWidth: 320,
+    marginTop: SPACING.xs,
   },
   supportingText: {
+    fontSize: DS.typography.fontSize.sm,
+    color: COLORS.textTertiary,
     textAlign: 'center',
     maxWidth: 280,
+    marginTop: SPACING.xs,
   },
-  form: {},
+  form: {
+    paddingHorizontal: SPACING.lg,
+    marginTop: SPACING.xl,
+  },
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: COLORS.error + '15',
+    borderRadius: 12,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.error,
   },
   errorBannerText: {
     flex: 1,
+    color: COLORS.error,
+    fontSize: DS.typography.fontSize.sm,
+    marginLeft: SPACING.xs,
   },
-  inputContainer: {},
-  label: {},
+  inputContainer: {
+    marginBottom: SPACING.md,
+  },
+  label: {
+    color: COLORS.text,
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.semibold,
+    marginBottom: SPACING.xs,
+  },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 2,
     height: 56,
+    ...COMPONENTS.card.shadow,
+  },
+  inputIcon: {
+    marginLeft: SPACING.md,
   },
   input: {
     flex: 1,
     height: '100%',
+    color: COLORS.text,
+    fontSize: DS.typography.fontSize.base,
+    paddingHorizontal: SPACING.sm,
   },
   showPasswordButton: {
     height: '100%',
+    paddingRight: SPACING.md,
     justifyContent: 'center',
   },
-  errorText: {},
+  errorText: {
+    color: COLORS.error,
+    fontSize: DS.typography.fontSize.xs,
+    marginTop: 4,
+  },
   optionsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: SPACING.xl,
   },
   checkboxRow: {
     flexDirection: 'row',
@@ -628,16 +519,41 @@ const styles = StyleSheet.create({
   checkbox: {
     width: 24,
     height: 24,
+    borderRadius: 6,
     borderWidth: 2,
+    borderColor: COLORS.border,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  checkboxLabel: {},
-  forgotPasswordText: {},
+  checkboxLabel: {
+    color: COLORS.textSecondary,
+    fontSize: DS.typography.fontSize.sm,
+    marginLeft: SPACING.xs,
+  },
+  forgotPasswordText: {
+    color: COLORS.navy,
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.semibold,
+  },
   loginButton: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 12,
+    paddingVertical: SPACING.lg,
     alignItems: 'center',
     justifyContent: 'center',
+    ...COMPONENTS.card.shadow,
+    shadowOpacity: 0.2,
+    elevation: 4,
   },
-  loginButtonText: {},
-  supportLink: {},
+  loginButtonText: {
+    color: COLORS.white,
+    fontSize: DS.typography.fontSize.lg,
+    fontWeight: DS.typography.fontWeight.semibold,
+  },
+  supportLink: {
+    color: COLORS.textTertiary,
+    fontSize: DS.typography.fontSize.xs,
+    textAlign: 'center',
+    marginTop: SPACING.xl,
+  },
 });

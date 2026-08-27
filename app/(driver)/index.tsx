@@ -1,9 +1,9 @@
 /**
- * Driver Home Screen
- * Current trip focus with single primary action
+ * Driver Home Screen - Redesigned with Design System
+ * Phase 8: Align Driver/Helper side with modern premium design
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,13 +14,14 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '../../src/theme/ThemeProvider';
+import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../src/theme/designSystem';
 import { useAuth } from '../../src/hooks';
 import { TripStatus } from '../../src/types/driver-porter.types';
 import StatusChip from '../../src/components/common/StatusChip';
 import EmptyStateCard from '../../src/components/common/EmptyStateCard';
-import AlertCard from '../../src/components/common/AlertCard';
 import StatCard from '../../src/components/common/StatCard';
+
+const DS = DESIGN_SYSTEM;
 
 // Demo current trip data
 const DEMO_CURRENT_TRIP = {
@@ -57,7 +58,6 @@ const DEMO_UPCOMING_TRIPS = [
 ];
 
 export default function DriverHome() {
-  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
   const { user } = useAuth();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
@@ -65,7 +65,6 @@ export default function DriverHome() {
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    // Simulate data refresh
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
@@ -79,28 +78,28 @@ export default function DriverHome() {
         return {
           label: 'Start Trip',
           icon: 'truck-fast' as const,
-          color: colors.primary,
+          color: COLORS.navy,
           onPress: () => {},
         };
       case TripStatus.IN_TRANSIT:
         return {
           label: 'Arrived at Destination',
           icon: 'map-marker-check' as const,
-          color: colors.success,
+          color: COLORS.success,
           onPress: () => {},
         };
       case TripStatus.UNLOADING:
         return {
           label: 'Complete Delivery',
           icon: 'check-circle' as const,
-          color: colors.success,
+          color: COLORS.success,
           onPress: () => {},
         };
       default:
         return {
           label: 'Acknowledge Trip',
           icon: 'check-circle-outline' as const,
-          color: colors.primary,
+          color: COLORS.navy,
           onPress: () => {},
         };
     }
@@ -124,31 +123,12 @@ export default function DriverHome() {
     return (
       <View>
         {/* Current Trip Card */}
-        <View
-          style={[
-            styles.currentTripCard,
-            {
-              backgroundColor: colors.surface,
-              borderRadius: borderRadius.md,
-              padding: spacing[4],
-            },
-          ]}
-        >
+        <View style={styles.currentTripCard}>
           {/* Header */}
           <View style={styles.tripHeader}>
             <View style={styles.tripHeaderLeft}>
-              <MaterialCommunityIcons name="truck-delivery" size={24} color={colors.primary} />
-              <Text
-                style={[
-                  styles.tripNumber,
-                  {
-                    color: colors.primary,
-                    fontSize: fontSizes.lg,
-                    fontWeight: fontWeights.semibold,
-                    marginLeft: spacing[2],
-                  },
-                ]}
-              >
+              <MaterialCommunityIcons name="truck-delivery" size={24} color={COLORS.navy} />
+              <Text style={styles.tripNumber}>
                 {DEMO_CURRENT_TRIP.tripNumber}
               </Text>
             </View>
@@ -160,174 +140,67 @@ export default function DriverHome() {
           </View>
 
           {/* Assignment Details */}
-          <View style={[styles.detailsSection, { marginTop: spacing[4] }]}>
+          <View style={styles.detailsSection}>
             <View style={styles.detailRow}>
-              <MaterialCommunityIcons name="clock-outline" size={18} color={colors.textSecondary} />
-              <Text
-                style={[
-                  styles.detailLabel,
-                  {
-                    color: colors.textSecondary,
-                    fontSize: fontSizes.sm,
-                    marginLeft: spacing[2],
-                  },
-                ]}
-              >
+              <MaterialCommunityIcons name="clock-outline" size={18} color={COLORS.textSecondary} />
+              <Text style={styles.detailLabel}>
                 Call Time:
               </Text>
-              <Text
-                style={[
-                  styles.detailValue,
-                  {
-                    color: colors.text,
-                    fontSize: fontSizes.sm,
-                    fontWeight: fontWeights.medium,
-                    marginLeft: spacing[1],
-                  },
-                ]}
-              >
+              <Text style={styles.detailValue}>
                 {DEMO_CURRENT_TRIP.callTime}
               </Text>
             </View>
 
-            <View style={[styles.detailRow, { marginTop: spacing[2] }]}>
-              <MaterialCommunityIcons name="truck" size={18} color={colors.textSecondary} />
-              <Text
-                style={[
-                  styles.detailLabel,
-                  {
-                    color: colors.textSecondary,
-                    fontSize: fontSizes.sm,
-                    marginLeft: spacing[2],
-                  },
-                ]}
-              >
+            <View style={styles.detailRow}>
+              <MaterialCommunityIcons name="truck" size={18} color={COLORS.textSecondary} />
+              <Text style={styles.detailLabel}>
                 Truck:
               </Text>
-              <Text
-                style={[
-                  styles.detailValue,
-                  {
-                    color: colors.text,
-                    fontSize: fontSizes.sm,
-                    fontWeight: fontWeights.medium,
-                    marginLeft: spacing[1],
-                  },
-                ]}
-              >
+              <Text style={styles.detailValue}>
                 {DEMO_CURRENT_TRIP.truckNumber}
               </Text>
             </View>
 
-            <View style={[styles.detailRow, { marginTop: spacing[2] }]}>
-              <MaterialCommunityIcons name="account-hard-hat" size={18} color={colors.textSecondary} />
-              <Text
-                style={[
-                  styles.detailLabel,
-                  {
-                    color: colors.textSecondary,
-                    fontSize: fontSizes.sm,
-                    marginLeft: spacing[2],
-                  },
-                ]}
-              >
+            <View style={styles.detailRow}>
+              <MaterialCommunityIcons name="account-hard-hat" size={18} color={COLORS.textSecondary} />
+              <Text style={styles.detailLabel}>
                 Porter:
               </Text>
-              <Text
-                style={[
-                  styles.detailValue,
-                  {
-                    color: colors.text,
-                    fontSize: fontSizes.sm,
-                    fontWeight: fontWeights.medium,
-                    marginLeft: spacing[1],
-                  },
-                ]}
-              >
+              <Text style={styles.detailValue}>
                 {DEMO_CURRENT_TRIP.porterName}
               </Text>
             </View>
           </View>
 
           {/* Route */}
-          <View style={[styles.routeSection, { marginTop: spacing[4] }]}>
+          <View style={styles.routeSection}>
             <View style={styles.routePoint}>
-              <View style={[styles.routeDot, { backgroundColor: colors.success }]} />
+              <View style={[styles.routeDot, { backgroundColor: COLORS.success }]} />
               <View style={styles.routeContent}>
-                <Text
-                  style={[
-                    styles.routeLabel,
-                    {
-                      color: colors.textSecondary,
-                      fontSize: fontSizes.xs,
-                    },
-                  ]}
-                >
+                <Text style={styles.routeLabel}>
                   Pickup
                 </Text>
-                <Text
-                  style={[
-                    styles.routeLocation,
-                    {
-                      color: colors.text,
-                      fontSize: fontSizes.base,
-                      fontWeight: fontWeights.semibold,
-                    },
-                  ]}
-                >
+                <Text style={styles.routeLocation}>
                   {DEMO_CURRENT_TRIP.pickup}
                 </Text>
-                <Text
-                  style={[
-                    styles.routeAddress,
-                    {
-                      color: colors.textSecondary,
-                      fontSize: fontSizes.sm,
-                    },
-                  ]}
-                >
+                <Text style={styles.routeAddress}>
                   {DEMO_CURRENT_TRIP.pickupAddress}
                 </Text>
               </View>
             </View>
 
-            <View style={[styles.routeLine, { backgroundColor: colors.border }]} />
+            <View style={styles.routeLine} />
 
             <View style={styles.routePoint}>
-              <View style={[styles.routeDot, { backgroundColor: colors.error }]} />
+              <View style={[styles.routeDot, { backgroundColor: COLORS.error }]} />
               <View style={styles.routeContent}>
-                <Text
-                  style={[
-                    styles.routeLabel,
-                    {
-                      color: colors.textSecondary,
-                      fontSize: fontSizes.xs,
-                    },
-                  ]}
-                >
+                <Text style={styles.routeLabel}>
                   Delivery
                 </Text>
-                <Text
-                  style={[
-                    styles.routeLocation,
-                    {
-                      color: colors.text,
-                      fontSize: fontSizes.base,
-                      fontWeight: fontWeights.semibold,
-                    },
-                  ]}
-                >
+                <Text style={styles.routeLocation}>
                   {DEMO_CURRENT_TRIP.delivery}
                 </Text>
-                <Text
-                  style={[
-                    styles.routeAddress,
-                    {
-                      color: colors.textSecondary,
-                      fontSize: fontSizes.sm,
-                    },
-                  ]}
-                >
+                <Text style={styles.routeAddress}>
                   {DEMO_CURRENT_TRIP.deliveryAddress}
                 </Text>
               </View>
@@ -340,84 +213,35 @@ export default function DriverHome() {
               styles.primaryButton,
               {
                 backgroundColor: primaryAction.color,
-                borderRadius: borderRadius.md,
-                marginTop: spacing[4],
-                padding: spacing[4],
               },
             ]}
             onPress={primaryAction.onPress}
             activeOpacity={0.8}
           >
-            <MaterialCommunityIcons name={primaryAction.icon} size={24} color={colors.textInverse} />
-            <Text
-              style={[
-                styles.primaryButtonText,
-                {
-                  color: colors.textInverse,
-                  fontSize: fontSizes.lg,
-                  fontWeight: fontWeights.semibold,
-                  marginLeft: spacing[2],
-                },
-              ]}
-            >
+            <MaterialCommunityIcons name={primaryAction.icon} size={24} color={COLORS.white} />
+            <Text style={styles.primaryButtonText}>
               {primaryAction.label}
             </Text>
           </TouchableOpacity>
 
           {/* Secondary Actions */}
-          <View style={[styles.secondaryActions, { marginTop: spacing[3], gap: spacing[2] }]}>
+          <View style={styles.secondaryActions}>
             <TouchableOpacity
-              style={[
-                styles.secondaryButton,
-                {
-                  backgroundColor: colors.surfaceElevated,
-                  borderRadius: borderRadius.base,
-                  flex: 1,
-                  padding: spacing[3],
-                },
-              ]}
+              style={styles.secondaryButton}
               onPress={() => {}}
             >
-              <MaterialCommunityIcons name="navigation" size={20} color={colors.primary} />
-              <Text
-                style={[
-                  styles.secondaryButtonText,
-                  {
-                    color: colors.text,
-                    fontSize: fontSizes.sm,
-                    fontWeight: fontWeights.medium,
-                    marginTop: spacing[1],
-                  },
-                ]}
-              >
+              <MaterialCommunityIcons name="navigation" size={20} color={COLORS.navy} />
+              <Text style={styles.secondaryButtonText}>
                 Navigate
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.secondaryButton,
-                {
-                  backgroundColor: colors.surfaceElevated,
-                  borderRadius: borderRadius.base,
-                  flex: 1,
-                  padding: spacing[3],
-                },
-              ]}
+              style={styles.secondaryButton}
               onPress={() => router.push('/(driver)/reports')}
             >
-              <MaterialCommunityIcons name="alert-circle-outline" size={20} color={colors.error} />
-              <Text
-                style={[
-                  styles.secondaryButtonText,
-                  {
-                    color: colors.text,
-                    fontSize: fontSizes.sm,
-                    fontWeight: fontWeights.medium,
-                    marginTop: spacing[1],
-                  },
-                ]}
-              >
+              <MaterialCommunityIcons name="alert-circle-outline" size={20} color={COLORS.error} />
+              <Text style={styles.secondaryButtonText}>
                 Report Issue
               </Text>
             </TouchableOpacity>
@@ -428,55 +252,28 @@ export default function DriverHome() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.navy]} />
         }
       >
         {/* Header */}
-        <View style={[styles.header, { padding: spacing[4] }]}>
+        <View style={styles.header}>
           <View>
-            <Text
-              style={[
-                styles.greeting,
-                {
-                  color: colors.textSecondary,
-                  fontSize: fontSizes.sm,
-                },
-              ]}
-            >
+            <Text style={styles.greeting}>
               Welcome back
             </Text>
-            <Text
-              style={[
-                styles.name,
-                {
-                  color: colors.text,
-                  fontSize: fontSizes['2xl'],
-                  fontWeight: fontWeights.bold,
-                },
-              ]}
-            >
+            <Text style={styles.name}>
               {user?.user_metadata?.first_name || 'Driver'}
             </Text>
           </View>
         </View>
 
         {/* Current Trip Section */}
-        <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              {
-                color: colors.text,
-                fontSize: fontSizes.lg,
-                fontWeight: fontWeights.semibold,
-                marginBottom: spacing[3],
-              },
-            ]}
-          >
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>
             Current Assignment
           </Text>
           {renderCurrentTrip()}
@@ -484,21 +281,11 @@ export default function DriverHome() {
 
         {/* Quick Stats */}
         {hasActiveTrip && (
-          <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                {
-                  color: colors.text,
-                  fontSize: fontSizes.lg,
-                  fontWeight: fontWeights.semibold,
-                  marginBottom: spacing[3],
-                },
-              ]}
-            >
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>
               This Week
             </Text>
-            <View style={[styles.statsRow, { gap: spacing[3] }]}>
+            <View style={styles.statsRow}>
               <StatCard label="Completed" value={8} icon="check-circle" variant="success" />
               <StatCard label="Total Trips" value={12} icon="truck-delivery" variant="primary" />
             </View>
@@ -506,85 +293,42 @@ export default function DriverHome() {
         )}
 
         {/* Upcoming Trips */}
-        <View style={[styles.section, { paddingHorizontal: spacing[4], paddingBottom: spacing[8] }]}>
+        <View style={[styles.section, styles.lastSection]}>
           <View style={styles.sectionHeader}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                {
-                  color: colors.text,
-                  fontSize: fontSizes.lg,
-                  fontWeight: fontWeights.semibold,
-                },
-              ]}
-            >
+            <Text style={styles.sectionTitle}>
               Upcoming Trips
             </Text>
             <TouchableOpacity onPress={() => router.push('/(driver)/trips')}>
-              <Text style={[styles.viewAllText, { color: colors.primary, fontSize: fontSizes.sm }]}>
+              <Text style={styles.viewAllText}>
                 View All
               </Text>
             </TouchableOpacity>
           </View>
 
-          <View style={{ marginTop: spacing[3] }}>
+          <View style={styles.upcomingTripsContainer}>
             {DEMO_UPCOMING_TRIPS.map((trip, index) => (
               <View
                 key={trip.id}
                 style={[
                   styles.upcomingTripCard,
-                  {
-                    backgroundColor: colors.surface,
-                    borderRadius: borderRadius.base,
-                    padding: spacing[3],
-                    marginBottom: index < DEMO_UPCOMING_TRIPS.length - 1 ? spacing[2] : 0,
-                  },
+                  index < DEMO_UPCOMING_TRIPS.length - 1 && styles.upcomingTripCardMargin,
                 ]}
               >
                 <View style={styles.upcomingTripHeader}>
                   <View style={styles.upcomingTripLeft}>
-                    <MaterialCommunityIcons name="calendar" size={18} color={colors.textSecondary} />
-                    <Text
-                      style={[
-                        styles.upcomingTripDate,
-                        {
-                          color: colors.text,
-                          fontSize: fontSizes.sm,
-                          fontWeight: fontWeights.medium,
-                          marginLeft: spacing[2],
-                        },
-                      ]}
-                    >
+                    <MaterialCommunityIcons name="calendar" size={18} color={COLORS.textSecondary} />
+                    <Text style={styles.upcomingTripDate}>
                       {trip.date} • {trip.callTime}
                     </Text>
                   </View>
                   <StatusChip status="scheduled" label="Scheduled" size="sm" />
                 </View>
-                <Text
-                  style={[
-                    styles.upcomingTripNumber,
-                    {
-                      color: colors.primary,
-                      fontSize: fontSizes.sm,
-                      fontWeight: fontWeights.medium,
-                      marginTop: spacing[2],
-                    },
-                  ]}
-                >
+                <Text style={styles.upcomingTripNumber}>
                   {trip.tripNumber}
                 </Text>
-                <View style={[styles.upcomingTripDestination, { marginTop: spacing[1] }]}>
-                  <MaterialCommunityIcons name="map-marker" size={16} color={colors.textSecondary} />
-                  <Text
-                    style={[
-                      styles.upcomingTripDestinationText,
-                      {
-                        color: colors.textSecondary,
-                        fontSize: fontSizes.sm,
-                        marginLeft: spacing[1],
-                      },
-                    ]}
-                  >
+                <View style={styles.upcomingTripDestination}>
+                  <MaterialCommunityIcons name="map-marker" size={16} color={COLORS.textSecondary} />
+                  <Text style={styles.upcomingTripDestinationText}>
                     {trip.destination}
                   </Text>
                 </View>
@@ -600,24 +344,52 @@ export default function DriverHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   scrollContent: {
     flexGrow: 1,
   },
-  header: {},
-  greeting: {},
-  name: {},
+  header: {
+    padding: SPACING.md,
+  },
+  greeting: {
+    color: COLORS.textSecondary,
+    fontSize: DS.typography.fontSize.sm,
+  },
+  name: {
+    color: COLORS.navy,
+    fontSize: DS.typography.fontSize['2xl'],
+    fontWeight: DS.typography.fontWeight.bold,
+  },
   section: {
-    marginBottom: 24,
+    marginBottom: SPACING.lg,
+    paddingHorizontal: SPACING.md,
+  },
+  lastSection: {
+    paddingBottom: SPACING['2xl'],
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  sectionTitle: {},
-  viewAllText: {},
-  currentTripCard: {},
+  sectionTitle: {
+    color: COLORS.text,
+    fontSize: DS.typography.fontSize.lg,
+    fontWeight: DS.typography.fontWeight.semibold,
+    marginBottom: SPACING.sm,
+  },
+  viewAllText: {
+    color: COLORS.navy,
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.semibold,
+  },
+  currentTripCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: COMPONENTS.card.borderRadius,
+    padding: SPACING.md,
+    ...COMPONENTS.card.shadow,
+  },
   tripHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -628,15 +400,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  tripNumber: {},
-  detailsSection: {},
+  tripNumber: {
+    color: COLORS.navy,
+    fontSize: DS.typography.fontSize.lg,
+    fontWeight: DS.typography.fontWeight.semibold,
+    marginLeft: SPACING.xs,
+  },
+  detailsSection: {
+    marginTop: SPACING.md,
+    gap: SPACING.xs,
+  },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  detailLabel: {},
-  detailValue: {},
-  routeSection: {},
+  detailLabel: {
+    color: COLORS.textSecondary,
+    fontSize: DS.typography.fontSize.sm,
+    marginLeft: SPACING.xs,
+  },
+  detailValue: {
+    color: COLORS.text,
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.medium,
+    marginLeft: 4,
+  },
+  routeSection: {
+    marginTop: SPACING.md,
+  },
   routePoint: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -650,37 +441,82 @@ const styles = StyleSheet.create({
   routeLine: {
     width: 2,
     height: 24,
+    backgroundColor: COLORS.border,
     marginLeft: 5,
     marginVertical: 4,
   },
   routeContent: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: SPACING.sm,
   },
-  routeLabel: {},
-  routeLocation: {},
+  routeLabel: {
+    color: COLORS.textSecondary,
+    fontSize: DS.typography.fontSize.xs,
+  },
+  routeLocation: {
+    color: COLORS.text,
+    fontSize: DS.typography.fontSize.base,
+    fontWeight: DS.typography.fontWeight.semibold,
+  },
   routeAddress: {
+    color: COLORS.textSecondary,
+    fontSize: DS.typography.fontSize.sm,
     marginTop: 2,
   },
   primaryButton: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 12,
+    marginTop: SPACING.md,
+    padding: SPACING.md,
+    ...COMPONENTS.card.shadow,
+    shadowOpacity: 0.2,
+    elevation: 4,
   },
-  primaryButtonText: {},
+  primaryButtonText: {
+    color: COLORS.white,
+    fontSize: DS.typography.fontSize.lg,
+    fontWeight: DS.typography.fontWeight.semibold,
+    marginLeft: SPACING.xs,
+  },
   secondaryActions: {
     flexDirection: 'row',
+    marginTop: SPACING.sm,
+    gap: SPACING.xs,
   },
   secondaryButton: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    padding: SPACING.sm,
     alignItems: 'center',
   },
   secondaryButtonText: {
+    color: COLORS.text,
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.medium,
+    marginTop: 4,
     textAlign: 'center',
   },
   statsRow: {
     flexDirection: 'row',
+    gap: SPACING.sm,
   },
-  upcomingTripCard: {},
+  upcomingTripsContainer: {
+    marginTop: SPACING.sm,
+  },
+  upcomingTripCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: SPACING.sm,
+    ...COMPONENTS.card.shadow,
+  },
+  upcomingTripCardMargin: {
+    marginBottom: SPACING.xs,
+  },
   upcomingTripHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -691,11 +527,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  upcomingTripDate: {},
-  upcomingTripNumber: {},
+  upcomingTripDate: {
+    color: COLORS.text,
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.medium,
+    marginLeft: SPACING.xs,
+  },
+  upcomingTripNumber: {
+    color: COLORS.navy,
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.medium,
+    marginTop: SPACING.xs,
+  },
   upcomingTripDestination: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 4,
   },
-  upcomingTripDestinationText: {},
+  upcomingTripDestinationText: {
+    color: COLORS.textSecondary,
+    fontSize: DS.typography.fontSize.sm,
+    marginLeft: 4,
+  },
 });

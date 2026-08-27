@@ -1,9 +1,9 @@
 /**
- * Operator Analytics Dashboard Screen - Redesigned
- * Enhanced UI/UX with proper layouts, complete data, and polish
+ * Operator Analytics Dashboard Screen - Redesigned with Design System
+ * Phase 3: Modern premium design with complete DESIGN_SYSTEM integration
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -15,55 +15,38 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Screen, Card, LoadingSpinner } from '../../src/components';
-import { useTheme } from '../../src/hooks';
+import { Screen, LoadingSpinner } from '../../src/components';
 import InteractiveLineChart from '../../src/components/analytics/InteractiveLineChart';
+import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../src/theme/designSystem';
 
 const { width } = Dimensions.get('window');
+const DS = DESIGN_SYSTEM;
 
 export default function AnalyticsScreen() {
-  // Force light theme for operator/admin
-  const themeObj = useTheme();
-  const colors = {
-    background: '#F0EDE8',
-    surface: '#FFFCF8',
-    text: '#2C2418',
-    textSecondary: '#6B6256',
-    textTertiary: '#9B9289',
-    border: '#E0D7CC',
-    primary: '#1B2A4A',
-    teal: '#3A7D8C',
-    orange: '#E07B2A',
-    success: '#4F7A5E',
-    error: '#C74C47',
-    warning: '#D89534',
-    white: '#FFFFFF',
-  };
-  const { spacing, fontSizes, fontWeights, borderRadius } = themeObj;
-
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
 
   // Mock data - replace with actual API calls
   const stats = [
-    { label: 'Active Trips', value: '24', icon: 'location', color: colors.teal, trend: '+12%', isPositive: true },
-    { label: 'Total Drivers', value: '48', icon: 'people', color: colors.primary, trend: '+3', isPositive: true },
-    { label: 'Fleet Size', value: '32', icon: 'car', color: colors.orange, trend: '+2', isPositive: true },
-    { label: 'Revenue', value: '₱2.4M', icon: 'cash', color: colors.success, trend: '+18%', isPositive: true },
+    { label: 'Active Trips', value: '24', icon: 'location', color: COLORS.teal, trend: '+12%', isPositive: true },
+    { label: 'Total Drivers', value: '48', icon: 'people', color: COLORS.navy, trend: '+3', isPositive: true },
+    { label: 'Fleet Size', value: '32', icon: 'car', color: COLORS.orange, trend: '+2', isPositive: true },
+    { label: 'Revenue', value: '₱2.4M', icon: 'cash', color: COLORS.success, trend: '+18%', isPositive: true },
   ];
 
   const quickStats = [
-    { label: 'Completed', subtitle: 'Today', value: '18', color: colors.success },
-    { label: 'In Progress', subtitle: 'trips', value: '24', color: colors.teal },
-    { label: 'Pending', subtitle: 'trips', value: '12', color: colors.orange },
-    { label: 'Issues', subtitle: 'reports', value: '3', color: colors.error },
+    { label: 'Completed', subtitle: 'Today', value: '18', color: COLORS.success },
+    { label: 'In Progress', subtitle: 'trips', value: '24', color: COLORS.teal },
+    { label: 'Pending', subtitle: 'trips', value: '12', color: COLORS.orange },
+    { label: 'Issues', subtitle: 'reports', value: '3', color: COLORS.error },
   ];
 
   const performance = [
-    { label: 'On-Time Delivery', value: '94%', percent: 94, icon: 'checkmark-circle', color: colors.success },
-    { label: 'Avg Trip Duration', value: '4.2 hrs', percent: 70, icon: 'time', color: colors.teal },
-    { label: 'Fuel Efficiency', value: '8.5 km/L', percent: 85, icon: 'speedometer', color: colors.orange },
-    { label: 'Customer Rating', value: '4.7', rating: 4.7, icon: 'star', color: colors.warning },
+    { label: 'On-Time Delivery', value: '94%', percent: 94, icon: 'checkmark-circle', color: COLORS.success },
+    { label: 'Avg Trip Duration', value: '4.2 hrs', percent: 70, icon: 'time', color: COLORS.teal },
+    { label: 'Fuel Efficiency', value: '8.5 km/L', percent: 85, icon: 'speedometer', color: COLORS.orange },
+    { label: 'Customer Rating', value: '4.7', rating: 4.7, icon: 'star', color: COLORS.warning },
   ];
 
   // Chart data for interactive component
@@ -88,8 +71,6 @@ export default function AnalyticsScreen() {
     ],
   };
 
-  const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
-
   const handlePeriodChange = (period: 'week' | 'month' | 'year') => {
     setSelectedPeriod(period);
     // TODO: Fetch data for the selected period
@@ -104,7 +85,7 @@ export default function AnalyticsScreen() {
   if (loading) {
     return (
       <Screen>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={[styles.container, { backgroundColor: COLORS.background }]}>
           <LoadingSpinner />
         </View>
       </Screen>
@@ -113,114 +94,40 @@ export default function AnalyticsScreen() {
 
   return (
     <Screen>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.container, { backgroundColor: COLORS.background }]}>
         {/* Header */}
-        <View
-          style={[
-            styles.header,
-            {
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing[3],
-              backgroundColor: colors.white,
-              borderBottomWidth: 1,
-              borderBottomColor: colors.border,
-            },
-          ]}
-        >
+        <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
-            style={{ marginRight: spacing[3] }}
+            style={styles.backButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Ionicons name="arrow-back" size={24} color={COLORS.navy} />
           </TouchableOpacity>
-          <Text
-            style={{
-              color: colors.text,
-              fontSize: fontSizes['2xl'],
-              fontWeight: fontWeights.bold,
-              flex: 1,
-            }}
-          >
-            Analytics
-          </Text>
+          <Text style={styles.headerTitle}>Analytics</Text>
+          <View style={{ width: 24 }} />
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingBottom: spacing.xl }}
+          contentContainerStyle={{ paddingBottom: SPACING['2xl'] }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.navy]} />
           }
           showsVerticalScrollIndicator={false}
         >
           {/* Overview - 2x2 Grid */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
-            <Text
-              style={{
-                fontSize: 13,
-                fontWeight: '700',
-                color: '#9E9E9E',
-                marginBottom: 12,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              OVERVIEW
-            </Text>
-            <View style={{ gap: 8 }}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>OVERVIEW</Text>
+            <View style={styles.gridContainer}>
+              <View style={styles.gridRow}>
                 {stats.slice(0, 2).map((stat, index) => (
-                  <View key={index} style={{ flex: 1 }}>
-                    <View
-                      style={{
-                        backgroundColor: colors.white,
-                        borderRadius: 12,
-                        padding: 16,
-                        alignItems: 'center',
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 1 },
-                        shadowOpacity: 0.05,
-                        shadowRadius: 2,
-                        elevation: 1,
-                        minHeight: 130,
-                      }}
-                    >
-                      <Ionicons name={stat.icon as any} size={28} color={stat.color} style={{ marginBottom: 12 }} />
-                      <Text
-                        style={{
-                          fontSize: 32,
-                          fontWeight: '700',
-                          color: colors.text,
-                          marginBottom: 4,
-                        }}
-                      >
-                        {stat.value}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: colors.textSecondary,
-                          marginBottom: 8,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {stat.label}
-                      </Text>
-                      <View
-                        style={{
-                          backgroundColor: stat.isPositive ? colors.success + '15' : colors.error + '15',
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          borderRadius: 12,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 11,
-                            fontWeight: '600',
-                            color: stat.isPositive ? colors.success : colors.error,
-                          }}
-                        >
+                  <View key={index} style={styles.gridCell}>
+                    <View style={styles.statCard}>
+                      <Ionicons name={stat.icon as any} size={28} color={stat.color} style={{ marginBottom: SPACING.sm }} />
+                      <Text style={styles.statValue}>{stat.value}</Text>
+                      <Text style={styles.statLabel}>{stat.label}</Text>
+                      <View style={[styles.trendBadge, { backgroundColor: stat.isPositive ? COLORS.success + '15' : COLORS.error + '15' }]}>
+                        <Text style={[styles.trendText, { color: stat.isPositive ? COLORS.success : COLORS.error }]}>
                           {stat.trend}
                         </Text>
                       </View>
@@ -228,59 +135,15 @@ export default function AnalyticsScreen() {
                   </View>
                 ))}
               </View>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
+              <View style={styles.gridRow}>
                 {stats.slice(2, 4).map((stat, index) => (
-                  <View key={index} style={{ flex: 1 }}>
-                    <View
-                      style={{
-                        backgroundColor: colors.white,
-                        borderRadius: 12,
-                        padding: 16,
-                        alignItems: 'center',
-                        shadowColor: '#000',
-                        shadowOffset: { width: 0, height: 1 },
-                        shadowOpacity: 0.05,
-                        shadowRadius: 2,
-                        elevation: 1,
-                        minHeight: 130,
-                      }}
-                    >
-                      <Ionicons name={stat.icon as any} size={28} color={stat.color} style={{ marginBottom: 12 }} />
-                      <Text
-                        style={{
-                          fontSize: 32,
-                          fontWeight: '700',
-                          color: colors.text,
-                          marginBottom: 4,
-                        }}
-                      >
-                        {stat.value}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 12,
-                          color: colors.textSecondary,
-                          marginBottom: 8,
-                          textAlign: 'center',
-                        }}
-                      >
-                        {stat.label}
-                      </Text>
-                      <View
-                        style={{
-                          backgroundColor: stat.isPositive ? colors.success + '15' : colors.error + '15',
-                          paddingHorizontal: 8,
-                          paddingVertical: 4,
-                          borderRadius: 12,
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontSize: 11,
-                            fontWeight: '600',
-                            color: stat.isPositive ? colors.success : colors.error,
-                          }}
-                        >
+                  <View key={index} style={styles.gridCell}>
+                    <View style={styles.statCard}>
+                      <Ionicons name={stat.icon as any} size={28} color={stat.color} style={{ marginBottom: SPACING.sm }} />
+                      <Text style={styles.statValue}>{stat.value}</Text>
+                      <Text style={styles.statLabel}>{stat.label}</Text>
+                      <View style={[styles.trendBadge, { backgroundColor: stat.isPositive ? COLORS.success + '15' : COLORS.error + '15' }]}>
+                        <Text style={[styles.trendText, { color: stat.isPositive ? COLORS.success : COLORS.error }]}>
                           {stat.trend}
                         </Text>
                       </View>
@@ -292,100 +155,23 @@ export default function AnalyticsScreen() {
           </View>
 
           {/* Today's Summary - All 4 Cards Fully Visible */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
-            <Text
-              style={{
-                fontSize: 13,
-                fontWeight: '700',
-                color: '#9E9E9E',
-                marginBottom: 12,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              TODAY'S SUMMARY
-            </Text>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>TODAY'S SUMMARY</Text>
+            <View style={styles.summaryContainer}>
               {quickStats.map((stat, index) => (
-                <View
-                  key={index}
-                  style={{
-                    flex: 1,
-                    backgroundColor: colors.white,
-                    borderRadius: 8,
-                    padding: 10,
-                    minHeight: 90,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 1 },
-                    shadowOpacity: 0.05,
-                    shadowRadius: 2,
-                    elevation: 1,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 24,
-                      fontWeight: '700',
-                      color: stat.color,
-                      marginBottom: 6,
-                    }}
-                  >
-                    {stat.value}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      fontWeight: '600',
-                      color: colors.text,
-                      marginBottom: 2,
-                      textAlign: 'center',
-                    }}
-                  >
-                    {stat.label}
-                  </Text>
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      color: colors.textTertiary,
-                      textAlign: 'center',
-                    }}
-                  >
-                    {stat.subtitle}
-                  </Text>
+                <View key={index} style={styles.summaryCard}>
+                  <Text style={[styles.summaryValue, { color: stat.color }]}>{stat.value}</Text>
+                  <Text style={styles.summaryLabel}>{stat.label}</Text>
+                  <Text style={styles.summarySubtitle}>{stat.subtitle}</Text>
                 </View>
               ))}
             </View>
           </View>
 
           {/* Weekly Trips Chart - Full Week Display */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
-            <Text
-              style={{
-                fontSize: 13,
-                fontWeight: '700',
-                color: '#9E9E9E',
-                marginBottom: 12,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              WEEKLY TRIPS TREND
-            </Text>
-            <View
-              style={{
-                backgroundColor: colors.white,
-                borderRadius: 12,
-                padding: 16,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.05,
-                shadowRadius: 2,
-                elevation: 1,
-                overflow: 'hidden',
-              }}
-            >
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>WEEKLY TRIPS TREND</Text>
+            <View style={styles.chartCard}>
               <InteractiveLineChart
                 data={interactiveChartData}
                 width={width - 64}
@@ -396,107 +182,42 @@ export default function AnalyticsScreen() {
           </View>
 
           {/* Performance Metrics - Progress Bars, No Chevrons */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 20 }}>
-            <Text
-              style={{
-                fontSize: 13,
-                fontWeight: '700',
-                color: '#9E9E9E',
-                marginBottom: 12,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              PERFORMANCE METRICS
-            </Text>
-            <View
-              style={{
-                backgroundColor: colors.white,
-                borderRadius: 12,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.05,
-                shadowRadius: 2,
-                elevation: 1,
-              }}
-            >
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>PERFORMANCE METRICS</Text>
+            <View style={styles.metricsCard}>
               {performance.map((metric, index) => (
                 <View
                   key={index}
-                  style={{
-                    paddingVertical: 16,
-                    paddingHorizontal: 16,
-                    borderBottomWidth: index < performance.length - 1 ? 1 : 0,
-                    borderBottomColor: colors.border,
-                    minHeight: 56,
-                  }}
+                  style={[
+                    styles.metricRow,
+                    index < performance.length - 1 && styles.metricRowBorder,
+                  ]}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                    <View
-                      style={{
-                        backgroundColor: metric.color + '15',
-                        width: 40,
-                        height: 40,
-                        borderRadius: 20,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        marginRight: 12,
-                      }}
-                    >
+                  <View style={styles.metricHeader}>
+                    <View style={[styles.metricIconContainer, { backgroundColor: metric.color + '15' }]}>
                       <Ionicons name={metric.icon as any} size={20} color={metric.color} />
                     </View>
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={{
-                          fontSize: 13,
-                          color: colors.textSecondary,
-                          marginBottom: 2,
-                        }}
-                      >
-                        {metric.label}
-                      </Text>
-                      <Text
-                        style={{
-                          fontSize: 20,
-                          fontWeight: '700',
-                          color: colors.text,
-                        }}
-                      >
-                        {metric.value}
-                      </Text>
+                    <View style={styles.metricInfo}>
+                      <Text style={styles.metricLabelText}>{metric.label}</Text>
+                      <Text style={styles.metricValueText}>{metric.value}</Text>
                     </View>
                   </View>
                   
                   {/* Progress Bar or Star Rating */}
                   {metric.rating ? (
-                    <View style={{ flexDirection: 'row', gap: 4, paddingLeft: 52 }}>
+                    <View style={styles.starRating}>
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Ionicons
                           key={star}
                           name={star <= Math.floor(metric.rating!) ? 'star' : star <= metric.rating! ? 'star-half' : 'star-outline'}
                           size={16}
-                          color={colors.warning}
+                          color={COLORS.warning}
                         />
                       ))}
                     </View>
                   ) : (
-                    <View
-                      style={{
-                        height: 6,
-                        backgroundColor: colors.border,
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                        marginLeft: 52,
-                      }}
-                    >
-                      <View
-                        style={{
-                          width: `${metric.percent}%`,
-                          height: '100%',
-                          backgroundColor: metric.color,
-                          borderRadius: 3,
-                        }}
-                      />
+                    <View style={styles.progressBarContainer}>
+                      <View style={[styles.progressBar, { width: `${metric.percent}%`, backgroundColor: metric.color }]} />
                     </View>
                   )}
                 </View>
@@ -505,80 +226,25 @@ export default function AnalyticsScreen() {
           </View>
 
           {/* Quick Actions - Polished Buttons */}
-          <View style={{ paddingHorizontal: 16, paddingTop: 20, paddingBottom: 32 }}>
-            <Text
-              style={{
-                fontSize: 13,
-                fontWeight: '700',
-                color: '#9E9E9E',
-                marginBottom: 12,
-                textTransform: 'uppercase',
-                letterSpacing: 0.5,
-              }}
-            >
-              QUICK ACTIONS
-            </Text>
-            <View style={{ gap: 8 }}>
+          <View style={[styles.section, { paddingBottom: SPACING['2xl'] }]}>
+            <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
+            <View style={styles.actionsContainer}>
               <TouchableOpacity
-                style={{
-                  backgroundColor: colors.primary,
-                  borderRadius: 8,
-                  padding: 16,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 3,
-                  elevation: 2,
-                }}
+                style={styles.primaryActionButton}
                 onPress={() => {}}
                 activeOpacity={0.8}
               >
-                <Ionicons name="document-text" size={20} color={colors.white} />
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: '600',
-                    color: colors.white,
-                    marginLeft: 8,
-                  }}
-                >
-                  Generate Report
-                </Text>
+                <Ionicons name="document-text" size={20} color={COLORS.white} />
+                <Text style={styles.primaryActionText}>Generate Report</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={{
-                  backgroundColor: colors.white,
-                  borderRadius: 8,
-                  padding: 16,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderWidth: 1.5,
-                  borderColor: colors.primary,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 2,
-                  elevation: 1,
-                }}
+                style={styles.secondaryActionButton}
                 onPress={() => {}}
                 activeOpacity={0.7}
               >
-                <Ionicons name="download" size={20} color={colors.primary} />
-                <Text
-                  style={{
-                    fontSize: 15,
-                    fontWeight: '600',
-                    color: colors.primary,
-                    marginLeft: 8,
-                  }}
-                >
-                  Export Data
-                </Text>
+                <Ionicons name="download" size={20} color={COLORS.navy} />
+                <Text style={styles.secondaryActionText}>Export Data</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -595,5 +261,208 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+    backgroundColor: COLORS.white,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  backButton: {
+    marginRight: SPACING.md,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: DS.typography.fontSize['2xl'],
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.navy,
+  },
+  section: {
+    paddingHorizontal: SPACING.md,
+    paddingTop: SPACING.lg,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.textTertiary,
+    marginBottom: SPACING.sm,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  // Overview Grid Styles
+  gridContainer: {
+    gap: SPACING.xs,
+  },
+  gridRow: {
+    flexDirection: 'row',
+    gap: SPACING.xs,
+  },
+  gridCell: {
+    flex: 1,
+  },
+  statCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: COMPONENTS.card.borderRadius,
+    padding: SPACING.md,
+    alignItems: 'center',
+    ...COMPONENTS.card.shadow,
+    minHeight: 130,
+  },
+  statValue: {
+    fontSize: 32,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.text,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginBottom: SPACING.xs,
+    textAlign: 'center',
+  },
+  trendBadge: {
+    paddingHorizontal: SPACING.xs,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  trendText: {
+    fontSize: 11,
+    fontWeight: DS.typography.fontWeight.semibold,
+  },
+  // Summary Styles
+  summaryContainer: {
+    flexDirection: 'row',
+    gap: SPACING.xs,
+  },
+  summaryCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: SPACING.sm,
+    minHeight: 90,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...COMPONENTS.card.shadow,
+  },
+  summaryValue: {
+    fontSize: 24,
+    fontWeight: DS.typography.fontWeight.bold,
+    marginBottom: 6,
+  },
+  summaryLabel: {
+    fontSize: 12,
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.text,
+    marginBottom: 2,
+    textAlign: 'center',
+  },
+  summarySubtitle: {
+    fontSize: 10,
+    color: COLORS.textTertiary,
+    textAlign: 'center',
+  },
+  // Chart Styles
+  chartCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: COMPONENTS.card.borderRadius,
+    padding: SPACING.md,
+    ...COMPONENTS.card.shadow,
+    overflow: 'hidden',
+  },
+  // Metrics Styles
+  metricsCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: COMPONENTS.card.borderRadius,
+    ...COMPONENTS.card.shadow,
+  },
+  metricRow: {
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    minHeight: 56,
+  },
+  metricRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  metricHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.xs,
+  },
+  metricIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: SPACING.sm,
+  },
+  metricInfo: {
+    flex: 1,
+  },
+  metricLabelText: {
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    marginBottom: 2,
+  },
+  metricValueText: {
+    fontSize: 20,
+    fontWeight: DS.typography.fontWeight.bold,
+    color: COLORS.text,
+  },
+  starRating: {
+    flexDirection: 'row',
+    gap: 4,
+    paddingLeft: 52,
+  },
+  progressBarContainer: {
+    height: 6,
+    backgroundColor: COLORS.border,
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginLeft: 52,
+  },
+  progressBar: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  // Actions Styles
+  actionsContainer: {
+    gap: SPACING.xs,
+  },
+  primaryActionButton: {
+    backgroundColor: COLORS.navy,
+    borderRadius: 8,
+    padding: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  primaryActionText: {
+    fontSize: 15,
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.white,
+    marginLeft: SPACING.xs,
+  },
+  secondaryActionButton: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: COLORS.navy,
+    ...COMPONENTS.card.shadow,
+  },
+  secondaryActionText: {
+    fontSize: 15,
+    fontWeight: DS.typography.fontWeight.semibold,
+    color: COLORS.navy,
+    marginLeft: SPACING.xs,
   },
 });
