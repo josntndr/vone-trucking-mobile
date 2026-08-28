@@ -10,10 +10,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/hooks';
 import { getTrucks } from '../../src/services/api/truck.service';
 import { getEmployees } from '../../src/services/api/employee.service';
+import { getExpensesSummary } from '../../src/services/api/expense.service';
 import { isSupabaseConfigured } from '../../src/services/api/supabase';
 import { TruckStatus } from '../../src/types/truck.types';
 import { EmploymentStatus, UserRole } from '../../src/types';
 import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../src/theme/designSystem';
+import { formatPhilippinePeso } from '../../src/utils/philippines';
 
 const DS = DESIGN_SYSTEM;
 
@@ -25,6 +27,13 @@ interface DashboardStats {
   totalEmployees: number;
   activeDrivers: number;
   activePorters: number;
+}
+
+interface FinancialSummary {
+  tripIncome: number;
+  expenses: number;
+  profit: number;
+  profitPercentage: number;
 }
 
 // Demo data
@@ -77,6 +86,12 @@ const DEMO_STATS: DashboardStats = {
 export default function OperatorHome() {
   const { user } = useAuth();
   const [stats, setStats] = useState<DashboardStats>(DEMO_STATS);
+  const [financial, setFinancial] = useState<FinancialSummary>({
+    tripIncome: 125500,
+    expenses: 45200,
+    profit: 80300,
+    profitPercentage: 64,
+  });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -89,8 +104,11 @@ export default function OperatorHome() {
         return;
       }
 
+      // Load trucks data
       const trucksResponse = await getTrucks({}, 1, 100);
       const trucks = trucksResponse.data?.data || [];
+      
+      // Load employees data
       const employeesResponse = await getEmployees({}, 1, 100);
       const employees = employeesResponse.data?.data || [];
 
@@ -107,12 +125,56 @@ export default function OperatorHome() {
           e => e.role === UserRole.PORTER && e.employment_status === EmploymentStatus.ACTIVE
         ).length,
       });
+
+      // Load financial data (this week)
+      await loadFinancialData();
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
       setStats(DEMO_STATS);
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+  };
+
+  const loadFinancialData = async () => {
+    try {
+      // Get date range for this week (Monday to Sunday)
+      const now = new Date();
+      const dayOfWeek = now.getDay();
+      const monday = new Date(now);
+      monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+      monday.setHours(0, 0, 0, 0);
+      
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      sunday.setHours(23, 59, 59, 999);
+
+      const dateFrom = monday.toISOString().split('T')[0];
+      const dateTo = sunday.toISOString().split('T')[0];
+
+      // Get expense summary for the week (approved expenses only)
+      const expensesResponse = await getExpensesSummary(dateFrom, dateTo);
+      
+      // Demo trip income (would come from trips service in production)
+      // TODO: Implement getTripIncomeSummary() in trip service
+      const tripIncome = 125500; // Placeholder
+      
+      if (expensesResponse.data) {
+        const approvedExpenses = expensesResponse.data.approved_total;
+        const profit = tripIncome - approvedExpenses;
+        const profitPercentage = tripIncome > 0 ? Math.round((profit / tripIncome) * 100) : 0;
+
+        setFinancial({
+          tripIncome,
+          expenses: approvedExpenses,
+          profit,
+          profitPercentage,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to load financial data:', error);
+      // Keep demo data on error
     }
   };
 
@@ -399,12 +461,16 @@ export default function OperatorHome() {
             {/* Row 3 - Record Expense */}
             <View style={styles.gridRow}>
               <TouchableOpacity
-                style={styles.gridItem}
-                onPress={() => {}}
+                style={[styles.gridItem, { flex: 2 }]}
+                onPress={() => router.push('/record-expense')}
                 activeOpacity={0.7}
+                accessible={true}
+                accessibilityLabel="Record a new expense"
+                accessibilityRole="button"
+                accessibilityHint="Opens form to record trip or administrative expenses"
               >
                 <View style={[styles.card, styles.actionCard]}>
-                  <Ionicons name="cash" size={20} color={COLORS.navy} style={{ marginRight: 6 }} />
+                  <Ionicons name="receipt-outline" size={20} color={COLORS.navy} style={{ marginRight: 6 }} />
                   <Text style={styles.actionText}>Record Expense</Text>
                 </View>
               </TouchableOpacity>
@@ -481,24 +547,41 @@ export default function OperatorHome() {
             <View style={styles.financialRow}>
               <View style={styles.financialItem}>
                 <Text style={styles.financialLabel}>Trip Income</Text>
-                <Text style={[styles.financialValue, { color: COLORS.success }]}>₱125,500</Text>
+                <Text style={[styles.financialValue, { color: COLORS.success }]}>
+                  {formatPhilippinePeso(financial.tripIncome)}
+                </Text>
               </View>
               <View style={[styles.financialDivider, { backgroundColor: COLORS.divider }]} />
               <View style={styles.financialItem}>
                 <Text style={styles.financialLabel}>Expenses</Text>
-                <Text style={[styles.financialValue, { color: COLORS.error }]}>₱45,200</Text>
+                <Text style={[styles.financialValue, { color: COLORS.error }]}>
+                  {formatPhilippinePeso(financial.expenses)}
+                </Text>
               </View>
             </View>
             
             <View style={[styles.financialProfit, { borderTopColor: COLORS.divider }]}>
               <Text style={styles.financialLabel}>Estimated Profit</Text>
-              <Text style={[styles.financialProfitValue, { color: COLORS.navy }]}>₱80,300</Text>
+              <Text style={[styles.financialProfitValue, { color: financial.profit >= 0 ? COLORS.navy : COLORS.error }]}>
+                {formatPhilippinePeso(financial.profit)}
+              </Text>
             </View>
 
             {/* Profit Progress Bar */}
             <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: '64%', backgroundColor: COLORS.success }]} />
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: `${Math.min(Math.max(financial.profitPercentage, 0), 100)}%`,
+                    backgroundColor: financial.profitPercentage >= 50 ? COLORS.success : COLORS.warning,
+                  },
+                ]}
+              />
             </View>
+            <Text style={[styles.profitPercentageText, { color: COLORS.textMuted, textAlign: 'center', marginTop: SPACING.xs }]}>
+              {financial.profitPercentage}% profit margin
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -826,5 +909,8 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     borderRadius: 3,
+  },
+  profitPercentageText: {
+    fontSize: DS.typography.fontSize.xs,
   },
 });

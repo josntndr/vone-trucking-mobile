@@ -1,9 +1,9 @@
 /**
  * Record Expense Screen
- * Full form for recording trip expenses
+ * Comprehensive expense recording with trip/truck association, receipt upload, and validation
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -14,42 +14,291 @@ import {
   Alert,
   Platform,
   KeyboardAvoidingView,
+  ActivityIndicator,
+  Image,
+  Modal,
 } from 'react-native';
 import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '../src/theme/ThemeProvider';
-import { Screen } from '../src/components';
-import { createExpense } from '../src/services/api/expense.service';
+import { Ionicons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { DESIGN_SYSTEM, COLORS, SPACING } from '../src/theme/designSystem';
+import { useAuth } from '../src/hooks';
+import {
+  createExpense,
+  uploadReceipt,
+  validateExpenseAmount,
+  validateExpenseDate,
+  getCurrentDateManila,
+} from '../src/services/api/expense.service';
+import { getTrips } from '../src/services/api/trip.service';
+import { getTrucks } from '../src/services/api/truck.service';
 import {
   ExpenseCategory,
   PaymentMethod,
   EXPENSE_CATEGORY_LABELS,
   PAYMENT_METHOD_LABELS,
+  TRIP_RELATED_CATEGORIES,
+  TRUCK_RELATED_CATEGORIES,
+  REQUIRES_DESCRIPTION,
   CreateExpenseInput,
 } from '../src/types/expense.types';
-import { formatPhilippinePeso } from '../src/utils/philippines';
+import { formatPhilippinePeso, parsePeso } from '../src/utils/philippines';
+import { Trip, TripStatus } from '../src/types/trip.types';
+import { Truck } from '../src/types/truck.types';
+
+const DS = DESIGN_SYSTEM;
+
+interface ReceiptFile {
+  uri: string;
+  name: string;
+  type: string;
+  size: number;
+}
 
 export default function RecordExpenseScreen() {
-  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
-
+  const { user } = useAuth();
+  
   // Form state
   const [category, setCategory] = useState<ExpenseCategory | null>(null);
   const [amount, setAmount] = useState('');
+  const [expenseDate, setExpenseDate] = useState(getCurrentDateManila());
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [description, setDescription] = useState('');
   const [notes, setNotes] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [time, setTime] = useState(new Date().toTimeString().split(' ')[0].substring(0, 5));
-
+  const [transactionRef, setTransactionRef] = useState('');
+  
+  // Trip and Truck selection
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [selectedTruck, setSelectedTruck] = useState<Truck | null>(null);
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [tripSearch, setTripSearch] = useState('');
+  const [truckSearch, setTruckSearch] = useState('');
+  
+  // Receipt
+  const [receipt, setReceipt] = useState<ReceiptFile | null>(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  
   // UI state
-  const [showReview, setShowReview] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTripModal, setShowTripModal] = useState(false);
+  const [showTruckModal, setShowTruckModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingTrips, setLoadingTrips] = useState(false);
+  const [loadingTrucks, setLoadingTrucks] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  
   // Focus states
   const [amountFocused, setAmountFocused] = useState(false);
   const [descriptionFocused, setDescriptionFocused] = useState(false);
   const [notesFocused, setNotesFocused] = useState(false);
+  const [refFocused, setRefFocused] = useState(false);
+
+  // Track if form has any data
+  useEffect(() => {
+    const formHasData = 
+      category !== null ||
+      amount !== '' ||
+      description !== '' ||
+      notes !== '' ||
+      transactionRef !== '' ||
+      selectedTrip !== null ||
+      selectedTruck !== null ||
+      receipt !== null;
+    
+    setHasUnsavedChanges(formHasData);
+  }, [category, amount, description, notes, transactionRef, selectedTrip, selectedTruck, receipt]);
+
+  // Load trips and trucks
+  useEffect(() => {
+    loadTrips();
+    loadTrucks();
+  }, []);
+
+  // Auto-select truck when trip is selected
+  useEffect(() => {
+    if (selectedTrip?.assigned_truck_id) {
+      const truck = trucks.find(t => t.id === selectedTrip.assigned_truck_id);
+      if (truck) {
+        setSelectedTruck(truck);
+      }
+    }
+  }, [selectedTrip, trucks]);
+
+  const loadTrips = async () => {
+    setLoadingTrips(true);
+    try {
+      const response = await getTrips(
+        { status: TripStatus.IN_TRANSIT }, // Only show active trips
+        1,
+        50
+      );
+      if (response.data?.data) {
+        setTrips(response.data.data);
+      }
+    } catch (error) {
+      console.error('Failed to load trips:', error);
+    } finally {
+      setLoadingTrips(false);
+    }
+  };
+
+  const loadTrucks = async () => {
+    setLoadingTrucks(true);
+    try {
+      const response = await getTrucks({}, 1, 50);
+      if (response.data?.data) {
+        setTrucks(response.data.data.filter(t => t.is_active));
+      }
+    } catch (error) {
+      console.error('Failed to load trucks:', error);
+    } finally {
+      setLoadingTrucks(false);
+    }
+  };
+
+  const handleCategorySelect = (cat: ExpenseCategory) => {
+    setCategory(cat);
+    if (errors.category) {
+      setErrors({ ...errors, category: '' });
+    }
+    
+    // Clear trip/truck if switching to incompatible category
+    if (TRUCK_RELATED_CATEGORIES.includes(cat) && selectedTrip) {
+      // Keep truck but might clear trip
+    } else if (TRIP_RELATED_CATEGORIES.includes(cat) && selectedTruck && !selectedTrip) {
+      // Truck is from trip, keep it
+    }
+  };
+
+  const handleAmountChange = (text: string) => {
+    // Allow only numbers and one decimal point
+    const cleaned = text.replace(/[^0-9.]/g, '');
+    
+    // Prevent multiple decimal points
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      return;
+    }
+    
+    // Limit decimal places to 2
+    if (parts[1] && parts[1].length > 2) {
+      return;
+    }
+    
+    setAmount(cleaned);
+    if (errors.amount) {
+      setErrors({ ...errors, amount: '' });
+    }
+  };
+
+  const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(Platform.OS === 'ios');
+    
+    if (selectedDate) {
+      const dateStr = selectedDate.toISOString().split('T')[0];
+      setExpenseDate(dateStr);
+      
+      if (errors.expenseDate) {
+        setErrors({ ...errors, expenseDate: '' });
+      }
+    }
+  };
+
+  const handlePickImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (!permission.granted) {
+        Alert.alert(
+          'Permission Required',
+          'Please allow access to your photo library to upload receipts.'
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.8,
+        base64: false,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        const fileSize = asset.fileSize || 0;
+        
+        // Check file size (max 10MB)
+        if (fileSize > 10 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Please select an image smaller than 10MB.');
+          return;
+        }
+        
+        setReceipt({
+          uri: asset.uri,
+          name: asset.fileName || 'receipt.jpg',
+          type: asset.type || 'image/jpeg',
+          size: fileSize,
+        });
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+    }
+  };
+
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['image/*', 'application/pdf'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.assets && result.assets[0]) {
+        const file = result.assets[0];
+        
+        // Check file size (max 10MB)
+        if (file.size && file.size > 10 * 1024 * 1024) {
+          Alert.alert('File Too Large', 'Please select a file smaller than 10MB.');
+          return;
+        }
+        
+        // Validate file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+        if (file.mimeType && !validTypes.includes(file.mimeType)) {
+          Alert.alert('Invalid File Type', 'Please select a JPG, PNG, or PDF file.');
+          return;
+        }
+        
+        setReceipt({
+          uri: file.uri,
+          name: file.name,
+          type: file.mimeType || 'application/pdf',
+          size: file.size || 0,
+        });
+      }
+    } catch (error) {
+      // Error is thrown when user cancels, we can ignore it
+      console.log('Document picker cancelled or error:', error);
+    }
+  };
+
+  const handleRemoveReceipt = () => {
+    Alert.alert(
+      'Remove Receipt',
+      'Are you sure you want to remove this receipt?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => setReceipt(null),
+        },
+      ]
+    );
+  };
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -58,374 +307,836 @@ export default function RecordExpenseScreen() {
       newErrors.category = 'Please select an expense category';
     }
 
-    if (!amount || parseFloat(amount) <= 0) {
-      newErrors.amount = 'Please enter a valid amount';
+    const amountValidation = validateExpenseAmount(amount);
+    if (!amountValidation.valid) {
+      newErrors.amount = amountValidation.error || 'Invalid amount';
+    }
+
+    const dateValidation = validateExpenseDate(expenseDate);
+    if (!dateValidation.valid) {
+      newErrors.expenseDate = dateValidation.error || 'Invalid date';
     }
 
     if (!paymentMethod) {
       newErrors.paymentMethod = 'Please select a payment method';
     }
 
+    // Category-specific validation
+    if (category && REQUIRES_DESCRIPTION.includes(category) && !description.trim()) {
+      newErrors.description = 'Description is required for Other category';
+    }
+
+    if (category && TRIP_RELATED_CATEGORIES.includes(category) && !selectedTrip) {
+      newErrors.trip = 'Please select a trip for this expense type';
+    }
+
+    if (category && TRUCK_RELATED_CATEGORIES.includes(category) && !selectedTruck && !selectedTrip) {
+      newErrors.truck = 'Please select a truck or trip for this expense type';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleReview = () => {
-    if (validateForm()) {
-      setShowReview(true);
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      Alert.alert('Validation Error', 'Please fix the errors before submitting.');
+      return;
+    }
+
+    if (hasUnsavedChanges) {
+      Alert.alert(
+        'Confirm Submission',
+        'Are you sure you want to record this expense?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Confirm',
+            onPress: submitExpense,
+          },
+        ]
+      );
     }
   };
 
-  const handleSubmit = async () => {
+  const submitExpense = async () => {
     setLoading(true);
 
     try {
+      // Create expense input
       const expenseInput: CreateExpenseInput = {
         category: category!,
         amount: parseFloat(amount),
-        date,
-        time,
+        expense_date: expenseDate,
         payment_method: paymentMethod!,
+        trip_id: selectedTrip?.id,
+        truck_id: selectedTruck?.id,
         description: description.trim() || undefined,
         notes: notes.trim() || undefined,
+        transaction_reference: transactionRef.trim() || undefined,
       };
 
-      const response = await createExpense(expenseInput);
+      // Upload receipt first if provided
+      if (receipt) {
+        setUploadingReceipt(true);
+        const tempId = `temp_${Date.now()}`;
+        const uploadResult = await uploadReceipt(receipt.uri, tempId);
+        setUploadingReceipt(false);
 
-      if (response.error) {
-        Alert.alert('Error', response.error);
-        return;
+        if (uploadResult.error) {
+          Alert.alert('Upload Failed', 'Failed to upload receipt. Continue without receipt?', [
+            { text: 'Cancel', style: 'cancel', onPress: () => setLoading(false) },
+            {
+              text: 'Continue',
+              onPress: async () => await createExpenseRecord(expenseInput),
+            },
+          ]);
+          return;
+        }
+
+        if (uploadResult.data) {
+          expenseInput.receipt_url = uploadResult.data.url;
+          expenseInput.receipt_filename = uploadResult.data.filename;
+        }
       }
 
-      // Success
+      await createExpenseRecord(expenseInput);
+    } catch (error) {
+      setLoading(false);
+      setUploadingReceipt(false);
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.');
+    }
+  };
+
+  const createExpenseRecord = async (input: CreateExpenseInput) => {
+    const response = await createExpense(input);
+
+    setLoading(false);
+
+    if (response.error) {
       Alert.alert(
-        'Success',
-        'Expense recorded successfully',
+        'Failed to Save',
+        "We couldn't save this expense. Check your connection and try again.",
         [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Retry', onPress: () => handleSubmit() },
+        ]
+      );
+      return;
+    }
+
+    // Success
+    setHasUnsavedChanges(false);
+    
+    Alert.alert(
+      'Expense Recorded Successfully',
+      `Your expense of ${formatPhilippinePeso(parseFloat(amount))} has been recorded and ${response.data?.approval_status === 'approved' ? 'approved' : 'is pending approval'}.`,
+      [
+        {
+          text: 'Record Another',
+          onPress: resetForm,
+        },
+        {
+          text: 'Done',
+          style: 'default',
+          onPress: () => router.back(),
+        },
+      ]
+    );
+  };
+
+  const resetForm = () => {
+    setCategory(null);
+    setAmount('');
+    setExpenseDate(getCurrentDateManila());
+    setPaymentMethod(null);
+    setDescription('');
+    setNotes('');
+    setTransactionRef('');
+    setSelectedTrip(null);
+    setSelectedTruck(null);
+    setReceipt(null);
+    setErrors({});
+    setHasUnsavedChanges(false);
+  };
+
+  const handleCancel = () => {
+    if (hasUnsavedChanges) {
+      Alert.alert(
+        'Unsaved Changes',
+        'Are you sure you want to leave? Your changes will be lost.',
+        [
+          { text: 'Stay', style: 'cancel' },
           {
-            text: 'OK',
+            text: 'Leave',
+            style: 'destructive',
             onPress: () => router.back(),
           },
         ]
       );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to record expense. Please try again.');
-    } finally {
-      setLoading(false);
+    } else {
+      router.back();
     }
   };
 
-  if (showReview) {
-    return (
-      <Screen>
-        <View style={[styles.container, { backgroundColor: colors.background }]}>
-          {/* Header */}
-          <View style={[styles.header, { paddingHorizontal: spacing[4], paddingVertical: spacing[4], backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
-            <TouchableOpacity onPress={() => setShowReview(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <MaterialCommunityIcons name="arrow-left" size={24} color={colors.text} />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.text, fontSize: fontSizes.lg, fontWeight: fontWeights.semibold }]}>
-              Review Expense
-            </Text>
-            <View style={{ width: 24 }} />
-          </View>
+  const filteredTrips = trips.filter(trip =>
+    trip.trip_number?.toLowerCase().includes(tripSearch.toLowerCase()) ||
+    trip.delivery_destination?.toLowerCase().includes(tripSearch.toLowerCase())
+  );
 
-          <ScrollView style={styles.reviewContent} contentContainerStyle={{ padding: spacing[4] }}>
-            <View style={[styles.reviewCard, { backgroundColor: colors.surface, borderRadius: borderRadius.card, padding: spacing[4] }]}>
-              <View style={styles.reviewRow}>
-                <Text style={[styles.reviewLabel, { color: colors.textSecondary, fontSize: fontSizes.sm }]}>Category</Text>
-                <Text style={[styles.reviewValue, { color: colors.text, fontSize: fontSizes.base, fontWeight: fontWeights.semibold }]}>
-                  {EXPENSE_CATEGORY_LABELS[category!]}
-                </Text>
-              </View>
-
-              <View style={[styles.reviewDivider, { backgroundColor: colors.border, marginVertical: spacing[3] }]} />
-
-              <View style={styles.reviewRow}>
-                <Text style={[styles.reviewLabel, { color: colors.textSecondary, fontSize: fontSizes.sm }]}>Amount</Text>
-                <Text style={[styles.reviewValue, { color: colors.primary, fontSize: fontSizes.xl, fontWeight: fontWeights.bold }]}>
-                  {formatPhilippinePeso(parseFloat(amount))}
-                </Text>
-              </View>
-
-              <View style={[styles.reviewDivider, { backgroundColor: colors.border, marginVertical: spacing[3] }]} />
-
-              <View style={styles.reviewRow}>
-                <Text style={[styles.reviewLabel, { color: colors.textSecondary, fontSize: fontSizes.sm }]}>Payment Method</Text>
-                <Text style={[styles.reviewValue, { color: colors.text, fontSize: fontSizes.base, fontWeight: fontWeights.semibold }]}>
-                  {PAYMENT_METHOD_LABELS[paymentMethod!]}
-                </Text>
-              </View>
-
-              <View style={[styles.reviewDivider, { backgroundColor: colors.border, marginVertical: spacing[3] }]} />
-
-              <View style={styles.reviewRow}>
-                <Text style={[styles.reviewLabel, { color: colors.textSecondary, fontSize: fontSizes.sm }]}>Date & Time</Text>
-                <Text style={[styles.reviewValue, { color: colors.text, fontSize: fontSizes.base }]}>
-                  {new Date(date).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })} at {time}
-                </Text>
-              </View>
-
-              {description && (
-                <>
-                  <View style={[styles.reviewDivider, { backgroundColor: colors.border, marginVertical: spacing[3] }]} />
-                  <View style={styles.reviewColumn}>
-                    <Text style={[styles.reviewLabel, { color: colors.textSecondary, fontSize: fontSizes.sm, marginBottom: spacing[2] }]}>Description</Text>
-                    <Text style={[styles.reviewValue, { color: colors.text, fontSize: fontSizes.base }]}>{description}</Text>
-                  </View>
-                </>
-              )}
-
-              {notes && (
-                <>
-                  <View style={[styles.reviewDivider, { backgroundColor: colors.border, marginVertical: spacing[3] }]} />
-                  <View style={styles.reviewColumn}>
-                    <Text style={[styles.reviewLabel, { color: colors.textSecondary, fontSize: fontSizes.sm, marginBottom: spacing[2] }]}>Notes</Text>
-                    <Text style={[styles.reviewValue, { color: colors.text, fontSize: fontSizes.base }]}>{notes}</Text>
-                  </View>
-                </>
-              )}
-            </View>
-
-            <TouchableOpacity
-              style={[styles.submitButton, { backgroundColor: loading ? colors.primaryLight : colors.primary, borderRadius: borderRadius.base, marginTop: spacing[6], paddingVertical: spacing[4] }]}
-              onPress={handleSubmit}
-              disabled={loading}
-              activeOpacity={0.8}
-            >
-              <Text style={[styles.submitButtonText, { color: colors.white, fontSize: fontSizes.base, fontWeight: fontWeights.semibold }]}>
-                {loading ? 'Saving...' : 'Confirm & Save'}
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-      </Screen>
-    );
-  }
+  const filteredTrucks = trucks.filter(truck =>
+    truck.truck_number?.toLowerCase().includes(truckSearch.toLowerCase()) ||
+    truck.license_plate?.toLowerCase().includes(truckSearch.toLowerCase())
+  );
 
   return (
-    <Screen>
-      <KeyboardAvoidingView
-        style={[styles.container, { backgroundColor: colors.background }]}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    <KeyboardAvoidingView
+      style={[styles.container, { backgroundColor: COLORS.background }]}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}>
+        <TouchableOpacity
+          onPress={handleCancel}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessible={true}
+          accessibilityLabel="Cancel"
+          accessibilityRole="button"
+        >
+          <Ionicons name="close" size={24} color={COLORS.navy} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: COLORS.navy }]}>
+          Record Expense
+        </Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <ScrollView
+        style={styles.form}
+        contentContainerStyle={{ padding: SPACING.base }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={[styles.header, { paddingHorizontal: spacing[4], paddingVertical: spacing[4], backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border }]}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <MaterialCommunityIcons name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.text, fontSize: fontSizes.lg, fontWeight: fontWeights.semibold }]}>
-            Record Expense
+        {/* Expense Category */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: COLORS.navy }]}>
+            Expense Category <Text style={{ color: COLORS.error }}>*</Text>
           </Text>
-          <View style={{ width: 24 }} />
+          <View style={styles.categoryGrid}>
+            {Object.entries(EXPENSE_CATEGORY_LABELS).map(([key, label]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.categoryButton,
+                  {
+                    backgroundColor: category === key ? COLORS.navy : COLORS.white,
+                    borderColor: category === key ? COLORS.navy : COLORS.divider,
+                  },
+                ]}
+                onPress={() => handleCategorySelect(key as ExpenseCategory)}
+                activeOpacity={0.7}
+                accessible={true}
+                accessibilityLabel={label}
+                accessibilityRole="button"
+                accessibilityState={{ selected: category === key }}
+              >
+                <Text
+                  style={[
+                    styles.categoryText,
+                    { color: category === key ? COLORS.white : COLORS.text },
+                  ]}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {errors.category && (
+            <Text style={[styles.errorText, { color: COLORS.error }]}>
+              {errors.category}
+            </Text>
+          )}
         </View>
 
-        <ScrollView
-          style={styles.form}
-          contentContainerStyle={{ padding: spacing[4] }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Category */}
-          <View style={[styles.fieldContainer, { marginBottom: spacing[5] }]}>
-            <Text style={[styles.label, { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginBottom: spacing[2] }]}>
-              Expense Category *
-            </Text>
-            <View style={styles.categoryGrid}>
-              {Object.entries(EXPENSE_CATEGORY_LABELS).map(([key, label]) => (
-                <TouchableOpacity
-                  key={key}
-                  style={[
-                    styles.categoryButton,
-                    {
-                      backgroundColor: category === key ? colors.primary : colors.surface,
-                      borderRadius: borderRadius.base,
-                      borderWidth: 2,
-                      borderColor: category === key ? colors.primary : colors.border,
-                      padding: spacing[3],
-                      marginBottom: spacing[2],
-                    },
-                  ]}
-                  onPress={() => {
-                    setCategory(key as ExpenseCategory);
-                    if (errors.category) {
-                      setErrors({ ...errors, category: '' });
-                    }
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.categoryText, { color: category === key ? colors.white : colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.medium, textAlign: 'center' }]}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            {errors.category && (
-              <Text style={[styles.errorText, { color: colors.error, fontSize: fontSizes.xs, marginTop: spacing[1] }]}>
-                {errors.category}
-              </Text>
-            )}
-          </View>
-
-          {/* Amount */}
-          <View style={[styles.fieldContainer, { marginBottom: spacing[5] }]}>
-            <Text style={[styles.label, { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginBottom: spacing[2] }]}>
-              Amount (PHP) *
-            </Text>
-            <View
-              style={[
-                styles.inputWrapper,
-                {
-                  backgroundColor: colors.surface,
-                  borderRadius: borderRadius.base,
-                  borderWidth: 2,
-                  borderColor: amountFocused ? colors.accent : errors.amount ? colors.error : colors.border,
-                  paddingHorizontal: spacing[4],
-                },
-              ]}
-            >
-              <Text style={[styles.currencySymbol, { color: colors.textSecondary, fontSize: fontSizes.lg }]}>₱</Text>
-              <TextInput
-                style={[styles.input, { color: colors.text, fontSize: fontSizes.base, paddingHorizontal: spacing[2] }]}
-                placeholder="0.00"
-                placeholderTextColor={colors.textSecondary}
-                value={amount}
-                onChangeText={(text) => {
-                  setAmount(text);
-                  if (errors.amount) {
-                    setErrors({ ...errors, amount: '' });
-                  }
-                }}
-                onFocus={() => setAmountFocused(true)}
-                onBlur={() => setAmountFocused(false)}
-                keyboardType="decimal-pad"
-              />
-            </View>
-            {errors.amount && (
-              <Text style={[styles.errorText, { color: colors.error, fontSize: fontSizes.xs, marginTop: spacing[1] }]}>
-                {errors.amount}
-              </Text>
-            )}
-          </View>
-
-          {/* Payment Method */}
-          <View style={[styles.fieldContainer, { marginBottom: spacing[5] }]}>
-            <Text style={[styles.label, { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginBottom: spacing[2] }]}>
-              Payment Method *
-            </Text>
-            <View style={styles.paymentMethodGrid}>
-              {Object.entries(PAYMENT_METHOD_LABELS).map(([key, label]) => (
-                <TouchableOpacity
-                  key={key}
-                  style={[
-                    styles.paymentMethodButton,
-                    {
-                      backgroundColor: paymentMethod === key ? colors.primary : colors.surface,
-                      borderRadius: borderRadius.base,
-                      borderWidth: 2,
-                      borderColor: paymentMethod === key ? colors.primary : colors.border,
-                      padding: spacing[3],
-                      marginBottom: spacing[2],
-                    },
-                  ]}
-                  onPress={() => {
-                    setPaymentMethod(key as PaymentMethod);
-                    if (errors.paymentMethod) {
-                      setErrors({ ...errors, paymentMethod: '' });
-                    }
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.paymentMethodText, { color: paymentMethod === key ? colors.white : colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.medium, textAlign: 'center' }]}>
-                    {label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            {errors.paymentMethod && (
-              <Text style={[styles.errorText, { color: colors.error, fontSize: fontSizes.xs, marginTop: spacing[1] }]}>
-                {errors.paymentMethod}
-              </Text>
-            )}
-          </View>
-
-          {/* Description */}
-          <View style={[styles.fieldContainer, { marginBottom: spacing[5] }]}>
-            <Text style={[styles.label, { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginBottom: spacing[2] }]}>
-              Description (Optional)
-            </Text>
-            <View
-              style={[
-                styles.textAreaWrapper,
-                {
-                  backgroundColor: colors.surface,
-                  borderRadius: borderRadius.base,
-                  borderWidth: 2,
-                  borderColor: descriptionFocused ? colors.accent : colors.border,
-                  padding: spacing[3],
-                },
-              ]}
-            >
-              <TextInput
-                style={[styles.textArea, { color: colors.text, fontSize: fontSizes.base }]}
-                placeholder="What was this expense for?"
-                placeholderTextColor={colors.textSecondary}
-                value={description}
-                onChangeText={setDescription}
-                onFocus={() => setDescriptionFocused(true)}
-                onBlur={() => setDescriptionFocused(false)}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-              />
-            </View>
-          </View>
-
-          {/* Notes */}
-          <View style={[styles.fieldContainer, { marginBottom: spacing[5] }]}>
-            <Text style={[styles.label, { color: colors.text, fontSize: fontSizes.sm, fontWeight: fontWeights.semibold, marginBottom: spacing[2] }]}>
-              Notes (Optional)
-            </Text>
-            <View
-              style={[
-                styles.textAreaWrapper,
-                {
-                  backgroundColor: colors.surface,
-                  borderRadius: borderRadius.base,
-                  borderWidth: 2,
-                  borderColor: notesFocused ? colors.accent : colors.border,
-                  padding: spacing[3],
-                },
-              ]}
-            >
-              <TextInput
-                style={[styles.textArea, { color: colors.text, fontSize: fontSizes.base }]}
-                placeholder="Additional notes or details..."
-                placeholderTextColor={colors.textSecondary}
-                value={notes}
-                onChangeText={setNotes}
-                onFocus={() => setNotesFocused(true)}
-                onBlur={() => setNotesFocused(false)}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-              />
-            </View>
-          </View>
-
-          {/* Review Button */}
-          <TouchableOpacity
-            style={[styles.reviewButton, { backgroundColor: colors.primary, borderRadius: borderRadius.base, paddingVertical: spacing[4], marginTop: spacing[2], marginBottom: spacing[8] }]}
-            onPress={handleReview}
-            activeOpacity={0.8}
+        {/* Amount */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: COLORS.navy }]}>
+            Amount (PHP) <Text style={{ color: COLORS.error }}>*</Text>
+          </Text>
+          <View
+            style={[
+              styles.inputWrapper,
+              {
+                backgroundColor: COLORS.white,
+                borderColor: amountFocused ? COLORS.navy : errors.amount ? COLORS.error : COLORS.divider,
+              },
+            ]}
           >
-            <Text style={[styles.reviewButtonText, { color: colors.white, fontSize: fontSizes.base, fontWeight: fontWeights.semibold }]}>
-              Review Expense
+            <Text style={[styles.currencySymbol, { color: COLORS.textMuted }]}>₱</Text>
+            <TextInput
+              style={[styles.input, { color: COLORS.text }]}
+              placeholder="0.00"
+              placeholderTextColor={COLORS.textMuted}
+              value={amount}
+              onChangeText={handleAmountChange}
+              onFocus={() => setAmountFocused(true)}
+              onBlur={() => setAmountFocused(false)}
+              keyboardType="decimal-pad"
+              accessible={true}
+              accessibilityLabel="Expense amount"
+              accessibilityHint="Enter expense amount in Philippine pesos"
+            />
+          </View>
+          {errors.amount && (
+            <Text style={[styles.errorText, { color: COLORS.error }]}>
+              {errors.amount}
+            </Text>
+          )}
+        </View>
+
+        {/* Expense Date */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: COLORS.navy }]}>
+            Expense Date <Text style={{ color: COLORS.error }}>*</Text>
+          </Text>
+          <TouchableOpacity
+            style={[styles.dateButton, { backgroundColor: COLORS.white, borderColor: errors.expenseDate ? COLORS.error : COLORS.divider }]}
+            onPress={() => setShowDatePicker(true)}
+            activeOpacity={0.7}
+            accessible={true}
+            accessibilityLabel="Select expense date"
+            accessibilityRole="button"
+          >
+            <Ionicons name="calendar-outline" size={20} color={COLORS.navy} />
+            <Text style={[styles.dateText, { color: COLORS.text }]}>
+              {new Date(expenseDate).toLocaleDateString('en-PH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
             </Text>
           </TouchableOpacity>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </Screen>
+          {errors.expenseDate && (
+            <Text style={[styles.errorText, { color: COLORS.error }]}>
+              {errors.expenseDate}
+            </Text>
+          )}
+          
+          {showDatePicker && (
+            <DateTimePicker
+              value={new Date(expenseDate)}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleDateChange}
+              maximumDate={new Date()}
+            />
+          )}
+        </View>
+
+        {/* Payment Method */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: COLORS.navy }]}>
+            Payment Method <Text style={{ color: COLORS.error }}>*</Text>
+          </Text>
+          <View style={styles.paymentGrid}>
+            {Object.entries(PAYMENT_METHOD_LABELS).map(([key, label]) => (
+              <TouchableOpacity
+                key={key}
+                style={[
+                  styles.paymentButton,
+                  {
+                    backgroundColor: paymentMethod === key ? COLORS.teal : COLORS.white,
+                    borderColor: paymentMethod === key ? COLORS.teal : COLORS.divider,
+                  },
+                ]}
+                onPress={() => {
+                  setPaymentMethod(key as PaymentMethod);
+                  if (errors.paymentMethod) {
+                    setErrors({ ...errors, paymentMethod: '' });
+                  }
+                }}
+                activeOpacity={0.7}
+                accessible={true}
+                accessibilityLabel={label}
+                accessibilityRole="button"
+                accessibilityState={{ selected: paymentMethod === key }}
+              >
+                <Text
+                  style={[
+                    styles.paymentText,
+                    { color: paymentMethod === key ? COLORS.white : COLORS.text },
+                  ]}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          {errors.paymentMethod && (
+            <Text style={[styles.errorText, { color: COLORS.error }]}>
+              {errors.paymentMethod}
+            </Text>
+          )}
+        </View>
+
+        {/* Conditional: Trip Selection (for trip-related expenses) */}
+        {category && TRIP_RELATED_CATEGORIES.includes(category) && (
+          <View style={styles.section}>
+            <Text style={[styles.label, { color: COLORS.navy }]}>
+              Related Trip <Text style={{ color: COLORS.error }}>*</Text>
+            </Text>
+            <TouchableOpacity
+              style={[styles.selectorButton, { backgroundColor: COLORS.white, borderColor: errors.trip ? COLORS.error : COLORS.divider }]}
+              onPress={() => setShowTripModal(true)}
+              activeOpacity={0.7}
+              accessible={true}
+              accessibilityLabel="Select related trip"
+              accessibilityRole="button"
+            >
+              {selectedTrip ? (
+                <View style={styles.selectedItem}>
+                  <View>
+                    <Text style={[styles.selectedItemTitle, { color: COLORS.navy }]}>
+                      {selectedTrip.trip_number}
+                    </Text>
+                    <Text style={[styles.selectedItemSubtitle, { color: COLORS.textMuted }]}>
+                      {selectedTrip.delivery_destination}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </View>
+              ) : (
+                <View style={styles.selectorPlaceholder}>
+                  <Ionicons name="car-outline" size={20} color={COLORS.textMuted} />
+                  <Text style={[styles.selectorPlaceholderText, { color: COLORS.textMuted }]}>
+                    Select Trip
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </View>
+              )}
+            </TouchableOpacity>
+            {errors.trip && (
+              <Text style={[styles.errorText, { color: COLORS.error }]}>
+                {errors.trip}
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Conditional: Truck Selection (for truck-related expenses) */}
+        {category && TRUCK_RELATED_CATEGORIES.includes(category) && !selectedTrip && (
+          <View style={styles.section}>
+            <Text style={[styles.label, { color: COLORS.navy }]}>
+              Related Truck <Text style={{ color: COLORS.error }}>*</Text>
+            </Text>
+            <TouchableOpacity
+              style={[styles.selectorButton, { backgroundColor: COLORS.white, borderColor: errors.truck ? COLORS.error : COLORS.divider }]}
+              onPress={() => setShowTruckModal(true)}
+              activeOpacity={0.7}
+              accessible={true}
+              accessibilityLabel="Select related truck"
+              accessibilityRole="button"
+            >
+              {selectedTruck ? (
+                <View style={styles.selectedItem}>
+                  <View>
+                    <Text style={[styles.selectedItemTitle, { color: COLORS.navy }]}>
+                      {selectedTruck.truck_number}
+                    </Text>
+                    <Text style={[styles.selectedItemSubtitle, { color: COLORS.textMuted }]}>
+                      {selectedTruck.license_plate}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </View>
+              ) : (
+                <View style={styles.selectorPlaceholder}>
+                  <Ionicons name="car-sport-outline" size={20} color={COLORS.textMuted} />
+                  <Text style={[styles.selectorPlaceholderText, { color: COLORS.textMuted }]}>
+                    Select Truck
+                  </Text>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </View>
+              )}
+            </TouchableOpacity>
+            {errors.truck && (
+              <Text style={[styles.errorText, { color: COLORS.error }]}>
+                {errors.truck}
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Auto-selected Truck (from Trip) */}
+        {selectedTrip && selectedTruck && (
+          <View style={styles.section}>
+            <Text style={[styles.label, { color: COLORS.navy }]}>
+              Assigned Truck
+            </Text>
+            <View style={[styles.infoBox, { backgroundColor: COLORS.statusScheduled, borderColor: COLORS.divider }]}>
+              <Ionicons name="information-circle" size={20} color={COLORS.teal} />
+              <Text style={[styles.infoText, { color: COLORS.text }]}>
+                {selectedTruck.truck_number} ({selectedTruck.license_plate})
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Transaction Reference (Optional) */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: COLORS.navy }]}>
+            Transaction Reference (Optional)
+          </Text>
+          <View
+            style={[
+              styles.inputWrapper,
+              {
+                backgroundColor: COLORS.white,
+                borderColor: refFocused ? COLORS.navy : COLORS.divider,
+              },
+            ]}
+          >
+            <Ionicons name="document-text-outline" size={20} color={COLORS.textMuted} style={{ marginRight: 8 }} />
+            <TextInput
+              style={[styles.input, { color: COLORS.text }]}
+              placeholder="e.g., Receipt #12345, OR #67890"
+              placeholderTextColor={COLORS.textMuted}
+              value={transactionRef}
+              onChangeText={setTransactionRef}
+              onFocus={() => setRefFocused(true)}
+              onBlur={() => setRefFocused(false)}
+              accessible={true}
+              accessibilityLabel="Transaction reference"
+            />
+          </View>
+        </View>
+
+        {/* Description */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: COLORS.navy }]}>
+            Description {REQUIRES_DESCRIPTION.includes(category!) && <Text style={{ color: COLORS.error }}>*</Text>}
+          </Text>
+          <View
+            style={[
+              styles.textAreaWrapper,
+              {
+                backgroundColor: COLORS.white,
+                borderColor: descriptionFocused ? COLORS.navy : errors.description ? COLORS.error : COLORS.divider,
+              },
+            ]}
+          >
+            <TextInput
+              style={[styles.textArea, { color: COLORS.text }]}
+              placeholder="What was this expense for?"
+              placeholderTextColor={COLORS.textMuted}
+              value={description}
+              onChangeText={(text) => {
+                setDescription(text);
+                if (errors.description) {
+                  setErrors({ ...errors, description: '' });
+                }
+              }}
+              onFocus={() => setDescriptionFocused(true)}
+              onBlur={() => setDescriptionFocused(false)}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+              accessible={true}
+              accessibilityLabel="Expense description"
+            />
+          </View>
+          {errors.description && (
+            <Text style={[styles.errorText, { color: COLORS.error }]}>
+              {errors.description}
+            </Text>
+          )}
+        </View>
+
+        {/* Notes */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: COLORS.navy }]}>
+            Notes (Optional)
+          </Text>
+          <View
+            style={[
+              styles.textAreaWrapper,
+              {
+                backgroundColor: COLORS.white,
+                borderColor: notesFocused ? COLORS.navy : COLORS.divider,
+              },
+            ]}
+          >
+            <TextInput
+              style={[styles.textArea, { color: COLORS.text }]}
+              placeholder="Additional notes or details..."
+              placeholderTextColor={COLORS.textMuted}
+              value={notes}
+              onChangeText={setNotes}
+              onFocus={() => setNotesFocused(true)}
+              onBlur={() => setNotesFocused(false)}
+              multiline
+              numberOfLines={3}
+              textAlignVertical="top"
+              accessible={true}
+              accessibilityLabel="Additional notes"
+            />
+          </View>
+        </View>
+
+        {/* Receipt Upload */}
+        <View style={styles.section}>
+          <Text style={[styles.label, { color: COLORS.navy }]}>
+            Receipt (Optional)
+          </Text>
+          
+          {!receipt ? (
+            <View style={styles.uploadButtons}>
+              <TouchableOpacity
+                style={[styles.uploadButton, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}
+                onPress={handlePickImage}
+                activeOpacity={0.7}
+                accessible={true}
+                accessibilityLabel="Upload photo from gallery"
+                accessibilityRole="button"
+              >
+                <Ionicons name="images-outline" size={20} color={COLORS.teal} />
+                <Text style={[styles.uploadButtonText, { color: COLORS.text }]}>
+                  Photo
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[styles.uploadButton, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}
+                onPress={handlePickDocument}
+                activeOpacity={0.7}
+                accessible={true}
+                accessibilityLabel="Upload document"
+                accessibilityRole="button"
+              >
+                <Ionicons name="document-outline" size={20} color={COLORS.teal} />
+                <Text style={[styles.uploadButtonText, { color: COLORS.text }]}>
+                  Document
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={[styles.receiptPreview, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}>
+              {receipt.type.startsWith('image/') ? (
+                <Image source={{ uri: receipt.uri }} style={styles.receiptImage} resizeMode="cover" />
+              ) : (
+                <View style={styles.receiptPdf}>
+                  <Ionicons name="document-text" size={48} color={COLORS.teal} />
+                  <Text style={[styles.receiptPdfName, { color: COLORS.text }]}>
+                    {receipt.name}
+                  </Text>
+                </View>
+              )}
+              <TouchableOpacity
+                style={[styles.removeReceiptButton, { backgroundColor: COLORS.error }]}
+                onPress={handleRemoveReceipt}
+                activeOpacity={0.7}
+                accessible={true}
+                accessibilityLabel="Remove receipt"
+                accessibilityRole="button"
+              >
+                <Ionicons name="close" size={20} color={COLORS.white} />
+              </TouchableOpacity>
+            </View>
+          )}
+          
+          <Text style={[styles.uploadHint, { color: COLORS.textMuted }]}>
+            JPG, PNG, or PDF • Max 10MB
+          </Text>
+        </View>
+
+        {/* Submit Button */}
+        <TouchableOpacity
+          style={[
+            styles.submitButton,
+            {
+              backgroundColor: loading ? COLORS.textMuted : COLORS.navy,
+              opacity: loading ? 0.6 : 1,
+            },
+          ]}
+          onPress={handleSubmit}
+          disabled={loading}
+          activeOpacity={0.8}
+          accessible={true}
+          accessibilityLabel="Save expense"
+          accessibilityRole="button"
+          accessibilityState={{ disabled: loading }}
+        >
+          {loading || uploadingReceipt ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color={COLORS.white} size="small" />
+              <Text style={[styles.submitButtonText, { color: COLORS.white, marginLeft: 12 }]}>
+                {uploadingReceipt ? 'Uploading Receipt...' : 'Saving...'}
+              </Text>
+            </View>
+          ) : (
+            <Text style={[styles.submitButtonText, { color: COLORS.white }]}>
+              Save Expense
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        {/* Bottom spacing */}
+        <View style={{ height: 40 }} />
+      </ScrollView>
+
+      {/* Trip Selection Modal */}
+      <Modal
+        visible={showTripModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowTripModal(false)}
+      >
+        <View style={[styles.modalContainer, { backgroundColor: COLORS.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}>
+            <TouchableOpacity onPress={() => setShowTripModal(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="close" size={24} color={COLORS.navy} />
+            </TouchableOpacity>
+            <Text style={[styles.modalTitle, { color: COLORS.navy }]}>Select Trip</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          
+          <View style={{ padding: SPACING.base }}>
+            <View style={[styles.searchBar, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}>
+              <Ionicons name="search" size={20} color={COLORS.textMuted} />
+              <TextInput
+                style={[styles.searchInput, { color: COLORS.text }]}
+                placeholder="Search by trip number or destination"
+                placeholderTextColor={COLORS.textMuted}
+                value={tripSearch}
+                onChangeText={setTripSearch}
+              />
+            </View>
+          </View>
+
+          <ScrollView style={styles.modalList}>
+            {loadingTrips ? (
+              <View style={styles.loadingState}>
+                <ActivityIndicator color={COLORS.navy} size="large" />
+                <Text style={[styles.loadingText, { color: COLORS.textMuted }]}>Loading trips...</Text>
+              </View>
+            ) : filteredTrips.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="car-outline" size={48} color={COLORS.textMuted} />
+                <Text style={[styles.emptyText, { color: COLORS.textMuted }]}>
+                  {tripSearch ? 'No matching trips found' : 'No active trips available'}
+                </Text>
+              </View>
+            ) : (
+              filteredTrips.map((trip) => (
+                <TouchableOpacity
+                  key={trip.id}
+                  style={[styles.modalItem, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}
+                  onPress={() => {
+                    setSelectedTrip(trip);
+                    setShowTripModal(false);
+                    if (errors.trip) {
+                      setErrors({ ...errors, trip: '' });
+                    }
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.modalItemContent}>
+                    <Text style={[styles.modalItemTitle, { color: COLORS.navy }]}>
+                      {trip.trip_number}
+                    </Text>
+                    <Text style={[styles.modalItemSubtitle, { color: COLORS.textMuted }]}>
+                      {trip.delivery_destination}
+                    </Text>
+                    {trip.assigned_truck_number && (
+                      <Text style={[styles.modalItemMeta, { color: COLORS.textMuted }]}>
+                        Truck: {trip.assigned_truck_number}
+                      </Text>
+                    )}
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Truck Selection Modal */}
+      <Modal
+        visible={showTruckModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowTruckModal(false)}
+      >
+        <View style={[styles.modalContainer, { backgroundColor: COLORS.background }]}>
+          <View style={[styles.modalHeader, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}>
+            <TouchableOpacity onPress={() => setShowTruckModal(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <Ionicons name="close" size={24} color={COLORS.navy} />
+            </TouchableOpacity>
+            <Text style={[styles.modalTitle, { color: COLORS.navy }]}>Select Truck</Text>
+            <View style={{ width: 24 }} />
+          </View>
+          
+          <View style={{ padding: SPACING.base }}>
+            <View style={[styles.searchBar, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}>
+              <Ionicons name="search" size={20} color={COLORS.textMuted} />
+              <TextInput
+                style={[styles.searchInput, { color: COLORS.text }]}
+                placeholder="Search by truck number or plate"
+                placeholderTextColor={COLORS.textMuted}
+                value={truckSearch}
+                onChangeText={setTruckSearch}
+              />
+            </View>
+          </View>
+
+          <ScrollView style={styles.modalList}>
+            {loadingTrucks ? (
+              <View style={styles.loadingState}>
+                <ActivityIndicator color={COLORS.navy} size="large" />
+                <Text style={[styles.loadingText, { color: COLORS.textMuted }]}>Loading trucks...</Text>
+              </View>
+            ) : filteredTrucks.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Ionicons name="car-sport-outline" size={48} color={COLORS.textMuted} />
+                <Text style={[styles.emptyText, { color: COLORS.textMuted }]}>
+                  {truckSearch ? 'No matching trucks found' : 'No trucks available'}
+                </Text>
+              </View>
+            ) : (
+              filteredTrucks.map((truck) => (
+                <TouchableOpacity
+                  key={truck.id}
+                  style={[styles.modalItem, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}
+                  onPress={() => {
+                    setSelectedTruck(truck);
+                    setShowTruckModal(false);
+                    if (errors.truck) {
+                      setErrors({ ...errors, truck: '' });
+                    }
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.modalItemContent}>
+                    <Text style={[styles.modalItemTitle, { color: COLORS.navy }]}>
+                      {truck.truck_number}
+                    </Text>
+                    <Text style={[styles.modalItemSubtitle, { color: COLORS.textMuted }]}>
+                      {truck.license_plate}
+                    </Text>
+                    <Text style={[styles.modalItemMeta, { color: COLORS.textMuted }]}>
+                      {truck.make} {truck.model}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                </TouchableOpacity>
+              ))
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -437,74 +1148,328 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: SPACING.base,
+    paddingVertical: SPACING.base,
+    borderBottomWidth: 1,
   },
   headerTitle: {
+    fontSize: DS.typography.fontSize.lg,
+    fontWeight: DS.typography.fontWeight.bold,
     flex: 1,
     textAlign: 'center',
   },
   form: {
     flex: 1,
   },
-  fieldContainer: {},
-  label: {},
+  section: {
+    marginBottom: SPACING.lg,
+  },
+  label: {
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.semibold,
+    marginBottom: SPACING.sm,
+  },
+  
+  // Category Grid
   categoryGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: SPACING.sm,
   },
   categoryButton: {
     minWidth: '48%',
     flex: 1,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 2,
+    alignItems: 'center',
+    minHeight: 48,
   },
-  categoryText: {},
+  categoryText: {
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.medium,
+    textAlign: 'center',
+  },
+  
+  // Amount Input
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
     height: 56,
+    paddingHorizontal: SPACING.base,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 2,
   },
   currencySymbol: {
-    marginRight: 4,
+    fontSize: DS.typography.fontSize.lg,
+    fontWeight: DS.typography.fontWeight.semibold,
+    marginRight: 8,
   },
   input: {
     flex: 1,
+    fontSize: DS.typography.fontSize.base,
     height: '100%',
   },
-  paymentMethodGrid: {
+  
+  // Date Button
+  dateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.base,
+    paddingHorizontal: SPACING.base,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 2,
+    minHeight: 56,
+  },
+  dateText: {
+    flex: 1,
+    fontSize: DS.typography.fontSize.base,
+    marginLeft: SPACING.md,
+  },
+  
+  // Payment Grid
+  paymentGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: SPACING.sm,
   },
-  paymentMethodButton: {
+  paymentButton: {
     minWidth: '48%',
     flex: 1,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.sm,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 2,
+    alignItems: 'center',
+    minHeight: 48,
   },
-  paymentMethodText: {},
-  textAreaWrapper: {},
+  paymentText: {
+    fontSize: DS.typography.fontSize.sm,
+    fontWeight: DS.typography.fontWeight.medium,
+    textAlign: 'center',
+  },
+  
+  // Selector Button
+  selectorButton: {
+    paddingVertical: SPACING.base,
+    paddingHorizontal: SPACING.base,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 2,
+    minHeight: 64,
+    justifyContent: 'center',
+  },
+  selectorPlaceholder: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  selectorPlaceholderText: {
+    flex: 1,
+    fontSize: DS.typography.fontSize.base,
+  },
+  selectedItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectedItemTitle: {
+    fontSize: DS.typography.fontSize.base,
+    fontWeight: DS.typography.fontWeight.semibold,
+    marginBottom: 4,
+  },
+  selectedItemSubtitle: {
+    fontSize: DS.typography.fontSize.sm,
+  },
+  
+  // Info Box
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.md,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 1,
+    gap: SPACING.sm,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: DS.typography.fontSize.sm,
+  },
+  
+  // Text Area
+  textAreaWrapper: {
+    padding: SPACING.md,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 2,
+    minHeight: 100,
+  },
   textArea: {
+    fontSize: DS.typography.fontSize.base,
     minHeight: 80,
   },
-  errorText: {},
-  reviewButton: {
+  
+  // Receipt Upload
+  uploadButtons: {
+    flexDirection: 'row',
+    gap: SPACING.sm,
+  },
+  uploadButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING.md,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 2,
+    gap: SPACING.sm,
+    minHeight: 56,
+  },
+  uploadButtonText: {
+    fontSize: DS.typography.fontSize.base,
+    fontWeight: DS.typography.fontWeight.medium,
+  },
+  receiptPreview: {
+    position: 'relative',
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 1,
+    overflow: 'hidden',
+    minHeight: 200,
+  },
+  receiptImage: {
+    width: '100%',
+    height: 200,
+  },
+  receiptPdf: {
+    height: 200,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  receiptPdfName: {
+    fontSize: DS.typography.fontSize.sm,
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+    paddingHorizontal: SPACING.base,
+  },
+  removeReceiptButton: {
+    position: 'absolute',
+    top: SPACING.sm,
+    right: SPACING.sm,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...DS.shadows.base,
+  },
+  uploadHint: {
+    fontSize: DS.typography.fontSize.xs,
+    marginTop: SPACING.sm,
+    textAlign: 'center',
+  },
+  
+  // Submit Button
+  submitButton: {
+    paddingVertical: SPACING.base,
+    borderRadius: DS.borderRadius.base,
+    alignItems: 'center',
+    marginTop: SPACING.lg,
+    minHeight: 56,
+    justifyContent: 'center',
+    ...DS.shadows.base,
+  },
+  submitButtonText: {
+    fontSize: DS.typography.fontSize.base,
+    fontWeight: DS.typography.fontWeight.semibold,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  reviewButtonText: {},
-  reviewContent: {
+  
+  // Error Text
+  errorText: {
+    fontSize: DS.typography.fontSize.xs,
+    marginTop: SPACING.xs,
+  },
+  
+  // Modal
+  modalContainer: {
     flex: 1,
   },
-  reviewCard: {},
-  reviewRow: {
+  modalHeader: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
+    paddingHorizontal: SPACING.base,
+    paddingVertical: SPACING.base,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: DS.typography.fontSize.lg,
+    fontWeight: DS.typography.fontWeight.bold,
+    flex: 1,
+    textAlign: 'center',
+  },
+  searchBar: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: SPACING.base,
+    borderRadius: DS.borderRadius.base,
+    borderWidth: 1,
+    height: 48,
+    gap: SPACING.sm,
   },
-  reviewColumn: {},
-  reviewLabel: {},
-  reviewValue: {},
-  reviewDivider: {
-    height: 1,
+  searchInput: {
+    flex: 1,
+    fontSize: DS.typography.fontSize.base,
   },
-  submitButton: {
+  modalList: {
+    flex: 1,
+  },
+  modalItem: {
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: SPACING.base,
+    paddingHorizontal: SPACING.base,
+    borderBottomWidth: 1,
   },
-  submitButtonText: {},
+  modalItemContent: {
+    flex: 1,
+  },
+  modalItemTitle: {
+    fontSize: DS.typography.fontSize.base,
+    fontWeight: DS.typography.fontWeight.semibold,
+    marginBottom: 4,
+  },
+  modalItemSubtitle: {
+    fontSize: DS.typography.fontSize.sm,
+    marginBottom: 2,
+  },
+  modalItemMeta: {
+    fontSize: DS.typography.fontSize.xs,
+  },
+  
+  // Loading/Empty States
+  loadingState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING['2xl'],
+  },
+  loadingText: {
+    fontSize: DS.typography.fontSize.sm,
+    marginTop: SPACING.md,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: SPACING['2xl'],
+    paddingHorizontal: SPACING.base,
+  },
+  emptyText: {
+    fontSize: DS.typography.fontSize.base,
+    marginTop: SPACING.md,
+    textAlign: 'center',
+  },
 });
