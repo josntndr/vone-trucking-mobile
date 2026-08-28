@@ -159,3 +159,10 @@ export const demoSignOut = async (): Promise<ApiResponse<void>> => {
 export const getInitialOperator = (): DemoUser => {
   return INITIAL_OPERATOR;
 };
+
+/**
+ * Get all demo users
+ */
+export const getDemoUsers = (): DemoUser[] => {
+  return Object.values(DEMO_USERS);
+};

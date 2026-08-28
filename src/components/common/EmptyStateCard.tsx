@@ -7,7 +7,7 @@ import React, { ReactNode } from 'react';
 import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '../../theme/ThemeProvider';
-import Button from '../ui/Button';
+import { Button } from '../ui/Button';
 
 interface EmptyStateCardProps {
   icon?: ReactNode;

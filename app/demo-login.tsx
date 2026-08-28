@@ -100,7 +100,7 @@ export default function DemoLoginScreen() {
         <View style={styles.rolesContainer}>
           <Text style={styles.sectionTitle}>Select Your Role</Text>
           
-          {demoUsers.map((item) => (
+          {demoUsers.map((item: any) => (
             <TouchableOpacity
               key={item.role}
               style={styles.roleCard}

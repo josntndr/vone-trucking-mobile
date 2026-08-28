@@ -99,12 +99,12 @@ export function useGPSHealth(options: UseGPSHealthOptions = {}): UseGPSHealthRes
   }, []);
 
   // Derived status flags
-  const hasWeakSignal = health ? health.signalStrength < 3 : false;
-  const hasPoorAccuracy = health ? health.accuracy > 50 : false;
+  const hasWeakSignal = health ? (health.signal_strength || health.signalStrength || 0) < 3 : false;
+  const hasPoorAccuracy = health ? (health.accuracy_meters || health.accuracy || 0) > 50 : false;
   const isHealthy = health ? 
-    health.isAvailable && 
-    health.signalStrength >= 3 && 
-    health.accuracy <= 50 : 
+    (health.isAvailable ?? true) && 
+    (health.signal_strength || health.signalStrength || 0) >= 3 && 
+    (health.accuracy_meters || health.accuracy || 0) <= 50 : 
     false;
 
   return {

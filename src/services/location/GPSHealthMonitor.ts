@@ -203,10 +203,10 @@ export class GPSHealthMonitor {
         severity: 'error',
         message: 'Mock location detected. GPS data may be falsified.',
         timestamp: new Date(),
-        location: {
+        location: location.latitude && location.longitude ? {
           latitude: location.latitude,
           longitude: location.longitude,
-        },
+        } : undefined,
       });
     }
 
@@ -221,10 +221,10 @@ export class GPSHealthMonitor {
         severity: 'warning',
         message: `Weak GPS signal (${satelliteCount} satellites). Location accuracy may be reduced.`,
         timestamp: new Date(),
-        location: {
+        location: location.latitude && location.longitude ? {
           latitude: location.latitude,
           longitude: location.longitude,
-        },
+        } : undefined,
       });
     } else if (this.wasRecentlyWeak()) {
       // Signal restored
@@ -233,10 +233,10 @@ export class GPSHealthMonitor {
         severity: 'info',
         message: 'GPS signal restored.',
         timestamp: new Date(),
-        location: {
+        location: location.latitude && location.longitude ? {
           latitude: location.latitude,
           longitude: location.longitude,
-        },
+        } : undefined,
       });
     }
 
@@ -247,10 +247,10 @@ export class GPSHealthMonitor {
         severity: 'warning',
         message: `GPS accuracy is poor (±${Math.round(accuracy)}m). Location may be inaccurate.`,
         timestamp: new Date(),
-        location: {
+        location: location.latitude && location.longitude ? {
           latitude: location.latitude,
           longitude: location.longitude,
-        },
+        } : undefined,
       });
     }
   }
@@ -378,9 +378,11 @@ export class GPSHealthMonitor {
     cutoffTime.setHours(cutoffTime.getHours() - this.config.historyRetentionHours);
     const cutoffISO = cutoffTime.toISOString();
 
-    this.state.healthHistory = this.state.healthHistory.filter(
-      h => (typeof h.lastUpdate === 'string' ? h.lastUpdate : h.lastUpdate.toISOString()) > cutoffISO
-    );
+    this.state.healthHistory = this.state.healthHistory.filter(h => {
+      if (!h.lastUpdate) return false;
+      const updateTime = typeof h.lastUpdate === 'string' ? h.lastUpdate : h.lastUpdate.toISOString();
+      return updateTime > cutoffISO;
+    });
   }
 
   /**
@@ -415,9 +417,11 @@ export class GPSHealthMonitor {
     cutoffTime.setHours(cutoffTime.getHours() - hours);
     const cutoffISO = cutoffTime.toISOString();
 
-    return this.state.healthHistory.filter(h => 
-      (typeof h.lastUpdate === 'string' ? h.lastUpdate : h.lastUpdate.toISOString()) > cutoffISO
-    );
+    return this.state.healthHistory.filter(h => {
+      if (!h.lastUpdate) return false;
+      const updateTime = typeof h.lastUpdate === 'string' ? h.lastUpdate : h.lastUpdate.toISOString();
+      return updateTime > cutoffISO;
+    });
   }
 
   /**

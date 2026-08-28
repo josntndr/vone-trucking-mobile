@@ -278,7 +278,7 @@ export default function ProfileScreen() {
                       },
                     ]}
                   >
-                    {user?.role?.toUpperCase() || 'OPERATOR'} / ADMIN
+                    {(user as any)?.role?.toUpperCase() || 'OPERATOR'} / ADMIN
                   </Text>
                   {isOnline && (
                     <StatusChip

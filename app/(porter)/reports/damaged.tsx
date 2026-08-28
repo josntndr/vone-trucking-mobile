@@ -101,7 +101,7 @@ export default function DamagedProductReportScreen() {
         photos: photoUrls,
       };
       
-      const response = await submitProductDiscrepancy(payload);
+      const response = await submitProductDiscrepancy(payload as any);
 
       if (response.error) {
         Alert.alert('Error', response.error);

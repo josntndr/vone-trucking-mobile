@@ -625,7 +625,7 @@ export default function PorterTripDetailScreen() {
               </Text>
               <TextInput
                 style={[styles.quantityInput, { color: colors.text, borderColor: colors.border }]}
-                value={loadingChecklist.quantity_confirmed.toString()}
+                value={(loadingChecklist.quantity_confirmed || 0).toString()}
                 onChangeText={(text) => setLoadingChecklist(prev => ({
                   ...prev,
                   quantity_confirmed: parseInt(text) || 0,
@@ -658,7 +658,7 @@ export default function PorterTripDetailScreen() {
             {/* Photos */}
             <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
               <Text style={[styles.inputLabel, { color: colors.text }]}>
-                Photos ({loadingChecklist.photo_urls.length})
+                Photos ({(loadingChecklist.photo_urls || []).length})
               </Text>
               <TouchableOpacity
                 style={[styles.photoButton, { borderColor: colors.primary }]}
@@ -776,7 +776,7 @@ export default function PorterTripDetailScreen() {
               </Text>
               <TextInput
                 style={[styles.quantityInput, { color: colors.text, borderColor: colors.border }]}
-                value={deliveryChecklist.quantity_delivered.toString()}
+                value={(deliveryChecklist.quantity_delivered || 0).toString()}
                 onChangeText={(text) => setDeliveryChecklist(prev => ({
                   ...prev,
                   quantity_delivered: parseInt(text) || 0,
@@ -828,7 +828,7 @@ export default function PorterTripDetailScreen() {
             {/* Photos */}
             <View style={[styles.inputContainer, { backgroundColor: colors.surface }]}>
               <Text style={[styles.inputLabel, { color: colors.text }]}>
-                Photos ({deliveryChecklist.photo_urls.length})
+                Photos ({(deliveryChecklist.photo_urls || []).length})
               </Text>
               <TouchableOpacity
                 style={[styles.photoButton, { borderColor: colors.primary }]}
