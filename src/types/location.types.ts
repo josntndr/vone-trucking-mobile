@@ -44,28 +44,6 @@ export type LocationSource =
   | 'truck_gps_device'      // Hardware GPS tracker (future)
   | 'manual_entry';         // Manually entered (emergency fallback)
 
-// ==================== GPS Health ====================
-
-/**
- * GPS Health Status
- * Indicates the overall health of GPS tracking
- */
-export interface GPSHealth {
-  status: 'healthy' | 'degraded' | 'unavailable';
-  signal_strength: number; // 1-5 scale
-  accuracy_meters: number;
-  last_fix_age_seconds: number;
-  satellite_count: number;
-  quality?: 'excellent' | 'good' | 'fair' | 'poor';
-  
-  // Backward compatibility aliases
-  signalStrength?: number;
-  accuracy?: number;
-  lastUpdate?: string | Date;
-  isAvailable?: boolean;
-  satelliteCount?: number;
-}
-
 // ==================== GPS Tracker Abstraction ====================
 
 /**
@@ -246,15 +224,16 @@ export interface LocationTrackingConfig {
 
 export interface GPSHealth {
   status: 'healthy' | 'weak' | 'unavailable';
+  signal_strength?: number; // 1-5 scale primary property
   accuracy_meters?: number;
   satellite_count?: number; // If available from hardware
   last_fix_age_seconds: number;
-  signal_strength?: 'excellent' | 'good' | 'fair' | 'poor';
+  quality?: 'excellent' | 'good' | 'fair' | 'poor';
   
   // CamelCase aliases for backward compatibility
   accuracy?: number; // Alias for accuracy_meters
   satelliteCount?: number; // Alias for satellite_count
-  signalStrength?: 'excellent' | 'good' | 'fair' | 'poor'; // Alias for signal_strength
+  signalStrength?: number; // Alias for signal_strength (numeric)
   isAvailable?: boolean; // Computed from status
   lastUpdate?: string; // Last successful location update timestamp
 }

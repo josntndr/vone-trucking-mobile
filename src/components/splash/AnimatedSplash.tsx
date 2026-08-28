@@ -98,11 +98,11 @@ export default function AnimatedSplash({ onComplete }: AnimatedSplashProps) {
         ]}
       >
         {/* Icon Container */}
-        <View style={[styles.iconCircle, { backgroundColor: colors?.accent || '#D87532' }]}>
+        <View style={[styles.iconCircle, { backgroundColor: colors.accent }]}>
           <MaterialCommunityIcons 
             name="truck-fast-outline" 
             size={64} 
-            color={colors?.textInverse || colors?.white || '#FFFFFF'} 
+            color={colors.white} 
           />
         </View>
 
@@ -111,10 +111,10 @@ export default function AnimatedSplash({ onComplete }: AnimatedSplashProps) {
           style={[
             styles.brandName,
             {
-              color: colors?.textInverse || colors?.white || '#FFFFFF',
-              fontSize: typography?.fontSize?.['4xl'] || 44,
-              fontWeight: (typography?.fontWeight?.heavy || '800') as any,
-              marginTop: spacing?.[6] || 24,
+              color: colors.white,
+              fontSize: 44,
+              fontWeight: '800' as any,
+              marginTop: 24,
             },
           ]}
         >
@@ -126,10 +126,10 @@ export default function AnimatedSplash({ onComplete }: AnimatedSplashProps) {
           style={[
             styles.tagline,
             {
-              color: colors?.accent || '#D87532',
-              fontSize: typography?.fontSize?.base || 16,
-              fontWeight: (typography?.fontWeight?.medium || '500') as any,
-              marginTop: spacing?.[3] || 12,
+              color: colors.accent,
+              fontSize: 16,
+              fontWeight: '500' as any,
+              marginTop: 12,
               opacity: taglineAnim,
             },
           ]}
