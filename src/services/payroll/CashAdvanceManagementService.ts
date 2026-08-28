@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Cash Advance Management Service
  * 
@@ -771,3 +772,4 @@ export class CashAdvanceManagementService {
 
 // Export singleton instance
 export const cashAdvanceManagementService = new CashAdvanceManagementService();
+

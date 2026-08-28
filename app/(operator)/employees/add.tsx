@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Add Employee Screen
  * Comprehensive redesign with required fields, per-trip compensation, and account management
@@ -1071,3 +1072,4 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
 });
+

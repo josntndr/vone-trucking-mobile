@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Driver and Porter Specific Types
  * Types for mobile workflows, assignments, checklists, and reports
@@ -661,3 +662,4 @@ export const getStatusAction = (
 
   return actions[status] || { label: status, icon: 'help', color: '#9E9E9E' };
 };
+

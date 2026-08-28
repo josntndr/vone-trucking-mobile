@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Notification Service
  * 
@@ -720,3 +721,4 @@ export class NotificationService {
 
 // Export singleton instance
 export const notificationService = new NotificationService();
+

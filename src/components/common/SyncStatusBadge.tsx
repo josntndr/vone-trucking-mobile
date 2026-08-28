@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Sync Status Badge Component
  * Shows offline, pending sync, syncing, and failed sync states

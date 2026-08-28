@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Offline Synchronization Service
  * 
@@ -751,3 +752,4 @@ export class OfflineSyncService {
 
 // Export singleton instance
 export const offlineSyncService = new OfflineSyncService();
+

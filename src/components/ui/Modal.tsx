@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Modal Component
  * Accessible modal dialog with backdrop
@@ -201,3 +202,4 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 });
+

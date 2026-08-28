@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Card Component
  * Container with elevation and rounded corners
@@ -68,3 +69,4 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
+

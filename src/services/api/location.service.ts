@@ -13,7 +13,7 @@ import type {
   GeofenceEvent,
   GPSAlert,
 } from '../../types/location.types';
-import type { ApiResponse } from '../../types/driver-porter.types';
+import type { ApiResponse } from '../../types';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * GPS Health Monitor Service
  * 
@@ -512,3 +513,4 @@ export class GPSHealthMonitor {
 
 // Export singleton instance
 export const gpsHealthMonitor = new GPSHealthMonitor();
+

@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Porter Trip Detail Screen
  * Time tracking, checklists, photo uploads

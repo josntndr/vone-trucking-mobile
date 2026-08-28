@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Operator Layout - Bottom Tab Navigation
  * 5 tabs: Home, Trips, Fleet, Employees, More

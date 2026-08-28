@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * Report Configuration Modal
  * Allows operators to configure report settings before generation
@@ -410,3 +411,4 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
 });
+

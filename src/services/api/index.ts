@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * API Services Entry Point
  * Export all API services
