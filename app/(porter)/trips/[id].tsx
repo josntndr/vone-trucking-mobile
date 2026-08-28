@@ -230,6 +230,7 @@ export default function PorterTripDetailScreen() {
               discrepancy_reported: deliveryChecklist.discrepancy_reported || false,
               discrepancy_notes: deliveryChecklist.discrepancy_notes,
               unloading_photos: deliveryChecklist.unloading_photos || [],
+              photo_urls: deliveryChecklist.photo_urls || [],
               completed_at: new Date().toISOString(),
               all_items_delivered: deliveryChecklist.all_items_delivered,
               customer_signature_obtained: deliveryChecklist.customer_signature_obtained,

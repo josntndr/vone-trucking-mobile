@@ -338,7 +338,7 @@ export const checkAvailability = async (
 
     // Check truck conflicts
     if (truckId && overlappingTrips) {
-      const truckConflicts = overlappingTrips.filter((trip) => trip.assigned_truck_id === truckId);
+      const truckConflicts = overlappingTrips.filter((trip: Trip) => trip.assigned_truck_id === truckId);
       for (const conflict of truckConflicts) {
         const { data: truck } = await supabase
           .from('trucks')
@@ -361,7 +361,7 @@ export const checkAvailability = async (
 
     // Check driver conflicts
     if (driverId && overlappingTrips) {
-      const driverConflicts = overlappingTrips.filter((trip) => trip.assigned_driver_id === driverId);
+      const driverConflicts = overlappingTrips.filter((trip: Trip) => trip.assigned_driver_id === driverId);
       for (const conflict of driverConflicts) {
         const { data: driver } = await supabase
           .from('employee_profiles')
@@ -391,7 +391,7 @@ export const checkAvailability = async (
           .select('trip_id, trips!inner(trip_number, delivery_date, call_time)')
           .eq('employee_id', porterId)
           .eq('role', 'porter')
-          .in('trip_id', overlappingTrips.map((t) => t.id));
+          .in('trip_id', overlappingTrips.map((t: Trip) => t.id));
 
         if (porterAssignments && porterAssignments.length > 0) {
           const { data: porter } = await supabase
@@ -467,8 +467,8 @@ export const assignResources = async (
     }
 
     if (!availabilityResult.data?.is_available) {
-      const conflictMessages = availabilityResult.data.conflicts
-        .map((c) => c.message)
+      const conflictMessages = (availabilityResult.data?.conflicts || [])
+        .map((c: any) => c.message)
         .join('\n');
       return { error: `Resource conflicts detected:\n${conflictMessages}` };
     }
@@ -521,10 +521,10 @@ export const assignResources = async (
       .eq('id', input.trip_id)
       .single();
 
-    if (currentTrip?.status === 'draft') {
+    if (currentTrip?.status === TripStatus.DRAFT) {
       await updateTripStatus({
         trip_id: input.trip_id,
-        new_status: 'assigned',
+        new_status: TripStatus.ASSIGNED,
         notes: 'Resources assigned to trip',
       });
     }
@@ -616,7 +616,7 @@ export const cancelTrip = async (input: CancelTripInput): Promise<ApiResponse<vo
 
     await updateTripStatus({
       trip_id: input.trip_id,
-      new_status: 'cancelled',
+      new_status: TripStatus.CANCELLED,
       reason: input.reason,
     });
 
@@ -676,7 +676,7 @@ export const duplicateTrip = async (input: DuplicateTripInput): Promise<ApiRespo
       expected_income: sourceTrip.expected_income,
       special_instructions: sourceTrip.special_instructions,
       delivery_instructions: sourceTrip.delivery_instructions,
-      status: 'draft',
+      status: TripStatus.DRAFT,
       is_recurring: true,
     };
 
@@ -702,7 +702,7 @@ export const duplicateTrip = async (input: DuplicateTripInput): Promise<ApiRespo
         .eq('role', 'porter');
 
       if (porterAssignments && porterAssignments.length > 0) {
-        assignInput.porter_ids = porterAssignments.map((a) => a.employee_id);
+        assignInput.porter_ids = porterAssignments.map((a: any) => a.employee_id);
       }
 
       await assignResources(assignInput);

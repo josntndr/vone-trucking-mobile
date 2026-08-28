@@ -471,7 +471,7 @@ export default function EmployeeDetailScreen() {
                 Compensation
               </Text>
 
-              {employee.compensation_config.base_salary && (
+              {employee.compensation_config.method === 'salary' && employee.compensation_config.base_amount && (
                 <View style={styles.infoRow}>
                   <Ionicons name="cash" size={20} color={colors.textSecondary} />
                   <View style={styles.infoContent}>
@@ -479,13 +479,13 @@ export default function EmployeeDetailScreen() {
                       Base Salary
                     </Text>
                     <Text style={[styles.infoValue, { color: colors.success }]}>
-                      {formatPeso(employee.compensation_config.base_salary)}
+                      {formatPeso(employee.compensation_config.base_amount)}
                     </Text>
                   </View>
                 </View>
               )}
 
-              {employee.compensation_config.daily_rate && (
+              {employee.compensation_config.method === 'daily' && employee.compensation_config.base_amount && (
                 <View style={styles.infoRow}>
                   <Ionicons name="calendar" size={20} color={colors.textSecondary} />
                   <View style={styles.infoContent}>
@@ -493,13 +493,13 @@ export default function EmployeeDetailScreen() {
                       Daily Rate
                     </Text>
                     <Text style={[styles.infoValue, { color: colors.success }]}>
-                      {formatPeso(employee.compensation_config.daily_rate)}
+                      {formatPeso(employee.compensation_config.base_amount)}
                     </Text>
                   </View>
                 </View>
               )}
 
-              {employee.compensation_config.trip_rate && (
+              {employee.compensation_config.method === 'per_trip' && employee.compensation_config.base_amount && (
                 <View style={styles.infoRow}>
                   <Ionicons name="navigate" size={20} color={colors.textSecondary} />
                   <View style={styles.infoContent}>
@@ -507,7 +507,7 @@ export default function EmployeeDetailScreen() {
                       Per-Trip Rate
                     </Text>
                     <Text style={[styles.infoValue, { color: colors.success }]}>
-                      {formatPeso(employee.compensation_config.trip_rate)}
+                      {formatPeso(employee.compensation_config.base_amount)}
                     </Text>
                   </View>
                 </View>

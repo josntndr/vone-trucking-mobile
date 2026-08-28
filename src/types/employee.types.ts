@@ -9,6 +9,8 @@ export enum EmploymentStatus {
   ACTIVE = 'active',
   ON_LEAVE = 'on_leave',
   INACTIVE = 'inactive',
+  SUSPENDED = 'suspended',  // Added for historical/legacy records
+  ARCHIVED = 'archived',    // Added for deleted/archived records
 }
 
 export enum AccountStatus {
@@ -102,6 +104,13 @@ export interface Employee {
   base_salary?: number | null;
   daily_rate?: number | null;
   
+  // Legacy compensation_config object (for backward compatibility with old screens)
+  compensation_config?: {
+    method?: 'per_trip' | 'salary' | 'daily';
+    base_amount?: number;
+    effective_from?: string;
+  };
+  
   // Account Information
   account_info?: AccountInfo;
   
@@ -148,6 +157,7 @@ export interface CreateEmployeeInput {
   // Account Access (required)
   username: string;
   temporary_password: string;
+  confirm_password?: string; // For form validation only, not sent to API
   account_status: AccountStatus;
   require_password_change: boolean;
 }

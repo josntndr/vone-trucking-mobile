@@ -378,6 +378,19 @@ export type CashAdvanceStatus =
   | 'written_off';
 
 /**
+ * Cash advance eligibility check result
+ */
+export interface EligibilityCheck {
+  is_eligible: boolean;
+  max_amount: number;
+  reasons: string[];
+  employment_days: number;
+  outstanding_balance: number;
+  monthly_income: number;
+  max_deduction_amount: number;
+}
+
+/**
  * Cash advance request
  */
 export interface CashAdvanceRequest {
@@ -422,6 +435,15 @@ export interface CashAdvanceRequest {
   created_at: string;
   updated_at: string;
   created_by: string;
+  
+  // Backward-compatible aliases for legacy components
+  amount?: number; // Alias for amount_requested
+  notes?: string; // Alias for purpose or approval_notes
+  approved_by?: string; // Alias for reviewed_by
+  approved_at?: string; // Alias for reviewed_at
+  rejected_by?: string; // Alias for reviewed_by (when rejected)
+  rejected_at?: string; // Alias for reviewed_at (when rejected)
+  acknowledged_by_employee_at?: string; // Alias for acknowledged_at
 }
 
 /**
@@ -478,6 +500,9 @@ export interface CashAdvanceTransaction {
   // Metadata
   created_at: string;
   created_by: string;
+  
+  // Backward-compatible alias
+  transaction_type?: 'disbursement' | 'repayment' | 'interest' | 'penalty' | 'adjustment' | 'write_off'; // Alias for type
 }
 
 /**

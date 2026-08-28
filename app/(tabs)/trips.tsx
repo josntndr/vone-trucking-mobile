@@ -18,7 +18,7 @@ export default function TripsScreen() {
           style={[
             styles.title,
             {
-              color: theme.colors.text.primary,
+              color: theme.colors.text,
               fontSize: theme.fontSizes['2xl'],
               fontWeight: theme.fontWeights.bold,
               marginBottom: theme.spacing[6],
@@ -29,7 +29,7 @@ export default function TripsScreen() {
         </Text>
 
         <EmptyState
-          icon={<MaterialCommunityIcons name="truck-delivery-outline" size={64} color={theme.colors.text.tertiary} />}
+          icon={<MaterialCommunityIcons name="truck-delivery-outline" size={64} color={theme.colors.textTertiary} />}
           title="No Trips Yet"
           description="Your trips will appear here once the feature is implemented."
         />

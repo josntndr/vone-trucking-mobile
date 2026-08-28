@@ -21,7 +21,7 @@ import {
   Alert,
   Image,
   ActivityIndicator,
-} from 'react';
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type {
   ProofOfDelivery,

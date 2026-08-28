@@ -76,7 +76,7 @@ const DEFAULT_CONFIG: GPSHealthConfig = {
 export class GPSHealthMonitor {
   private config: GPSHealthConfig;
   private state: GPSHealthState;
-  private healthCheckTimer?: NodeJS.Timeout;
+  private healthCheckTimer?: ReturnType<typeof setInterval>;
   private alertCallbacks: Array<(alert: GPSAlert) => void> = [];
   private healthCallbacks: Array<(health: GPSHealth) => void> = [];
 
@@ -145,16 +145,22 @@ export class GPSHealthMonitor {
    * Calculate GPS health from location data
    */
   private calculateGPSHealth(location: LocationUpdate): GPSHealth {
-    const signalStrength = this.calculateSignalStrength(location);
-    const quality = this.determineQuality(location, signalStrength);
+    const signal_strength = this.calculateSignalStrength(location);
+    const quality = this.determineQuality(location, signal_strength);
 
     return {
-      signalStrength,
-      accuracy: location.accuracy,
-      lastUpdate: new Date(location.timestamp),
-      isAvailable: true,
-      satelliteCount: location.satelliteCount,
+      status: 'healthy',
+      signal_strength,
+      accuracy_meters: location.accuracy || 0,
+      last_fix_age_seconds: 0,
+      satellite_count: location.satelliteCount || 0,
       quality,
+      // Aliases for backward compatibility
+      signalStrength: signal_strength,
+      accuracy: location.accuracy || 0,
+      lastUpdate: new Date(location.timestamp).toISOString(),
+      isAvailable: true,
+      satelliteCount: location.satelliteCount || 0,
     };
   }
 
@@ -176,13 +182,13 @@ export class GPSHealthMonitor {
    */
   private determineQuality(
     location: LocationUpdate,
-    signalStrength: number
+    signal_strength: number
   ): 'excellent' | 'good' | 'fair' | 'poor' {
-    const accuracy = location.accuracy;
+    const accuracy = location.accuracy || 999;
 
-    if (signalStrength >= 4 && accuracy <= 10) return 'excellent';
-    if (signalStrength >= 3 && accuracy <= 30) return 'good';
-    if (signalStrength >= 2 && accuracy <= 100) return 'fair';
+    if (signal_strength >= 4 && accuracy <= 10) return 'excellent';
+    if (signal_strength >= 3 && accuracy <= 30) return 'good';
+    if (signal_strength >= 2 && accuracy <= 100) return 'fair';
     return 'poor';
   }
 
@@ -191,7 +197,7 @@ export class GPSHealthMonitor {
    */
   private checkForAlerts(location: LocationUpdate, health: GPSHealth): void {
     // Check for mock location
-    if (location.isMock) {
+    if (location.is_mock || location.isMock) {
       this.triggerAlert({
         type: 'mock_location_detected',
         severity: 'error',
@@ -205,11 +211,15 @@ export class GPSHealthMonitor {
     }
 
     // Check for weak signal
-    if (health.signalStrength < this.config.weakSignalThreshold) {
+    const signalStrength = health.signal_strength || health.signalStrength || 0;
+    const satelliteCount = health.satellite_count || health.satelliteCount || 0;
+    const accuracy = health.accuracy_meters || health.accuracy || 0;
+
+    if (signalStrength < this.config.weakSignalThreshold) {
       this.triggerAlert({
         type: 'weak_signal',
         severity: 'warning',
-        message: `Weak GPS signal (${health.satelliteCount || 0} satellites). Location accuracy may be reduced.`,
+        message: `Weak GPS signal (${satelliteCount} satellites). Location accuracy may be reduced.`,
         timestamp: new Date(),
         location: {
           latitude: location.latitude,
@@ -231,11 +241,11 @@ export class GPSHealthMonitor {
     }
 
     // Check for poor accuracy
-    if (health.accuracy > this.config.poorAccuracyThreshold) {
+    if (accuracy > this.config.poorAccuracyThreshold) {
       this.triggerAlert({
         type: 'poor_accuracy',
         severity: 'warning',
-        message: `GPS accuracy is poor (±${Math.round(health.accuracy)}m). Location may be inaccurate.`,
+        message: `GPS accuracy is poor (±${Math.round(accuracy)}m). Location may be inaccurate.`,
         timestamp: new Date(),
         location: {
           latitude: location.latitude,
@@ -366,9 +376,10 @@ export class GPSHealthMonitor {
   private cleanupHistory(): void {
     const cutoffTime = new Date();
     cutoffTime.setHours(cutoffTime.getHours() - this.config.historyRetentionHours);
+    const cutoffISO = cutoffTime.toISOString();
 
     this.state.healthHistory = this.state.healthHistory.filter(
-      h => h.lastUpdate > cutoffTime
+      h => (typeof h.lastUpdate === 'string' ? h.lastUpdate : h.lastUpdate.toISOString()) > cutoffISO
     );
   }
 
@@ -378,11 +389,18 @@ export class GPSHealthMonitor {
   getCurrentHealth(): GPSHealth | null {
     if (!this.state.lastLocation) {
       return {
+        status: 'unavailable',
+        signal_strength: 0,
+        accuracy_meters: 0,
+        last_fix_age_seconds: 0,
+        satellite_count: 0,
+        quality: 'poor',
+        // Aliases
         signalStrength: 0,
         accuracy: 0,
-        lastUpdate: new Date(),
+        lastUpdate: new Date().toISOString(),
         isAvailable: false,
-        quality: 'poor',
+        satelliteCount: 0,
       };
     }
 
@@ -395,8 +413,11 @@ export class GPSHealthMonitor {
   getHealthHistory(hours: number = 1): GPSHealth[] {
     const cutoffTime = new Date();
     cutoffTime.setHours(cutoffTime.getHours() - hours);
+    const cutoffISO = cutoffTime.toISOString();
 
-    return this.state.healthHistory.filter(h => h.lastUpdate > cutoffTime);
+    return this.state.healthHistory.filter(h => 
+      (typeof h.lastUpdate === 'string' ? h.lastUpdate : h.lastUpdate.toISOString()) > cutoffISO
+    );
   }
 
   /**
@@ -406,7 +427,7 @@ export class GPSHealthMonitor {
     const history = this.getHealthHistory(hours);
     if (history.length === 0) return 0;
 
-    const sum = history.reduce((acc, h) => acc + h.signalStrength, 0);
+    const sum = history.reduce((acc, h) => acc + (h.signal_strength || h.signalStrength || 0), 0);
     return sum / history.length;
   }
 
@@ -417,7 +438,7 @@ export class GPSHealthMonitor {
     const history = this.getHealthHistory(hours);
     if (history.length === 0) return 0;
 
-    const sum = history.reduce((acc, h) => acc + h.accuracy, 0);
+    const sum = history.reduce((acc, h) => acc + (h.accuracy_meters || h.accuracy || 0), 0);
     return sum / history.length;
   }
 

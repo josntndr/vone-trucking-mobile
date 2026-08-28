@@ -221,7 +221,7 @@ export const useAuth = () => {
     // Only listen for Supabase auth changes if configured
     if (isSupabaseConfigured()) {
       const { data: authListener } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
+        async (event: string, session: any) => {
           if (event === 'SIGNED_IN' && session?.user) {
             const response = await AuthService.getCurrentUser();
             if (response.data) {

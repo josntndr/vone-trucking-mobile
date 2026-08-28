@@ -1,13 +1,19 @@
 /**
- * Login Screen - Private System Entry Point - Redesigned with Design System
- * Phase 7: Align Auth screens with modern premium design
+ * Login Screen - Redesigned to Match Reference Image
+ * 
+ * Features:
+ * - Large dark navy branding section with rounded bottom corners
+ * - Centered truck icon, app name, and subtitle
+ * - Professional input fields with icons
+ * - Password visibility toggle
+ * - Solid navy Sign In button
+ * - Responsive design (320px - 430px)
+ * - Preserves existing authentication logic
  * 
  * Security Notes:
  * - "Remember me" persists username only (NOT password)
  * - Passwords are never stored in plaintext
  * - Session tokens should use secure storage in production
- * - TODO: Replace AsyncStorage with expo-secure-store or react-native-keychain
- * - TODO: Implement proper OAuth or JWT token authentication
  * - Demo authentication is for development only
  */
 
@@ -22,13 +28,16 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Dimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../theme/designSystem';
+import { DESIGN_SYSTEM, COLORS, SPACING } from '../../theme/designSystem';
 import { demoSignIn } from '../../services/demo/demoAuth.service';
 
 const DS = DESIGN_SYSTEM;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const REMEMBER_ME_KEY = '@vone_remember_me';
 const SESSION_TOKEN_KEY = '@vone_session_token';
 
@@ -41,13 +50,14 @@ export default function LoginScreen({
   onLoginSuccess,
   onForgotPassword,
 }: LoginScreenProps) {
+  const insets = useSafeAreaInsets();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   
-  // Field focus states for enhanced UX
+  // Field focus states
   const [usernameFocused, setUsernameFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   
@@ -182,75 +192,61 @@ export default function LoginScreen({
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
       >
-        {/* Header with Logo and Branding */}
-        <View style={styles.header}>
-          <View style={styles.brandingContainer}>
-            {/* Logo */}
-            <View style={styles.logoContainer}>
-              <MaterialCommunityIcons 
-                name="truck-fast-outline" 
-                size={44} 
-                color={COLORS.white} 
-              />
-            </View>
-            
-            {/* Application Name */}
-            <Text style={styles.appName}>
-              Vone Trucking
-            </Text>
-            
-            {/* Main Tagline */}
-            <Text style={styles.tagline}>
-              Vone Trucking operations, all in one place.
-            </Text>
-            
-            {/* Supporting Text */}
-            <Text style={styles.supportingText}>
-              Secure access for authorised Vone Trucking personnel.
-            </Text>
+        {/* Navy Branding Header with Rounded Bottom Corners */}
+        <View style={[styles.brandingHeader, { paddingTop: insets.top + 40 }]}>
+          {/* Truck Icon */}
+          <View style={styles.iconContainer}>
+            <MaterialCommunityIcons 
+              name="truck-outline" 
+              size={64} 
+              color="#FFFFFF" 
+            />
           </View>
+          
+          {/* App Name */}
+          <Text style={styles.appName}>Vone Trucking</Text>
+          
+          {/* Subtitle */}
+          <Text style={styles.subtitle}>Fleet Management System</Text>
         </View>
 
-        {/* Login Form */}
-        <View style={styles.form}>
-          {/* General Error */}
+        {/* Login Form Container */}
+        <View style={styles.formContainer}>
+          {/* Welcome Text */}
+          <View style={styles.welcomeSection}>
+            <Text style={styles.welcomeTitle}>Welcome back</Text>
+            <Text style={styles.welcomeSubtitle}>Sign in to your account</Text>
+          </View>
+
+          {/* General Error Banner */}
           {errors.general && (
             <View style={styles.errorBanner}>
               <MaterialCommunityIcons name="alert-circle" size={20} color={COLORS.error} />
-              <Text style={styles.errorBannerText}>
-                {errors.general}
-              </Text>
+              <Text style={styles.errorBannerText}>{errors.general}</Text>
             </View>
           )}
 
           {/* Username Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>
-              Username
-            </Text>
+          <View style={styles.inputGroup}>
             <View
               style={[
                 styles.inputWrapper,
-                {
-                  borderColor: usernameFocused
-                    ? COLORS.navy
-                    : errors.username
-                    ? COLORS.error
-                    : COLORS.border,
-                },
+                usernameFocused && styles.inputWrapperFocused,
+                errors.username && styles.inputWrapperError,
               ]}
             >
               <MaterialCommunityIcons
                 name="account-outline"
-                size={22}
-                color={usernameFocused ? COLORS.navy : COLORS.textSecondary}
+                size={24}
+                color={usernameFocused ? '#1B2A4A' : '#9CA3AF'}
                 style={styles.inputIcon}
               />
               <TextInput
-                style={styles.input}
-                placeholder="Enter your username"
-                placeholderTextColor={COLORS.textTertiary}
+                style={styles.textInput}
+                placeholder="Username"
+                placeholderTextColor="#9CA3AF"
                 value={username}
                 onChangeText={(text) => {
                   setUsername(text);
@@ -263,42 +259,33 @@ export default function LoginScreen({
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!loading}
+                returnKeyType="next"
               />
             </View>
             {errors.username && (
-              <Text style={styles.errorText}>
-                {errors.username}
-              </Text>
+              <Text style={styles.errorText}>{errors.username}</Text>
             )}
           </View>
 
           {/* Password Input */}
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>
-              Password
-            </Text>
+          <View style={styles.inputGroup}>
             <View
               style={[
                 styles.inputWrapper,
-                {
-                  borderColor: passwordFocused
-                    ? COLORS.navy
-                    : errors.password
-                    ? COLORS.error
-                    : COLORS.border,
-                },
+                passwordFocused && styles.inputWrapperFocused,
+                errors.password && styles.inputWrapperError,
               ]}
             >
               <MaterialCommunityIcons
                 name="lock-outline"
-                size={22}
-                color={passwordFocused ? COLORS.navy : COLORS.textSecondary}
+                size={24}
+                color={passwordFocused ? '#1B2A4A' : '#9CA3AF'}
                 style={styles.inputIcon}
               />
               <TextInput
-                style={styles.input}
-                placeholder="Enter your password"
-                placeholderTextColor={COLORS.textTertiary}
+                style={styles.textInput}
+                placeholder="Password"
+                placeholderTextColor="#9CA3AF"
                 value={password}
                 onChangeText={(text) => {
                   setPassword(text);
@@ -312,91 +299,58 @@ export default function LoginScreen({
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!loading}
+                returnKeyType="go"
+                onSubmitEditing={handleLogin}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
-                style={styles.showPasswordButton}
+                style={styles.eyeButton}
                 activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <MaterialCommunityIcons
                   name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                  size={22}
-                  color={COLORS.textSecondary}
+                  size={24}
+                  color="#9CA3AF"
                 />
               </TouchableOpacity>
             </View>
             {errors.password && (
-              <Text style={styles.errorText}>
-                {errors.password}
-              </Text>
+              <Text style={styles.errorText}>{errors.password}</Text>
             )}
           </View>
 
-          {/* Remember Me & Forgot Password Row */}
-          <View style={styles.optionsRow}>
-            <TouchableOpacity
-              style={styles.checkboxRow}
-              onPress={() => setRememberMe(!rememberMe)}
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <View
-                style={[
-                  styles.checkbox,
-                  {
-                    backgroundColor: rememberMe ? COLORS.navy : COLORS.white,
-                  },
-                ]}
-              >
-                {rememberMe && (
-                  <MaterialCommunityIcons name="check" size={18} color={COLORS.white} />
-                )}
-              </View>
-              <Text style={styles.checkboxLabel}>
-                Remember me
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              onPress={onForgotPassword} 
-              activeOpacity={0.7}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Text style={styles.forgotPasswordText}>
-                Forgot password?
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Login Button */}
+          {/* Sign In Button */}
           <TouchableOpacity
             style={[
-              styles.loginButton,
-              {
-                opacity: loading ? 0.7 : 1,
-              },
+              styles.signInButton,
+              loading && styles.signInButtonDisabled,
             ]}
             onPress={handleLogin}
             disabled={loading}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
           >
             {loading ? (
-              <ActivityIndicator color={COLORS.white} size="small" />
+              <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
-              <Text style={styles.loginButtonText}>
-                Log In
-              </Text>
+              <Text style={styles.signInButtonText}>Sign In</Text>
             )}
           </TouchableOpacity>
 
-          {/* Support Text */}
-          <Text style={styles.supportLink}>
-            Need help? Contact your Operator or system administrator.
-          </Text>
+          {/* Forgot Password Link */}
+          {onForgotPassword && (
+            <TouchableOpacity
+              onPress={onForgotPassword}
+              style={styles.forgotPasswordContainer}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
-        {/* Footer Spacing */}
-        <View style={{ height: SPACING['2xl'] }} />
+        {/* Bottom Spacing */}
+        <View style={{ height: Math.max(insets.bottom, 20) + 20 }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -405,155 +359,168 @@ export default function LoginScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F5F4F0', // Warm off-white background
   },
   scrollContent: {
     flexGrow: 1,
   },
-  header: {
-    paddingHorizontal: SPACING.lg,
-  },
-  brandingContainer: {
+  
+  // ==================== Branding Header ====================
+  brandingHeader: {
+    backgroundColor: '#1B2A4A', // Dark navy
     alignItems: 'center',
-    marginTop: SPACING['2xl'] + SPACING.lg,
+    paddingBottom: 56,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    marginBottom: 40, // Space after the rounded corners
   },
-  logoContainer: {
-    width: 88,
-    height: 88,
-    backgroundColor: COLORS.navy,
-    borderRadius: 22,
+  iconContainer: {
+    width: 96,
+    height: 96,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 20,
   },
   appName: {
-    fontSize: DS.typography.fontSize['3xl'],
-    fontWeight: DS.typography.fontWeight.bold,
-    color: COLORS.navy,
-    textAlign: 'center',
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#FFFFFF',
     letterSpacing: -0.5,
-    marginTop: SPACING.md,
+    marginBottom: 8,
   },
-  tagline: {
-    fontSize: DS.typography.fontSize.base,
-    fontWeight: DS.typography.fontWeight.medium,
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-    maxWidth: 320,
-    marginTop: SPACING.xs,
+  subtitle: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: 'rgba(255, 255, 255, 0.7)',
+    letterSpacing: 0.2,
   },
-  supportingText: {
-    fontSize: DS.typography.fontSize.sm,
-    color: COLORS.textTertiary,
-    textAlign: 'center',
-    maxWidth: 280,
-    marginTop: SPACING.xs,
+  
+  // ==================== Form Container ====================
+  formContainer: {
+    paddingHorizontal: 24,
+    marginTop: 0, // No extra margin needed now
   },
-  form: {
-    paddingHorizontal: SPACING.lg,
-    marginTop: SPACING.xl,
+  welcomeSection: {
+    marginBottom: 28,
   },
+  welcomeTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#2D2D2D',
+    marginBottom: 6,
+  },
+  welcomeSubtitle: {
+    fontSize: 15,
+    fontWeight: '400',
+    color: '#9E9E9E',
+  },
+  
+  // ==================== Error Banner ====================
   errorBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.error + '15',
+    backgroundColor: '#FFF5F5',
     borderRadius: 12,
-    padding: SPACING.md,
-    marginBottom: SPACING.md,
+    padding: 16,
+    marginBottom: 20,
     borderLeftWidth: 4,
-    borderLeftColor: COLORS.error,
+    borderLeftColor: '#D32F2F',
   },
   errorBannerText: {
     flex: 1,
-    color: COLORS.error,
-    fontSize: DS.typography.fontSize.sm,
-    marginLeft: SPACING.xs,
+    color: '#D32F2F',
+    fontSize: 14,
+    marginLeft: 12,
+    fontWeight: '500',
   },
-  inputContainer: {
-    marginBottom: SPACING.md,
-  },
-  label: {
-    color: COLORS.text,
-    fontSize: DS.typography.fontSize.sm,
-    fontWeight: DS.typography.fontWeight.semibold,
-    marginBottom: SPACING.xs,
+  
+  // ==================== Input Fields ====================
+  inputGroup: {
+    marginBottom: 16,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 2,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
     height: 56,
-    ...COMPONENTS.card.shadow,
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  inputWrapperFocused: {
+    borderColor: '#1B2A4A',
+    borderWidth: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  inputWrapperError: {
+    borderColor: '#D32F2F',
+    borderWidth: 2,
   },
   inputIcon: {
-    marginLeft: SPACING.md,
+    marginRight: 12,
   },
-  input: {
+  textInput: {
     flex: 1,
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#2D2D2D',
     height: '100%',
-    color: COLORS.text,
-    fontSize: DS.typography.fontSize.base,
-    paddingHorizontal: SPACING.sm,
   },
-  showPasswordButton: {
-    height: '100%',
-    paddingRight: SPACING.md,
-    justifyContent: 'center',
+  eyeButton: {
+    padding: 4,
+    marginLeft: 8,
   },
   errorText: {
-    color: COLORS.error,
-    fontSize: DS.typography.fontSize.xs,
-    marginTop: 4,
+    color: '#D32F2F',
+    fontSize: 12,
+    marginTop: 6,
+    marginLeft: 4,
+    fontWeight: '500',
   },
-  optionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: SPACING.xl,
-  },
-  checkboxRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  checkbox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: COLORS.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxLabel: {
-    color: COLORS.textSecondary,
-    fontSize: DS.typography.fontSize.sm,
-    marginLeft: SPACING.xs,
-  },
-  forgotPasswordText: {
-    color: COLORS.navy,
-    fontSize: DS.typography.fontSize.sm,
-    fontWeight: DS.typography.fontWeight.semibold,
-  },
-  loginButton: {
-    backgroundColor: COLORS.navy,
-    borderRadius: 12,
-    paddingVertical: SPACING.lg,
+  
+  // ==================== Sign In Button ====================
+  signInButton: {
+    backgroundColor: '#1B2A4A', // Solid navy - NO gradient
+    borderRadius: 14,
+    height: 56,
     alignItems: 'center',
     justifyContent: 'center',
-    ...COMPONENTS.card.shadow,
-    shadowOpacity: 0.2,
+    marginTop: 8,
+    shadowColor: '#1B2A4A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
     elevation: 4,
   },
-  loginButtonText: {
-    color: COLORS.white,
-    fontSize: DS.typography.fontSize.lg,
-    fontWeight: DS.typography.fontWeight.semibold,
+  signInButtonDisabled: {
+    opacity: 0.6,
   },
-  supportLink: {
-    color: COLORS.textTertiary,
-    fontSize: DS.typography.fontSize.xs,
-    textAlign: 'center',
-    marginTop: SPACING.xl,
+  signInButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  
+  // ==================== Forgot Password ====================
+  forgotPasswordContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+    paddingVertical: 8,
+  },
+  forgotPasswordText: {
+    color: '#1B2A4A',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

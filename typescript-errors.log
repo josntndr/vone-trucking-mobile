@@ -1,0 +1,287 @@
+﻿app/(driver)/index.tsx(391,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(driver)/index.tsx(473,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(driver)/index.tsx(515,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/_layout.tsx(54,9): error TS2353: Object literal may only specify known properties, and 'tabBarIndicatorStyle' does not exist in type 'BottomTabNavigationOptions | ((props: { route: RouteProp<ParamListBase, string>; navigation: BottomTabNavigationProp<ParamListBase, string, string | undefined>; theme: Theme; }) => BottomTabNavigationOptions)'.
+app/(operator)/analytics.tsx(426,57): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: ViewProps): View', gave the following error.
+    Type '{ width: `${number}%` | "undefined%"; backgroundColor: string; }' is not assignable to type 'ViewStyle | Falsy | RecursiveArray<ViewStyle | Falsy> | readonly (ViewStyle | Falsy)[]'.
+      Types of property 'width' are incompatible.
+        Type '`${number}%` | "undefined%"' is not assignable to type 'DimensionValue | undefined'.
+          Type '"undefined%"' is not assignable to type 'DimensionValue | undefined'.
+  Overload 2 of 2, '(props: ViewProps, context: any): View', gave the following error.
+    Type '{ width: `${number}%` | "undefined%"; backgroundColor: string; }' is not assignable to type 'ViewStyle | Falsy | RecursiveArray<ViewStyle | Falsy> | readonly (ViewStyle | Falsy)[]'.
+      Types of property 'width' are incompatible.
+        Type '`${number}%` | "undefined%"' is not assignable to type 'DimensionValue | undefined'.
+          Type '"undefined%"' is not assignable to type 'DimensionValue | undefined'.
+app/(operator)/analytics.tsx(549,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/analytics.tsx(586,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/analytics.tsx(610,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/analytics.tsx(617,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/analytics.tsx(702,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/employees/[id].tsx(117,29): error TS2339: Property 'SUSPENDED' does not exist on type 'typeof EmploymentStatus'.
+app/(operator)/employees/[id].tsx(120,29): error TS2339: Property 'ARCHIVED' does not exist on type 'typeof EmploymentStatus'.
+app/(operator)/employees/[id].tsx(468,21): error TS2339: Property 'compensation_config' does not exist on type 'Employee'.
+app/(operator)/employees/[id].tsx(474,25): error TS2339: Property 'compensation_config' does not exist on type 'Employee'.
+app/(operator)/employees/[id].tsx(482,44): error TS2339: Property 'compensation_config' does not exist on type 'Employee'.
+app/(operator)/employees/[id].tsx(488,25): error TS2339: Property 'compensation_config' does not exist on type 'Employee'.
+app/(operator)/employees/[id].tsx(496,44): error TS2339: Property 'compensation_config' does not exist on type 'Employee'.
+app/(operator)/employees/[id].tsx(502,25): error TS2339: Property 'compensation_config' does not exist on type 'Employee'.
+app/(operator)/employees/[id].tsx(510,44): error TS2339: Property 'compensation_config' does not exist on type 'Employee'.
+app/(operator)/employees/[id].tsx(532,62): error TS2339: Property 'ARCHIVED' does not exist on type 'typeof EmploymentStatus'.
+app/(operator)/employees/add.tsx(75,5): error TS2322: Type 'Resolver<{ employee_id: string; first_name: string; last_name: string; role: UserRole.DRIVER | UserRole.PORTER; phone: string; address: string; emergency_contact_name: string; emergency_contact_relationship: string; ... 12 more ...; require_password_change?: boolean | undefined; }, any, { ...; }>' is not assignable to type 'Resolver<{ employee_id: string; first_name: string; last_name: string; role: UserRole.DRIVER | UserRole.PORTER; phone: string; address: string; emergency_contact_name: string; emergency_contact_relationship: string; ... 12 more ...; license_expiry?: string | undefined; }, any, { ...; }>'.
+  Types of parameters 'options' and 'options' are incompatible.
+    Type 'ResolverOptions<{ employee_id: string; first_name: string; last_name: string; role: UserRole.DRIVER | UserRole.PORTER; phone: string; address: string; emergency_contact_name: string; emergency_contact_relationship: string; ... 12 more ...; license_expiry?: string | undefined; }>' is not assignable to type 'ResolverOptions<{ employee_id: string; first_name: string; last_name: string; role: UserRole.DRIVER | UserRole.PORTER; phone: string; address: string; emergency_contact_name: string; emergency_contact_relationship: string; ... 12 more ...; require_password_change?: boolean | undefined; }>'.
+      Type 'EmploymentStatus | undefined' is not assignable to type 'EmploymentStatus'.
+        Type 'undefined' is not assignable to type 'EmploymentStatus'.
+app/(operator)/employees/add.tsx(795,35): error TS2345: Argument of type '(data: CreateEmployeeFormData) => Promise<void>' is not assignable to parameter of type 'SubmitHandler<TFieldValues, Promise<void>>'.
+  Types of parameters 'data' and 'data' are incompatible.
+    Type 'TFieldValues' is not assignable to type '{ employee_id: string; first_name: string; last_name: string; role: UserRole.DRIVER | UserRole.PORTER; phone: string; address: string; emergency_contact_name: string; emergency_contact_relationship: string; ... 12 more ...; license_expiry?: string | undefined; }'.
+      Type 'FieldValues' is missing the following properties from type '{ employee_id: string; first_name: string; last_name: string; role: UserRole.DRIVER | UserRole.PORTER; phone: string; address: string; emergency_contact_name: string; emergency_contact_relationship: string; ... 12 more ...; license_expiry?: string | undefined; }': employee_id, first_name, last_name, role, and 13 more.
+app/(operator)/employees/index.tsx(45,49): error TS2339: Property 'SUSPENDED' does not exist on type 'typeof EmploymentStatus'.
+app/(operator)/employees/index.tsx(128,29): error TS2339: Property 'SUSPENDED' does not exist on type 'typeof EmploymentStatus'.
+app/(operator)/employees/index.tsx(131,29): error TS2339: Property 'ARCHIVED' does not exist on type 'typeof EmploymentStatus'.
+app/(operator)/employees/index.tsx(362,44): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/employees/index.tsx(401,44): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/trips/index.tsx(273,33): error TS2339: Property 'pickup_location' does not exist on type 'Trip'.
+app/(operator)/trips/index.tsx(341,19): error TS2551: Property 'assigned_porter_name' does not exist on type 'Trip'. Did you mean 'assigned_driver_name'?
+app/(operator)/trips/index.tsx(345,25): error TS2551: Property 'assigned_porter_name' does not exist on type 'Trip'. Did you mean 'assigned_driver_name'?
+app/(operator)/trips/index.tsx(578,42): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/trips/index.tsx(826,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/trips/index.tsx(858,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/trips/index.tsx(900,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(operator)/trucks/index.tsx(307,42): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+app/(porter)/reports/damaged.tsx(104,55): error TS2345: Argument of type 'ProductDiscrepancySubmission' is not assignable to parameter of type 'Omit<ProductDiscrepancy, "id" | "reported_at">'.
+  Types of property 'reported_by' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+app/(porter)/reports/missing.tsx(89,55): error TS2345: Argument of type 'ProductDiscrepancySubmission' is not assignable to parameter of type 'Omit<ProductDiscrepancy, "id" | "reported_at">'.
+  Types of property 'reported_by' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+app/(porter)/reports/rejected.tsx(116,55): error TS2345: Argument of type 'ProductDiscrepancySubmission' is not assignable to parameter of type 'Omit<ProductDiscrepancy, "id" | "reported_at">'.
+  Types of property 'reported_by' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+app/(porter)/trips/[id].tsx(223,19): error TS2741: Property 'photo_urls' is missing in type '{ trip_id: string; porter_id: string; items: ChecklistItem[]; total_items_delivered: number; items_returned: number; items_damaged: number; discrepancy_reported: boolean; ... 8 more ...; location: { ...; } | undefined; }' but required in type 'DeliveryChecklistSubmission'.
+app/(porter)/trips/[id].tsx(242,60): error TS2345: Argument of type 'DeliveryChecklistSubmission' is not assignable to parameter of type 'Omit<DeliveryChecklist, "id">'.
+  Property 'started_at' is missing in type 'DeliveryChecklistSubmission' but required in type 'Omit<DeliveryChecklist, "id">'.
+app/(porter)/trips/[id].tsx(627,24): error TS18048: 'loadingChecklist.quantity_confirmed' is possibly 'undefined'.
+app/(porter)/trips/[id].tsx(628,61): error TS2345: Argument of type '(prev: Partial<LoadingChecklist>) => { quantity_confirmed: number; id?: string | undefined; trip_id?: string | undefined; porter_id?: string | undefined; ... 15 more ...; location?: { ...; } | undefined; }' is not assignable to parameter of type 'SetStateAction<Partial<LoadingChecklist>>'.
+  Type '(prev: Partial<LoadingChecklist>) => { quantity_confirmed: number; id?: string | undefined; trip_id?: string | undefined; porter_id?: string | undefined; ... 15 more ...; location?: { ...; } | undefined; }' is not assignable to type '(prevState: Partial<LoadingChecklist>) => Partial<LoadingChecklist>'.
+    Call signature return types '{ quantity_confirmed: number; id?: string | undefined; trip_id?: string | undefined; porter_id?: string | undefined; started_at?: string | undefined; completed_at?: string | undefined; ... 13 more ...; location?: { ...; } | undefined; }' and 'Partial<LoadingChecklist>' are incompatible.
+      The types of 'quantity_confirmed' are incompatible between these types.
+        Type 'number' is not assignable to type 'boolean | undefined'.
+app/(porter)/trips/[id].tsx(660,26): error TS18048: 'loadingChecklist.photo_urls' is possibly 'undefined'.
+app/(porter)/trips/[id].tsx(778,24): error TS18048: 'deliveryChecklist.quantity_delivered' is possibly 'undefined'.
+app/(porter)/trips/[id].tsx(830,26): error TS18048: 'deliveryChecklist.photo_urls' is possibly 'undefined'.
+app/(tabs)/profile.tsx(281,28): error TS2339: Property 'role' does not exist on type 'User'.
+app/(tabs)/trips.tsx(21,40): error TS2339: Property 'primary' does not exist on type '"#F7F4EF" | "#24211F"'.
+  Property 'primary' does not exist on type '"#F7F4EF"'.
+app/(tabs)/trips.tsx(32,106): error TS2339: Property 'tertiary' does not exist on type '"#F7F4EF" | "#24211F"'.
+  Property 'tertiary' does not exist on type '"#F7F4EF"'.
+app/demo-login.tsx(19,22): error TS2724: '"../src/services/demo/demoAuth.service"' has no exported member named 'getDemoUsers'. Did you mean 'getDemoUser'?
+app/demo-login.tsx(103,27): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/components/analytics/ExportConfigModal.tsx(268,5): error TS2322: Type '"85vh"' is not assignable to type 'DimensionValue | undefined'.
+src/components/analytics/InteractiveLineChart.tsx(408,13): error TS2322: Type 'Value' is not assignable to type 'NumberProp | undefined'.
+src/components/analytics/InteractiveLineChart.tsx(428,13): error TS2322: Type 'Value' is not assignable to type 'NumberProp | undefined'.
+src/components/analytics/ReportConfigModal.tsx(255,5): error TS2322: Type '"85vh"' is not assignable to type 'DimensionValue | undefined'.
+src/components/auth/ChangePasswordScreen.tsx(183,43): error TS2339: Property 'heavy' does not exist on type '{ readonly light: "300"; readonly normal: "400"; readonly medium: "500"; readonly semibold: "600"; readonly bold: "700"; readonly extrabold: "800"; }'.
+src/components/auth/ForgotPasswordScreen.tsx(124,43): error TS2339: Property 'heavy' does not exist on type '{ readonly light: "300"; readonly normal: "400"; readonly medium: "500"; readonly semibold: "600"; readonly bold: "700"; readonly extrabold: "800"; }'.
+src/components/auth/LoginScreen.tsx(487,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+src/components/auth/LoginScreen.tsx(544,24): error TS2339: Property 'shadow' does not exist on type '{ backgroundColor: string; borderRadius: number; padding: number; shadowColor: string; shadowOffset: { width: number; height: number; }; shadowOpacity: number; shadowRadius: number; elevation: number; }'.
+src/components/common/EmptyStateCard.tsx(10,8): error TS2613: Module '"C:/Users/Joy/OneDrive/Documents/Vone Trucking/vone-trucking-mobile/src/components/ui/Button"' has no default export. Did you mean to use 'import { Button } from "C:/Users/Joy/OneDrive/Documents/Vone Trucking/vone-trucking-mobile/src/components/ui/Button"' instead?
+src/components/common/index.ts(13,10): error TS2305: Module '"./Button"' has no exported member 'default'.
+src/components/common/SyncStatusBadge.tsx(51,12): error TS2678: Type '"offline"' is not comparable to type 'SyncStatus'.
+src/components/common/SyncStatusBadge.tsx(65,61): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(66,39): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(66,76): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(74,50): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(78,39): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(78,76): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(79,46): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(79,64): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(80,65): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(86,52): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(87,37): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(87,74): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(88,44): error TS18048: 'config' is possibly 'undefined'.
+src/components/common/SyncStatusBadge.tsx(88,62): error TS18048: 'config' is possibly 'undefined'.
+src/components/delivery/PODSubmissionForm.tsx(15,3): error TS2305: Module '"react"' has no exported member 'View'.
+src/components/delivery/PODSubmissionForm.tsx(16,3): error TS2305: Module '"react"' has no exported member 'Text'.
+src/components/delivery/PODSubmissionForm.tsx(17,3): error TS2305: Module '"react"' has no exported member 'TextInput'.
+src/components/delivery/PODSubmissionForm.tsx(18,3): error TS2305: Module '"react"' has no exported member 'TouchableOpacity'.
+src/components/delivery/PODSubmissionForm.tsx(19,3): error TS2305: Module '"react"' has no exported member 'ScrollView'.
+src/components/delivery/PODSubmissionForm.tsx(20,3): error TS2305: Module '"react"' has no exported member 'StyleSheet'.
+src/components/delivery/PODSubmissionForm.tsx(21,3): error TS2305: Module '"react"' has no exported member 'Alert'.
+src/components/delivery/PODSubmissionForm.tsx(22,3): error TS2305: Module '"react"' has no exported member 'Image'.
+src/components/delivery/PODSubmissionForm.tsx(23,3): error TS2305: Module '"react"' has no exported member 'ActivityIndicator'.
+src/components/delivery/SignatureCapture.tsx(25,29): error TS2307: Cannot find module 'react-native-signature-canvas' or its corresponding type declarations.
+src/components/fuel/FuelRecordingCard.tsx(20,30): error TS2307: Cannot find module 'expo-image-picker' or its corresponding type declarations.
+src/components/fuel/FuelRecordingCard.tsx(54,59): error TS2339: Property 'calculateTotal' does not exist on type 'Function'.
+src/components/fuel/FuelRecordingCard.tsx(65,59): error TS2339: Property 'calculateTotal' does not exist on type 'Function'.
+src/components/fuel/FuelRecordingCard.tsx(79,59): error TS2339: Property 'calculateLitres' does not exist on type 'Function'.
+src/components/index.ts(9,1): error TS2308: Module './ui' has already exported a member named 'Button'. Consider explicitly re-exporting to resolve the ambiguity.
+src/components/index.ts(9,1): error TS2308: Module './ui' has already exported a member named 'Card'. Consider explicitly re-exporting to resolve the ambiguity.
+src/components/onboarding/OnboardingScreens.tsx(120,39): error TS2339: Property 'heavy' does not exist on type '{ readonly light: "300"; readonly normal: "400"; readonly medium: "500"; readonly semibold: "600"; readonly bold: "700"; readonly extrabold: "800"; }'.
+src/components/payroll/CashAdvanceManagementCard.tsx(71,33): error TS7053: Element implicitly has an 'any' type because expression of type '"getAllRequests"' can't be used to index type 'CashAdvanceManagementService'.
+  Property 'getAllRequests' does not exist on type 'CashAdvanceManagementService'.
+src/components/payroll/CashAdvanceManagementCard.tsx(74,25): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/components/payroll/CashAdvanceManagementCard.tsx(74,28): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/components/payroll/CashAdvanceManagementCard.tsx(115,9): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/components/payroll/CashAdvanceManagementCard.tsx(120,38): error TS2339: Property 'amount' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceManagementCard.tsx(148,9): error TS2554: Expected 3 arguments, but got 4.
+src/components/payroll/CashAdvanceManagementCard.tsx(183,9): error TS2554: Expected 3-4 arguments, but got 5.
+src/components/payroll/CashAdvanceManagementCard.tsx(188,23): error TS2339: Property 'amount' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceManagementCard.tsx(217,9): error TS2345: Argument of type 'string' is not assignable to parameter of type '"check" | "cash" | "bank_transfer"'.
+src/components/payroll/CashAdvanceManagementCard.tsx(318,58): error TS2339: Property 'amount' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceManagementCard.tsx(375,18): error TS2339: Property 'notes' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceManagementCard.tsx(378,53): error TS2339: Property 'notes' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceManagementCard.tsx(515,39): error TS2339: Property 'amount' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceManagementCard.tsx(625,39): error TS2339: Property 'amount' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestCard.tsx(21,30): error TS2307: Cannot find module 'expo-image-picker' or its corresponding type declarations.
+src/components/payroll/CashAdvanceRequestCard.tsx(22,33): error TS2307: Cannot find module 'expo-document-picker' or its corresponding type declarations.
+src/components/payroll/CashAdvanceRequestCard.tsx(23,35): error TS2305: Module '"../../types/payroll.types"' has no exported member 'EligibilityCheck'.
+src/components/payroll/CashAdvanceRequestCard.tsx(66,9): error TS2554: Expected 2 arguments, but got 3.
+src/components/payroll/CashAdvanceRequestCard.tsx(93,11): error TS2554: Expected 2 arguments, but got 3.
+src/components/payroll/CashAdvanceRequestCard.tsx(200,9): error TS2554: Expected 1 arguments, but got 7.
+src/components/payroll/CashAdvanceRequestCard.tsx(291,39): error TS7006: Parameter 'reason' implicitly has an 'any' type.
+src/components/payroll/CashAdvanceRequestCard.tsx(291,47): error TS7006: Parameter 'index' implicitly has an 'any' type.
+src/components/payroll/CashAdvanceRequestList.tsx(48,33): error TS7053: Element implicitly has an 'any' type because expression of type '"getAllRequests"' can't be used to index type 'CashAdvanceManagementService'.
+  Property 'getAllRequests' does not exist on type 'CashAdvanceManagementService'.
+src/components/payroll/CashAdvanceRequestList.tsx(49,51): error TS7006: Parameter 'r' implicitly has an 'any' type.
+src/components/payroll/CashAdvanceRequestList.tsx(52,30): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/components/payroll/CashAdvanceRequestList.tsx(52,33): error TS7006: Parameter 'b' implicitly has an 'any' type.
+src/components/payroll/CashAdvanceRequestList.tsx(147,14): error TS2551: Property 'transaction_type' does not exist on type 'CashAdvanceTransaction'. Did you mean 'transaction_date'?
+src/components/payroll/CashAdvanceRequestList.tsx(179,27): error TS2339: Property 'amount' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(252,22): error TS2339: Property 'notes' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(255,59): error TS2339: Property 'notes' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(267,26): error TS2339: Property 'rejected_by' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(269,42): error TS2339: Property 'rejected_by' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(270,30): error TS2339: Property 'rejected_at' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(270,62): error TS2339: Property 'rejected_at' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(284,34): error TS2551: Property 'transaction_type' does not exist on type 'CashAdvanceTransaction'. Did you mean 'transaction_date'?
+src/components/payroll/CashAdvanceRequestList.tsx(286,35): error TS2551: Property 'transaction_type' does not exist on type 'CashAdvanceTransaction'. Did you mean 'transaction_date'?
+src/components/payroll/CashAdvanceRequestList.tsx(290,44): error TS2551: Property 'transaction_type' does not exist on type 'CashAdvanceTransaction'. Did you mean 'transaction_date'?
+src/components/payroll/CashAdvanceRequestList.tsx(299,26): error TS2551: Property 'transaction_type' does not exist on type 'CashAdvanceTransaction'. Did you mean 'transaction_date'?
+src/components/payroll/CashAdvanceRequestList.tsx(303,27): error TS2551: Property 'transaction_type' does not exist on type 'CashAdvanceTransaction'. Did you mean 'transaction_date'?
+src/components/payroll/CashAdvanceRequestList.tsx(312,22): error TS2339: Property 'approved_by' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(315,40): error TS2339: Property 'approved_by' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(316,28): error TS2339: Property 'approved_at' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(316,60): error TS2339: Property 'approved_at' does not exist on type 'CashAdvanceRequest'.
+src/components/payroll/CashAdvanceRequestList.tsx(333,22): error TS2551: Property 'acknowledged_by_employee_at' does not exist on type 'CashAdvanceRequest'. Did you mean 'acknowledged_by_employee'?
+src/components/payroll/CashAdvanceRequestList.tsx(337,37): error TS2551: Property 'acknowledged_by_employee_at' does not exist on type 'CashAdvanceRequest'. Did you mean 'acknowledged_by_employee'?
+src/components/payroll/PayrollProcessingCard.tsx(169,17): error TS2345: Argument of type '{ employee_id: string; employee_name: string; employee_role: "driver"; compensation_config: { method: "per_trip"; base_amount: number; effective_from: string; }; }[]' is not assignable to parameter of type '{ employee_id: string; employee_name: string; employee_role: "driver" | "porter" | "other"; compensation_config: EmployeeCompensation; }[]'.
+  Type '{ employee_id: string; employee_name: string; employee_role: "driver"; compensation_config: { method: "per_trip"; base_amount: number; effective_from: string; }; }' is not assignable to type '{ employee_id: string; employee_name: string; employee_role: "driver" | "porter" | "other"; compensation_config: EmployeeCompensation; }'.
+    Types of property 'compensation_config' are incompatible.
+      Type '{ method: "per_trip"; base_amount: number; effective_from: string; }' is missing the following properties from type 'EmployeeCompensation': employee_id, overtime_enabled, created_at, updated_at, created_by
+src/components/payroll/PayrollProcessingCard.tsx(232,9): error TS2345: Argument of type '"manual_adjustment"' is not assignable to parameter of type '"earnings_adjustment" | "deduction_adjustment" | "calculation_error" | "data_error" | "policy_change"'.
+src/components/payroll/PayslipViewerCard.tsx(332,16): error TS18048: 'selectedPayslip.cash_advance_deduction' is possibly 'undefined'.
+src/components/payroll/PayslipViewerCard.tsx(339,15): error TS18048: 'selectedPayslip.cash_advance_balance' is possibly 'undefined'.
+src/components/splash/AnimatedSplash.tsx(105,51): error TS2339: Property 'white' does not exist on type 'never'.
+src/components/splash/AnimatedSplash.tsx(114,53): error TS2339: Property 'white' does not exist on type 'never'.
+src/components/splash/AnimatedSplash.tsx(115,37): error TS2339: Property 'fontSize' does not exist on type '{ readonly h1: { readonly fontSize: 36; readonly fontWeight: "700"; readonly lineHeight: 1.2; }; readonly h2: { readonly fontSize: 30; readonly fontWeight: "700"; readonly lineHeight: 1.2; }; ... 9 more ...; readonly label: { ...; }; }'.
+src/components/splash/AnimatedSplash.tsx(116,40): error TS2339: Property 'fontWeight' does not exist on type '{ readonly h1: { readonly fontSize: 36; readonly fontWeight: "700"; readonly lineHeight: 1.2; }; readonly h2: { readonly fontSize: 30; readonly fontWeight: "700"; readonly lineHeight: 1.2; }; ... 9 more ...; readonly label: { ...; }; }'.
+src/components/splash/AnimatedSplash.tsx(130,37): error TS2339: Property 'fontSize' does not exist on type '{ readonly h1: { readonly fontSize: 36; readonly fontWeight: "700"; readonly lineHeight: 1.2; }; readonly h2: { readonly fontSize: 30; readonly fontWeight: "700"; readonly lineHeight: 1.2; }; ... 9 more ...; readonly label: { ...; }; }'.
+src/components/splash/AnimatedSplash.tsx(131,40): error TS2339: Property 'fontWeight' does not exist on type '{ readonly h1: { readonly fontSize: 36; readonly fontWeight: "700"; readonly lineHeight: 1.2; }; readonly h2: { readonly fontSize: 30; readonly fontWeight: "700"; readonly lineHeight: 1.2; }; ... 9 more ...; readonly label: { ...; }; }'.
+src/components/ui/Card.tsx(31,49): error TS2339: Property 'elevated' does not exist on type '"#FFFDFC" | "#2A2826"'.
+  Property 'elevated' does not exist on type '"#FFFDFC"'.
+src/components/ui/Modal.tsx(87,53): error TS2339: Property 'elevated' does not exist on type '"#FFFDFC" | "#2A2826"'.
+  Property 'elevated' does not exist on type '"#FFFDFC"'.
+src/components/ui/Modal.tsx(101,58): error TS2339: Property 'light' does not exist on type '"#E5DDD5" | "#3E3935"'.
+  Property 'light' does not exist on type '"#E5DDD5"'.
+src/components/ui/Modal.tsx(153,55): error TS2339: Property 'light' does not exist on type '"#E5DDD5" | "#3E3935"'.
+  Property 'light' does not exist on type '"#E5DDD5"'.
+src/hooks/useAuth.ts(224,16): error TS7006: Parameter 'event' implicitly has an 'any' type.
+src/hooks/useAuth.ts(224,23): error TS7006: Parameter 'session' implicitly has an 'any' type.
+src/hooks/useForm.ts(20,27): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(schema: Zod3Type<T, FieldValues>, schemaOptions?: ParseParams | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodType<T, unknown, $ZodTypeInternals<T, unknown>>' is not assignable to parameter of type 'Zod3Type<T, FieldValues>'.
+      Types of property '_input' are incompatible.
+        Type 'unknown' is not assignable to type 'FieldValues'.
+  Overload 2 of 4, '(schema: Zod4Type<unknown, FieldValues>, schemaOptions?: ParseContext<$ZodIssue> | undefined, resolverOptions?: NonRawResolverOptions | undefined): Resolver<...>', gave the following error.
+    Argument of type 'ZodType<T, unknown, $ZodTypeInternals<T, unknown>>' is not assignable to parameter of type 'Zod4Type<unknown, FieldValues>'.
+      The types of '_zod.input' are incompatible between these types.
+        Type 'unknown' is not assignable to type 'FieldValues'.
+src/hooks/useGPSHealth.ts(102,41): error TS2551: Property 'signalStrength' does not exist on type 'GPSHealth'. Did you mean 'signal_strength'?
+src/hooks/useGPSHealth.ts(103,43): error TS2339: Property 'accuracy' does not exist on type 'GPSHealth'.
+src/hooks/useGPSHealth.ts(105,12): error TS2339: Property 'isAvailable' does not exist on type 'GPSHealth'.
+src/hooks/useGPSHealth.ts(106,12): error TS2551: Property 'signalStrength' does not exist on type 'GPSHealth'. Did you mean 'signal_strength'?
+src/hooks/useGPSHealth.ts(107,12): error TS2339: Property 'accuracy' does not exist on type 'GPSHealth'.
+src/services/analytics/data-export.service.ts(297,36): error TS2339: Property 'documentDirectory' does not exist on type 'typeof import("C:/Users/Joy/OneDrive/Documents/Vone Trucking/vone-trucking-mobile/node_modules/expo-file-system/build/index")'.
+src/services/api/employee.service.ts(196,33): error TS2339: Property 'confirm_password' does not exist on type 'CreateEmployeeInput'.
+src/services/api/import.service.ts(190,20): error TS2538: Type 'null' cannot be used as an index type.
+src/services/api/import.service.ts(193,50): error TS2345: Argument of type 'VoneTruckingField | null' is not assignable to parameter of type 'VoneTruckingField'.
+  Type 'null' is not assignable to type 'VoneTruckingField'.
+src/services/api/import.service.ts(197,13): error TS2322: Type 'VoneTruckingField | null' is not assignable to type 'VoneTruckingField'.
+  Type 'null' is not assignable to type 'VoneTruckingField'.
+src/services/api/import.service.ts(200,38): error TS2538: Type 'null' cannot be used as an index type.
+src/services/api/index.ts(12,1): error TS2308: Module './trip.service' has already exported a member named 'updateTripStatus'. Consider explicitly re-exporting to resolve the ambiguity.
+src/services/api/location.service.ts(16,15): error TS2305: Module '"../../types/driver-porter.types"' has no exported member 'ApiResponse'.
+src/services/api/trip.service.ts(341,55): error TS7006: Parameter 'trip' implicitly has an 'any' type.
+src/services/api/trip.service.ts(364,56): error TS7006: Parameter 'trip' implicitly has an 'any' type.
+src/services/api/trip.service.ts(394,48): error TS7006: Parameter 't' implicitly has an 'any' type.
+src/services/api/trip.service.ts(470,32): error TS18048: 'availabilityResult.data' is possibly 'undefined'.
+src/services/api/trip.service.ts(527,9): error TS2322: Type '"assigned"' is not assignable to type 'TripStatus'.
+src/services/api/trip.service.ts(619,7): error TS2322: Type '"cancelled"' is not assignable to type 'TripStatus'.
+src/services/api/trip.service.ts(679,7): error TS2322: Type '"draft"' is not assignable to type 'TripStatus | undefined'.
+src/services/api/trip.service.ts(705,57): error TS7006: Parameter 'a' implicitly has an 'any' type.
+src/services/delivery/IncidentReportingService.ts(10,30): error TS2307: Cannot find module 'expo-image-picker' or its corresponding type declarations.
+src/services/delivery/IncidentReportingService.ts(11,33): error TS2307: Cannot find module 'expo-document-picker' or its corresponding type declarations.
+src/services/delivery/ProofOfDeliveryService.ts(10,30): error TS2307: Cannot find module 'expo-image-picker' or its corresponding type declarations.
+src/services/delivery/UploadQueueService.ts(10,35): error TS2307: Cannot find module 'expo-image-manipulator' or its corresponding type declarations.
+src/services/delivery/UploadQueueService.ts(11,26): error TS2307: Cannot find module 'expo-network' or its corresponding type declarations.
+src/services/delivery/UploadQueueService.ts(27,33): error TS2694: Namespace 'global.NodeJS' has no exported member 'Timeout'.
+src/services/delivery/UploadQueueService.ts(181,24): error TS2339: Property 'size' does not exist on type 'FileInfo'.
+  Property 'size' does not exist on type '{ exists: false; uri: string; isDirectory: false; }'.
+src/services/demo/demoAuth.service.ts(30,5): error TS2353: Object literal may only specify known properties, and 'email' does not exist in type 'UserProfile'.
+src/services/demo/demoAuth.service.ts(51,7): error TS2353: Object literal may only specify known properties, and 'email' does not exist in type 'UserProfile'.
+src/services/demo/demoAuth.service.ts(70,7): error TS2353: Object literal may only specify known properties, and 'email' does not exist in type 'UserProfile'.
+src/services/demo/demoTrucks.service.ts(24,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(25,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(26,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(45,5): error TS2353: Object literal may only specify known properties, and 'last_maintenance_date' does not exist in type 'Truck'.
+src/services/demo/demoTrucks.service.ts(70,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(71,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(72,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(93,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(94,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(95,5): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/services/demo/demoTrucks.service.ts(114,5): error TS2353: Object literal may only specify known properties, and 'last_maintenance_date' does not exist in type 'Truck'.
+src/services/fuel/FuelReportsService.ts(73,31): error TS2339: Property 'driver_id' does not exist on type 'FuelBudgetInput'.
+src/services/location/GPSHealthMonitor.ts(79,37): error TS2694: Namespace 'global.NodeJS' has no exported member 'Timeout'.
+src/services/location/GPSHealthMonitor.ts(152,7): error TS2561: Object literal may only specify known properties, but 'signalStrength' does not exist in type 'GPSHealth'. Did you mean to write 'signal_strength'?
+src/services/location/GPSHealthMonitor.ts(153,26): error TS2339: Property 'accuracy' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(156,32): error TS2339: Property 'satelliteCount' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(165,33): error TS2339: Property 'satelliteCount' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(181,31): error TS2339: Property 'accuracy' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(194,18): error TS2551: Property 'isMock' does not exist on type 'LocationUpdate'. Did you mean 'is_mock'?
+src/services/location/GPSHealthMonitor.ts(201,30): error TS2339: Property 'latitude' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(202,31): error TS2339: Property 'longitude' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(208,16): error TS2551: Property 'signalStrength' does not exist on type 'GPSHealth'. Did you mean 'signal_strength'?
+src/services/location/GPSHealthMonitor.ts(212,45): error TS2551: Property 'satelliteCount' does not exist on type 'GPSHealth'. Did you mean 'satellite_count'?
+src/services/location/GPSHealthMonitor.ts(215,30): error TS2339: Property 'latitude' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(216,31): error TS2339: Property 'longitude' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(227,30): error TS2339: Property 'latitude' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(228,31): error TS2339: Property 'longitude' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(234,16): error TS2339: Property 'accuracy' does not exist on type 'GPSHealth'.
+src/services/location/GPSHealthMonitor.ts(238,62): error TS2339: Property 'accuracy' does not exist on type 'GPSHealth'.
+src/services/location/GPSHealthMonitor.ts(241,30): error TS2339: Property 'latitude' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(242,31): error TS2339: Property 'longitude' does not exist on type 'LocationUpdate'.
+src/services/location/GPSHealthMonitor.ts(371,14): error TS2339: Property 'lastUpdate' does not exist on type 'GPSHealth'.
+src/services/location/GPSHealthMonitor.ts(381,9): error TS2561: Object literal may only specify known properties, but 'signalStrength' does not exist in type 'GPSHealth'. Did you mean to write 'signal_strength'?
+src/services/location/GPSHealthMonitor.ts(399,51): error TS2339: Property 'lastUpdate' does not exist on type 'GPSHealth'.
+src/services/location/GPSHealthMonitor.ts(409,52): error TS2551: Property 'signalStrength' does not exist on type 'GPSHealth'. Did you mean 'signal_strength'?
+src/services/location/GPSHealthMonitor.ts(420,52): error TS2339: Property 'accuracy' does not exist on type 'GPSHealth'.
+src/services/location/LocationPermissionManager.ts(25,42): error TS2339: Property 'accuracy' does not exist on type 'LocationPermissionResponse'.
+src/services/location/LocationPermissionManager.ts(26,42): error TS2339: Property 'accuracy' does not exist on type 'LocationPermissionResponse'.
+src/services/notifications/NotificationService.ts(31,35): error TS2322: Type 'Promise<{ shouldShowAlert: true; shouldPlaySound: true; shouldSetBadge: true; }>' is not assignable to type 'Promise<NotificationBehavior>'.
+  Type '{ shouldShowAlert: true; shouldPlaySound: true; shouldSetBadge: true; }' is missing the following properties from type 'NotificationBehavior': shouldShowBanner, shouldShowList
+src/services/payroll/CashAdvanceManagementService.ts(359,7): error TS2322: Type '"completed"' is not assignable to type '"repaying"'.
+src/services/payroll/CashAdvanceManagementService.ts(419,7): error TS2322: Type '"completed"' is not assignable to type '"repaying"'.
+src/services/reports/ReportGenerationService.ts(516,37): error TS2339: Property 'documentDirectory' does not exist on type 'typeof import("C:/Users/Joy/OneDrive/Documents/Vone Trucking/vone-trucking-mobile/node_modules/expo-file-system/build/index")'.
+src/services/reports/ReportGenerationService.ts(548,37): error TS2339: Property 'documentDirectory' does not exist on type 'typeof import("C:/Users/Joy/OneDrive/Documents/Vone Trucking/vone-trucking-mobile/node_modules/expo-file-system/build/index")'.
+src/services/sync/OfflineSyncService.ts(34,29): error TS2694: Namespace 'global.NodeJS' has no exported member 'Timeout'.
+src/types/driver-porter.types.ts(545,9): error TS2322: Type 'Partial<Record<TripStatus, TripStatus[]>>' is not assignable to type 'Record<TripStatus, TripStatus[]>'.
+  Types of property 'draft' are incompatible.
+    Type 'TripStatus[] | undefined' is not assignable to type 'TripStatus[]'.
+      Type 'undefined' is not assignable to type 'TripStatus[]'.

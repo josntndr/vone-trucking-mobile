@@ -22,6 +22,7 @@ export const fontWeights = {
   semibold: '600',
   bold: '700',
   extrabold: '800',
+  heavy: '800', // Alias for extrabold - used in some legacy components
 } as const;
 
 export const lineHeights = {

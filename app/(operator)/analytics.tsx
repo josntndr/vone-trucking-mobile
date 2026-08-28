@@ -546,7 +546,7 @@ const styles = StyleSheet.create({
     borderRadius: COMPONENTS.card.borderRadius,
     padding: SPACING.md,
     alignItems: 'center',
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
     minHeight: 130,
   },
   statValue: {
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
     minHeight: 90,
     alignItems: 'center',
     justifyContent: 'center',
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
   },
   summaryValue: {
     fontSize: 24,
@@ -607,14 +607,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: COMPONENTS.card.borderRadius,
     padding: SPACING.md,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
     overflow: 'hidden',
   },
   // Metrics Styles
   metricsCard: {
     backgroundColor: COLORS.white,
     borderRadius: COMPONENTS.card.borderRadius,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
   },
   metricRow: {
     paddingVertical: SPACING.md,
@@ -699,7 +699,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: COLORS.navy,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
   },
   secondaryActionText: {
     fontSize: 15,

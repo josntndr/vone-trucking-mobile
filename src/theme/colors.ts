@@ -107,6 +107,19 @@ export const lightTheme = {
   white: brandColors.white,
   black: brandColors.black,
   transparent: brandColors.transparent,
+  
+  // Card surface variants for elevated/flat distinction
+  elevated: brandColors.white,
+  light: '#EFE9E3',
+  
+  // Legacy/common style properties
+  shadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
 } as const;
 
 // Dark Theme (if needed later)
@@ -165,6 +178,19 @@ export const darkTheme = {
   white: brandColors.white,
   black: brandColors.black,
   transparent: brandColors.transparent,
+  
+  // Card surface variants for elevated/flat distinction
+  elevated: '#342F2D',
+  light: '#4A443F',
+  
+  // Legacy/common style properties
+  shadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
 } as const;
 
 export type ColorTheme = typeof lightTheme;

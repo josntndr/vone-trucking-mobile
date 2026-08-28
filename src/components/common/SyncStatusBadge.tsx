@@ -55,10 +55,21 @@ export function SyncStatusBadge({ status, onRetry, compact = false }: SyncStatus
           bgColor: colors.border,
           label: 'Offline',
         };
+      default:
+        return {
+          icon: 'help-circle',
+          color: colors.textSecondary,
+          bgColor: colors.border,
+          label: 'Unknown',
+        };
     }
   };
 
   const config = getStatusConfig();
+
+  if (!config) {
+    return null;
+  }
 
   if (compact) {
     return (

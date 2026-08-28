@@ -359,7 +359,7 @@ export default function EmployeesListScreen() {
                       styles.filterChip,
                       {
                         backgroundColor: isSelected ? COLORS.navy : 'transparent',
-                        ...COMPONENTS.card.shadow,
+                        ...DS.shadows.base,
                         shadowOpacity: isSelected ? 0.15 : 0,
                         elevation: isSelected ? 2 : 0,
                       },
@@ -398,7 +398,7 @@ export default function EmployeesListScreen() {
                       styles.filterChip,
                       {
                         backgroundColor: isSelected ? COLORS.navy : 'transparent',
-                        ...COMPONENTS.card.shadow,
+                        ...DS.shadows.base,
                         shadowOpacity: isSelected ? 0.15 : 0,
                         elevation: isSelected ? 2 : 0,
                       },

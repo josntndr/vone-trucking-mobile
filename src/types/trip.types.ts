@@ -64,6 +64,7 @@ export interface Trip {
   // Locations
   pickup_warehouse: string;
   pickup_address?: string;
+  pickup_location?: string; // Legacy alias for pickup_warehouse
   delivery_destination: string;
   delivery_address: string;
   store_branch_name?: string;
@@ -81,6 +82,7 @@ export interface Trip {
   assigned_driver_name?: string;
   porter_ids?: string[];
   porter_names?: string[];
+  assigned_porter_name?: string; // Legacy field for single porter
   
   // Financial
   expected_income?: number;

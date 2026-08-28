@@ -575,7 +575,7 @@ export default function TripsListScreen() {
                     styles.filterChip,
                     {
                       backgroundColor: isSelected ? COLORS.navy : COLORS.white,
-                      ...COMPONENTS.card.shadow,
+                      ...DS.shadows.base,
                       shadowOpacity: isSelected ? 0.15 : 0.05,
                       elevation: isSelected ? 3 : 1,
                     },
@@ -823,7 +823,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
   },
   filterButtonText: {
     fontSize: 14,
@@ -855,7 +855,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
   },
   sortButtonText: {
     fontSize: 14,
@@ -897,7 +897,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
   },
   secondaryActionText: {
     fontSize: 14,

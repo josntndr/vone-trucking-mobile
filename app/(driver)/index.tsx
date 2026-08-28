@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: COMPONENTS.card.borderRadius,
     padding: SPACING.md,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
   },
   tripHeader: {
     flexDirection: 'row',
@@ -470,7 +470,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: SPACING.md,
     padding: SPACING.md,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
     shadowOpacity: 0.2,
     elevation: 4,
   },
@@ -512,7 +512,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: SPACING.sm,
-    ...COMPONENTS.card.shadow,
+    ...DS.shadows.base,
   },
   upcomingTripCardMargin: {
     marginBottom: SPACING.xs,

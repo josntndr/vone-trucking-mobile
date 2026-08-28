@@ -304,7 +304,7 @@ export default function TrucksListScreen() {
                     styles.filterChip,
                     {
                       backgroundColor: isSelected ? COLORS.navy : COLORS.white,
-                      ...COMPONENTS.card.shadow,
+                      ...DS.shadows.base,
                       shadowOpacity: isSelected ? 0.15 : 0.05,
                       elevation: isSelected ? 3 : 1,
                     },
