@@ -29,7 +29,7 @@ import {
   archiveEmployee,
   restoreEmployee,
 } from '../../../src/services/api/employee.service';
-import { Employee, EmploymentStatus } from '../../../src/types/employee.types';
+import { Employee, EmploymentStatus, getDisplayAddress } from '../../../src/types/employee.types';
 import { UserRole } from '../../../src/types';
 import {
   formatPhilippineDate,
@@ -287,7 +287,7 @@ export default function EmployeeDetailScreen() {
               </View>
             )}
 
-            {employee.address && (
+            {(employee.formatted_address || employee.address) && (
               <View style={styles.infoRow}>
                 <Ionicons name="location" size={20} color={colors.textSecondary} />
                 <View style={styles.infoContent}>
@@ -295,7 +295,7 @@ export default function EmployeeDetailScreen() {
                     Address
                   </Text>
                   <Text style={[styles.infoValue, { color: colors.text }]}>
-                    {employee.address}
+                    {getDisplayAddress(employee)}
                   </Text>
                 </View>
               </View>

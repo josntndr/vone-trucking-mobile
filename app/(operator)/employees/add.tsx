@@ -22,6 +22,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Screen } from '../../../src/components';
+import { AddressFormSection } from '../../../src/components/forms';
 import { 
   createEmployee, 
   checkUsernameAvailability 
@@ -81,7 +82,20 @@ export default function AddEmployeeScreen() {
       last_name: '',
       role: UserRole.DRIVER,
       phone: '',
+      // Legacy address field (optional for backward compatibility)
       address: '',
+      // Structured address fields (required)
+      country: 'Philippines',
+      country_code: 'PH',
+      province: '',
+      province_code: '',
+      city: '',
+      city_code: '',
+      barangay: '',
+      barangay_code: '',
+      postal_code: '',
+      address_line_1: '',
+      address_line_2: '',
       emergency_contact_name: '',
       emergency_contact_relationship: '',
       emergency_contact_phone: '',
@@ -507,11 +521,14 @@ export default function AddEmployeeScreen() {
               keyboardType: 'phone-pad',
             })}
 
-            {renderTextInput('address', 'Complete Address', {
-              placeholder: 'House number, street, barangay, city, and province',
-              multiline: true,
-              maxLength: 500,
-            })}
+            {/* Structured Address Section */}
+            <AddressFormSection
+              control={control}
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              disabled={isSubmitting}
+            />
           </View>
 
           {/* Section 2: Emergency Contact */}

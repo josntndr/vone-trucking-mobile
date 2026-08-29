@@ -91,6 +91,58 @@ const perTripRateSchema = z
     'Per-trip rate must be between ₱1.00 and ₱999,999.00'
   );
 
+// Structured Address Validation
+const structuredAddressSchema = z.object({
+  // Country (required)
+  country: z.string().min(1, 'Select a country'),
+  country_code: z.string().min(1, 'Country code is required'),
+  
+  // Province/Region (required)
+  province: z.string().min(1, 'Select a province or region'),
+  province_code: z.string().min(1, 'Province code is required'),
+  
+  // City/Municipality (required)
+  city: z.string().min(1, 'Select a city or municipality'),
+  city_code: z.string().min(1, 'City code is required'),
+  
+  // Barangay (required)
+  barangay: z.string().min(1, 'Select a barangay'),
+  barangay_code: z.string().min(1, 'Barangay code is required'),
+  
+  // Postal Code (required)
+  postal_code: z
+    .string()
+    .min(1, 'Enter a postal code')
+    .regex(/^\d{4}$/, 'Postal code must be exactly 4 digits')
+    .refine(
+      (val) => {
+        const code = parseInt(val, 10);
+        return code >= 1000 && code <= 9999;
+      },
+      'Enter a valid postal code'
+    ),
+  
+  // Address Line 1 (required)
+  address_line_1: z
+    .string()
+    .min(1, "Enter the employee's house, street, or subdivision")
+    .min(5, 'Address line 1 must be at least 5 characters')
+    .max(200, 'Address line 1 is too long')
+    .trim()
+    .refine(
+      (val) => val.split(' ').length >= 2,
+      'Enter a detailed address (e.g., Block 3 Lot 15, Treelane 3 Subdivision)'
+    ),
+  
+  // Address Line 2 (optional)
+  address_line_2: z
+    .string()
+    .max(200, 'Address line 2 is too long')
+    .trim()
+    .optional()
+    .or(z.literal('')),
+});
+
 // Create Employee Schema
 export const employeeSchema = z
   .object({
@@ -122,16 +174,37 @@ export const employeeSchema = z
     // Contact Information (required)
     phone: philippinePhoneSchema,
 
+    // Legacy address field (optional for backward compatibility)
     address: z
       .string()
-      .min(1, 'Enter the employee\'s complete address')
-      .min(10, 'Address is too short - enter house number, street, barangay, city, and province')
-      .max(500, 'Address is too long')
+      .optional()
+      .or(z.literal('')),
+
+    // Structured Address (required) - Country is always Philippines
+    country: z.string().default('Philippines'),
+    country_code: z.string().default('PH'),
+    province: z.string().min(1, 'Select a province or region'),
+    province_code: z.string().min(1, 'Province code is required'),
+    city: z.string().min(1, 'Select a city or municipality'),
+    city_code: z.string().min(1, 'City code is required'),
+    barangay: z.string().min(1, 'Select a barangay'),
+    barangay_code: z.string().min(1, 'Barangay code is required'),
+    postal_code: z
+      .string()
+      .min(1, 'Enter a postal code')
+      .regex(/^\d{4}$/, 'Postal code must be exactly 4 digits'),
+    address_line_1: z
+      .string()
+      .min(1, "Enter the employee's house, street, or subdivision")
+      .min(5, 'Address line 1 must be at least 5 characters')
+      .max(200, 'Address line 1 is too long')
+      .trim(),
+    address_line_2: z
+      .string()
+      .max(200, 'Address line 2 is too long')
       .trim()
-      .refine(
-        (val) => val.split(' ').length >= 5,
-        'Enter a complete address (house number, street, barangay, city, province)'
-      ),
+      .optional()
+      .or(z.literal('')),
 
     // Emergency Contact (required)
     emergency_contact_name: z
@@ -231,6 +304,20 @@ export const employeeSchema = z
       message: 'Emergency contact must use a different phone number',
       path: ['emergency_contact_phone'],
     }
+  )
+  .refine(
+    (data) => {
+      // Validate address line 1 has meaningful content (not just spaces/punctuation)
+      if (data.address_line_1) {
+        const cleaned = data.address_line_1.trim();
+        return cleaned.length >= 5 && /[a-zA-Z0-9]/.test(cleaned);
+      }
+      return true;
+    },
+    {
+      message: 'Enter a valid street address with house or building details',
+      path: ['address_line_1'],
+    }
   );
 
 export type CreateEmployeeFormData = z.infer<typeof employeeSchema>;
@@ -263,12 +350,41 @@ export const updateEmployeeSchema = z.object({
 
   phone: philippinePhoneSchema.optional(),
 
+  // Legacy address field (optional for backward compatibility)
   address: z
     .string()
-    .min(10, 'Address is too short')
     .max(500, 'Address is too long')
     .trim()
-    .optional(),
+    .optional()
+    .or(z.literal('')),
+
+  // Structured Address (optional for updates) - Country is always Philippines
+  country: z.string().default('Philippines').optional(),
+  country_code: z.string().default('PH').optional(),
+  province: z.string().min(1, 'Select a province or region').optional(),
+  province_code: z.string().optional(),
+  city: z.string().min(1, 'Select a city or municipality').optional(),
+  city_code: z.string().optional(),
+  barangay: z.string().min(1, 'Select a barangay').optional(),
+  barangay_code: z.string().optional(),
+  postal_code: z
+    .string()
+    .regex(/^\d{4}$/, 'Postal code must be exactly 4 digits')
+    .optional()
+    .or(z.literal('')),
+  address_line_1: z
+    .string()
+    .min(5, 'Address line 1 must be at least 5 characters')
+    .max(200, 'Address line 1 is too long')
+    .trim()
+    .optional()
+    .or(z.literal('')),
+  address_line_2: z
+    .string()
+    .max(200, 'Address line 2 is too long')
+    .trim()
+    .optional()
+    .or(z.literal('')),
 
   emergency_contact_name: z
     .string()
@@ -376,4 +492,93 @@ export const generateSecurePassword = (): string => {
     .split('')
     .sort(() => Math.random() - 0.5)
     .join('');
+};
+
+/**
+ * Validate structured address hierarchy
+ * Ensures city belongs to province and barangay belongs to city
+ */
+export const validateAddressHierarchy = async (
+  provinceCode: string,
+  cityCode: string,
+  barangayCode: string
+): Promise<{ valid: boolean; error?: string }> => {
+  // Import location service dynamically to avoid circular dependencies
+  const locationService = await import('../../services/location.service');
+  return locationService.validateLocationHierarchy(provinceCode, cityCode, barangayCode);
+};
+
+/**
+ * Validate postal code for a city
+ */
+export const validatePostalCodeForCity = async (
+  postalCode: string,
+  cityCode: string
+): Promise<{ valid: boolean; error?: string }> => {
+  // Import location service dynamically to avoid circular dependencies
+  const locationService = await import('../../services/location.service');
+  return locationService.validatePostalCode(postalCode, cityCode);
+};
+
+/**
+ * Validate complete structured address
+ * Returns detailed validation errors for each field
+ */
+export const validateStructuredAddress = async (address: {
+  country_code: string;
+  province_code: string;
+  city_code: string;
+  barangay_code: string;
+  postal_code: string;
+  address_line_1: string;
+}): Promise<{ valid: boolean; errors: Record<string, string> }> => {
+  const errors: Record<string, string> = {};
+
+  // Validate required fields
+  if (!address.country_code) errors.country = 'Select a country';
+  if (!address.province_code) errors.province = 'Select a province or region';
+  if (!address.city_code) errors.city = 'Select a city or municipality';
+  if (!address.barangay_code) errors.barangay = 'Select a barangay';
+  if (!address.postal_code) errors.postal_code = 'Enter a postal code';
+  if (!address.address_line_1 || address.address_line_1.trim().length < 5) {
+    errors.address_line_1 = "Enter the employee's house, street, or subdivision";
+  }
+
+  // If basic validation fails, return early
+  if (Object.keys(errors).length > 0) {
+    return { valid: false, errors };
+  }
+
+  // Validate location hierarchy
+  const hierarchyResult = await validateAddressHierarchy(
+    address.province_code,
+    address.city_code,
+    address.barangay_code
+  );
+  
+  if (!hierarchyResult.valid && hierarchyResult.error) {
+    // Determine which field caused the error
+    if (hierarchyResult.error.includes('city')) {
+      errors.city = hierarchyResult.error;
+    } else if (hierarchyResult.error.includes('barangay')) {
+      errors.barangay = hierarchyResult.error;
+    } else {
+      errors.barangay = hierarchyResult.error;
+    }
+  }
+
+  // Validate postal code
+  const postalResult = await validatePostalCodeForCity(
+    address.postal_code,
+    address.city_code
+  );
+  
+  if (!postalResult.valid && postalResult.error) {
+    errors.postal_code = postalResult.error;
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
 };

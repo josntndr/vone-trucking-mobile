@@ -14,6 +14,7 @@ import type {
   EmployeeFilters,
   AccountStatus,
 } from '../../types/employee.types';
+import { formatAddressWithLine2 } from '../location.service';
 
 /**
  * Check if username is available
@@ -172,6 +173,25 @@ export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiRes
       return { error: 'This username is already in use' };
     }
 
+    // Generate formatted address from structured fields
+    let formattedAddress: string | undefined;
+    if (input.address_line_1 && input.barangay_code && input.city_code && input.province_code && input.postal_code && input.country_code) {
+      try {
+        formattedAddress = formatAddressWithLine2({
+          addressLine1: input.address_line_1,
+          addressLine2: input.address_line_2,
+          barangayCode: input.barangay_code,
+          cityCode: input.city_code,
+          provinceCode: input.province_code,
+          postalCode: input.postal_code,
+          countryCode: input.country_code,
+        });
+      } catch (error) {
+        console.error('Error formatting address:', error);
+        // Continue without formatted address
+      }
+    }
+
     // Generate internal email identifier for auth system
     // This is NEVER shown to the employee or operator UI
     const internalEmail = `${input.username.toLowerCase()}@vonetrucking.internal`;
@@ -192,7 +212,7 @@ export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiRes
       return { error: 'Failed to create employee account. Please try again.' };
     }
 
-    // Create employee profile with all required fields
+    // Create employee profile with all required fields including structured address
     const { temporary_password, confirm_password, ...profileData } = input;
 
     const { data, error } = await supabase
@@ -206,6 +226,20 @@ export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiRes
         employment_status: input.employment_status,
         is_active: true,
         per_trip_rate: input.per_trip_rate,
+        // Structured address fields
+        country: input.country,
+        country_code: input.country_code,
+        province: input.province,
+        province_code: input.province_code,
+        city: input.city,
+        city_code: input.city_code,
+        barangay: input.barangay,
+        barangay_code: input.barangay_code,
+        postal_code: input.postal_code,
+        address_line_1: input.address_line_1,
+        address_line_2: input.address_line_2 || null,
+        formatted_address: formattedAddress,
+        address_is_legacy: false,
         created_by: user.id,
         updated_by: user.id,
       })
@@ -259,10 +293,30 @@ export const updateEmployee = async (input: UpdateEmployeeInput): Promise<ApiRes
 
     const { id, ...updates } = input;
 
+    // Generate formatted address if structured fields are provided
+    let formattedAddress: string | undefined;
+    if (updates.address_line_1 && updates.barangay_code && updates.city_code && updates.province_code && updates.postal_code && updates.country_code) {
+      try {
+        formattedAddress = formatAddressWithLine2({
+          addressLine1: updates.address_line_1,
+          addressLine2: updates.address_line_2,
+          barangayCode: updates.barangay_code,
+          cityCode: updates.city_code,
+          provinceCode: updates.province_code,
+          postalCode: updates.postal_code,
+          countryCode: updates.country_code,
+        });
+      } catch (error) {
+        console.error('Error formatting address:', error);
+        // Continue without formatted address
+      }
+    }
+
     const { data, error } = await supabase
       .from('employee_profiles')
       .update({
         ...updates,
+        formatted_address: formattedAddress,
         updated_by: user.id,
         updated_at: new Date().toISOString(),
       })

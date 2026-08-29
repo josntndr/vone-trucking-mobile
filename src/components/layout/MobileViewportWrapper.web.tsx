@@ -7,6 +7,7 @@
 import React, { ReactNode, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Text } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { PortalProvider } from '../../contexts/PortalContext';
 
 interface MobileViewportWrapperProps {
   children: ReactNode;
@@ -93,7 +94,9 @@ export default function MobileViewportWrapper({ children }: MobileViewportWrappe
             },
           ]}
         >
-          {children}
+          <PortalProvider>
+            {children}
+          </PortalProvider>
         </View>
       </ScrollView>
     </View>
@@ -183,5 +186,6 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
     overflow: 'hidden',
+    position: 'relative', // Create positioning context for absolute children
   },
 });

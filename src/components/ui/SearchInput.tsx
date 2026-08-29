@@ -51,15 +51,11 @@ export const SearchInput: React.FC<SearchInputProps> = ({
             accessibilityLabel="Clear search"
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text
-              style={{
-                color: theme.colors.textSecondary,
-                fontSize: theme.fontSizes.lg,
-                fontWeight: theme.fontWeights.bold,
-              }}
-            >
-              ✕
-            </Text>
+            <Ionicons
+              name="close-circle"
+              size={theme.fontSizes.lg}
+              color={theme.colors.textSecondary}
+            />
           </TouchableOpacity>
         ) : undefined
       }

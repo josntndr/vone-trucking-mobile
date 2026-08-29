@@ -38,6 +38,33 @@ export interface EmergencyContact {
   phone: string;
 }
 
+/**
+ * Structured Address Components
+ * Replaces single-string address field with structured location data
+ */
+export interface StructuredAddress {
+  // Location hierarchy (all required)
+  country: string;
+  country_code: string;
+  province: string;
+  province_code: string;
+  city: string;
+  city_code: string;
+  barangay: string;
+  barangay_code: string;
+  postal_code: string;
+  
+  // Address lines
+  address_line_1: string; // House/Unit, Building, Street, Subdivision
+  address_line_2?: string; // Apartment, floor, landmark, additional directions
+  
+  // Formatted complete address (generated)
+  formatted_address: string;
+  
+  // Legacy flag
+  is_legacy?: boolean; // True if address was migrated from old single-string format
+}
+
 export interface LicenseDetails {
   license_number: string;
   license_type: LicenseType;
@@ -71,7 +98,22 @@ export interface Employee {
   
   // Contact (required)
   phone: string;
-  address: string;
+  address: string; // Legacy single-string address (for backward compatibility)
+  
+  // Structured Address (new fields)
+  country?: string;
+  country_code?: string;
+  province?: string;
+  province_code?: string;
+  city?: string;
+  city_code?: string;
+  barangay?: string;
+  barangay_code?: string;
+  postal_code?: string;
+  address_line_1?: string;
+  address_line_2?: string;
+  formatted_address?: string;
+  address_is_legacy?: boolean;
   
   // Email is nullable for backward compatibility, not exposed in UI
   email?: string | null;
@@ -134,7 +176,22 @@ export interface CreateEmployeeInput {
   last_name: string;
   role: UserRole.DRIVER | UserRole.PORTER;
   phone: string;
-  address: string;
+  
+  // Address (legacy single-string, optional for backward compatibility)
+  address?: string;
+  
+  // Structured Address (new required fields)
+  country: string;
+  country_code: string;
+  province: string;
+  province_code: string;
+  city: string;
+  city_code: string;
+  barangay: string;
+  barangay_code: string;
+  postal_code: string;
+  address_line_1: string;
+  address_line_2?: string;
   
   // Emergency Contact (required)
   emergency_contact_name: string;
@@ -170,7 +227,22 @@ export interface UpdateEmployeeInput {
   first_name?: string;
   last_name?: string;
   phone?: string;
+  
+  // Address (legacy single-string, optional for backward compatibility)
   address?: string;
+  
+  // Structured Address (new fields)
+  country?: string;
+  country_code?: string;
+  province?: string;
+  province_code?: string;
+  city?: string;
+  city_code?: string;
+  barangay?: string;
+  barangay_code?: string;
+  postal_code?: string;
+  address_line_1?: string;
+  address_line_2?: string;
   
   // Emergency Contact
   emergency_contact_name?: string;
@@ -206,4 +278,53 @@ export interface EmployeeFilters {
   is_active?: boolean;
   account_status?: AccountStatus;
   search?: string; // Search by employee_id, name, or phone (not email)
+}
+
+/**
+ * Helper function to check if employee has structured address
+ */
+export function hasStructuredAddress(employee: Employee): boolean {
+  return !!(
+    employee.country_code &&
+    employee.province_code &&
+    employee.city_code &&
+    employee.barangay_code &&
+    employee.postal_code &&
+    employee.address_line_1
+  );
+}
+
+/**
+ * Helper function to get display address (prefers formatted_address, falls back to legacy address)
+ */
+export function getDisplayAddress(employee: Employee): string {
+  if (employee.formatted_address) {
+    return employee.formatted_address;
+  }
+  return employee.address || 'No address provided';
+}
+
+/**
+ * Helper function to extract structured address from employee
+ */
+export function getStructuredAddress(employee: Employee): StructuredAddress | null {
+  if (!hasStructuredAddress(employee)) {
+    return null;
+  }
+  
+  return {
+    country: employee.country!,
+    country_code: employee.country_code!,
+    province: employee.province!,
+    province_code: employee.province_code!,
+    city: employee.city!,
+    city_code: employee.city_code!,
+    barangay: employee.barangay!,
+    barangay_code: employee.barangay_code!,
+    postal_code: employee.postal_code!,
+    address_line_1: employee.address_line_1!,
+    address_line_2: employee.address_line_2,
+    formatted_address: employee.formatted_address!,
+    is_legacy: employee.address_is_legacy,
+  };
 }
