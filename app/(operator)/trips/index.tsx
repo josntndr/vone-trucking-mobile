@@ -789,7 +789,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    paddingHorizontal: SPACING.md,
     paddingTop: SPACING.md,
     paddingBottom: SPACING.sm,
     backgroundColor: COLORS.white,
@@ -801,11 +800,13 @@ const styles = StyleSheet.create({
     fontWeight: DS.typography.fontWeight.bold,
     color: COLORS.navy,
     marginBottom: 4,
+    paddingHorizontal: SPACING.md,
   },
   headerSubtitle: {
     fontSize: 14,
     lineHeight: 20,
     color: COLORS.textSecondary,
+    paddingHorizontal: SPACING.md,
   },
   searchSection: {
     paddingHorizontal: SPACING.md,
