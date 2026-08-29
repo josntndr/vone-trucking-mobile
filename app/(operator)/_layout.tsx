@@ -1,17 +1,19 @@
 // @ts-nocheck
 /**
  * Operator Layout - Bottom Tab Navigation
- * 5 tabs: Home, Trips, Fleet, Employees, More
- * Redesigned with proper icons, colors, and active state indicators
+ * 5 tabs: Home, Trips, Trucks, Employees, More
+ * Redesigned to match screenshot with teal active state and clean icons
  */
 
 import { Tabs } from 'expo-router';
+import { View, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// Navigation Colors
+// Navigation Colors (matching screenshot)
 const NAV_COLORS = {
-  active: '#1B2A4A',        // Navy for active icon/label
+  active: '#3A7D8C',         // Teal for active state
+  activeBackground: '#E0F2F7', // Light teal background for active icon
   inactive: '#9E9E9E',       // Medium grey for inactive
   background: '#FFFFFF',     // Clean white background
   border: '#E0E0E0',         // Subtle top border
@@ -33,29 +35,23 @@ export default function OperatorLayout() {
           borderTopWidth: 1,
           borderTopColor: NAV_COLORS.border,
           height: 64 + insets.bottom,
-          paddingBottom: insets.bottom,
+          paddingBottom: insets.bottom + 4,
           paddingTop: 8,
+          paddingHorizontal: 4,
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: -1 },
-          shadowOpacity: 0.05,
-          shadowRadius: 3,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
           elevation: 8,
         },
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '500',
-          textTransform: 'capitalize',
           marginTop: 4,
-          marginBottom: 4,
+          marginBottom: 0,
         },
         tabBarIconStyle: {
           marginTop: 4,
-        },
-        // Explicitly disable any indicator
-        tabBarIndicatorStyle: {
-          height: 0,
-          width: 0,
-          display: 'none',
         },
       }}
     >
@@ -64,11 +60,20 @@ export default function OperatorLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "home" : "home-outline"} 
-              size={24} 
-              color={color} 
-            />
+            <View style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Ionicons 
+                name={focused ? "home" : "home-outline"} 
+                size={24} 
+                color={color} 
+              />
+            </View>
           ),
         }}
       />
@@ -77,24 +82,42 @@ export default function OperatorLayout() {
         options={{
           title: 'Trips',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "navigate" : "navigate-outline"} 
-              size={24} 
-              color={color} 
-            />
+            <View style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Ionicons 
+                name={focused ? "navigate" : "navigate-outline"} 
+                size={24} 
+                color={color} 
+              />
+            </View>
           ),
         }}
       />
       <Tabs.Screen
         name="trucks"
         options={{
-          title: 'Fleet',
+          title: 'Trucks',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "car" : "car-outline"} 
-              size={24} 
-              color={color} 
-            />
+            <View style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Ionicons 
+                name={focused ? "car" : "car-outline"} 
+                size={24} 
+                color={color} 
+              />
+            </View>
           ),
         }}
       />
@@ -103,11 +126,20 @@ export default function OperatorLayout() {
         options={{
           title: 'Employees',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "people" : "people-outline"} 
-              size={24} 
-              color={color} 
-            />
+            <View style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Ionicons 
+                name={focused ? "people" : "people-outline"} 
+                size={24} 
+                color={color} 
+              />
+            </View>
           ),
         }}
       />
@@ -116,11 +148,20 @@ export default function OperatorLayout() {
         options={{
           title: 'More',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name={focused ? "grid" : "grid-outline"} 
-              size={24} 
-              color={color} 
-            />
+            <View style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <Ionicons 
+                name={focused ? "ellipsis-horizontal-circle" : "ellipsis-horizontal-circle-outline"} 
+                size={24} 
+                color={color} 
+              />
+            </View>
           ),
         }}
       />

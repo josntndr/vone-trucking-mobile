@@ -30,6 +30,7 @@ import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../../src/theme/d
 import { getTrips } from '../../../src/services/api/trip.service';
 import { Trip, TripStatus, getTripStatusInfo } from '../../../src/types/trip.types';
 import { formatPhilippineDate, formatPeso } from '../../../src/utils/philippines';
+import { formatPlantRoute } from '../../../src/config/plant.config';
 
 const DS = DESIGN_SYSTEM;
 
@@ -146,9 +147,22 @@ export default function TripsListScreen() {
       if (response.error) {
         console.error('Trips fetch error:', response.error);
         
+        // Determine error message based on error type
+        let errorMessage = 'Couldn\'t load trips. Check your connection and try again.';
+        
+        if (response.error.includes('Database not configured') || response.error.includes('Supabase')) {
+          errorMessage = 'Database connection not configured. Please contact your administrator.';
+        } else if (response.error.includes('session') || response.error.includes('authentication') || response.error.includes('authenticated')) {
+          errorMessage = 'Your session has expired. Please sign in again.';
+        } else if (response.error.includes('permission') || response.error.includes('not authorized')) {
+          errorMessage = 'You don\'t have permission to view these trips.';
+        } else if (response.error.includes('network') || response.error.includes('timeout')) {
+          errorMessage = 'Network error. Check your connection and try again.';
+        }
+        
         // If this is the first page, show error state
         if (!append) {
-          setError('Couldn\'t load trips. Check your connection and try again.');
+          setError(errorMessage);
           setTrips([]);
           setHasMore(false);
         }
@@ -183,9 +197,20 @@ export default function TripsListScreen() {
     } catch (err) {
       console.error('Unexpected trips error:', err);
       
+      // Determine error message
+      let errorMessage = 'An unexpected error occurred. Please try again.';
+      
+      if (err instanceof TypeError && err.message.includes('null')) {
+        errorMessage = 'Database connection not configured. Please contact your administrator.';
+      } else if (err instanceof Error) {
+        if (err.message.includes('network') || err.message.includes('fetch')) {
+          errorMessage = 'Network error. Check your connection and try again.';
+        }
+      }
+      
       // If this is the first page, show error state
       if (!append) {
-        setError('Couldn\'t load trips. Check your connection and try again.');
+        setError(errorMessage);
         setTrips([]);
         setHasMore(false);
       }
@@ -269,10 +294,8 @@ export default function TripsListScreen() {
     const isToday = deliveryDate.toDateString() === new Date().toDateString();
     const contextualAction = getContextualAction(item);
     
-    // Create route presentation
-    const pickupLocation = item.pickup_location || 'Pickup';
-    const destination = item.delivery_destination || 'Destination';
-    const route = `${pickupLocation} → ${destination}`;
+    // Create route presentation using Imus Plant → Destination
+    const route = formatPlantRoute(item.delivery_destination || 'Destination');
 
     return (
       <TouchableOpacity 
@@ -465,7 +488,7 @@ export default function TripsListScreen() {
           <TextInput
             value={search}
             onChangeText={setSearch}
-            placeholder="Search trips, locations, trucks, or employees"
+            placeholder="Search trips, destinations, trucks, or employees"
             placeholderTextColor={COLORS.textSecondary}
             style={styles.searchInput}
           />
@@ -955,7 +978,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: 100,
+    paddingBottom: 84, // Tab bar base height (64px) + comfortable spacing (20px)
   },
   listContentEmpty: {
     flexGrow: 1,

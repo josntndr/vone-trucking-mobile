@@ -15,11 +15,13 @@ import {
 import { router } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Ionicons } from '@expo/vector-icons';
 import { Screen, Button, Card } from '../../../src/components';
 import { useTheme } from '../../../src/hooks';
 import { createTrip } from '../../../src/services/api/trip.service';
 import { createTripSchema, CreateTripFormData } from '../../../src/validation/schemas/trip.schema';
 import { TripStatus } from '../../../src/types/trip.types';
+import { IMUS_PLANT } from '../../../src/config/plant.config';
 
 export default function AddTripScreen() {
   // Force light theme for operator/admin
@@ -48,8 +50,7 @@ export default function AddTripScreen() {
       delivery_reference: '',
       delivery_date: '',
       call_time: '',
-      pickup_warehouse: '',
-      pickup_address: '',
+      // pickup_warehouse and pickup_address removed - will be auto-filled with Imus Plant
       delivery_destination: '',
       delivery_address: '',
       store_branch_name: '',
@@ -163,18 +164,31 @@ export default function AddTripScreen() {
           </Card>
 
           {/* Locations */}
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Pickup Location</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Origin</Text>
           <Card style={styles.section}>
-            {renderInput('pickup_warehouse', 'Warehouse Name *', 'e.g., Main Warehouse Manila')}
-            {renderInput(
-              'pickup_address',
-              'Pickup Address',
-              'Full pickup address',
-              { multiline: true }
-            )}
+            <View style={styles.readOnlyField}>
+              <View style={styles.readOnlyHeader}>
+                <Ionicons name="business" size={20} color={colors.primary} />
+                <Text style={[styles.readOnlyLabel, { color: colors.text }]}>
+                  Pickup Location
+                </Text>
+              </View>
+              <Text style={[styles.readOnlyValue, { color: colors.text }]}>
+                {IMUS_PLANT.name}
+              </Text>
+              <Text style={[styles.readOnlyAddress, { color: colors.textSecondary }]}>
+                {IMUS_PLANT.address}
+              </Text>
+              <View style={styles.infoBox}>
+                <Ionicons name="information-circle-outline" size={16} color={colors.primary} />
+                <Text style={[styles.infoText, { color: colors.textSecondary }]}>
+                  All deliveries originate from Imus Plant
+                </Text>
+              </View>
+            </View>
           </Card>
 
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Delivery Location</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>Destination</Text>
           <Card style={styles.section}>
             {renderInput(
               'delivery_destination',
@@ -318,6 +332,42 @@ const styles = StyleSheet.create({
   },
   footerContent: {
     flexDirection: 'row',
+  },
+  readOnlyField: {
+    paddingVertical: 4,
+  },
+  readOnlyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 8,
+  },
+  readOnlyLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  readOnlyValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 4,
+  },
+  readOnlyAddress: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#192A4A10',
+    borderRadius: 8,
+    padding: 12,
+    gap: 8,
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });
 

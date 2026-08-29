@@ -34,11 +34,12 @@ export const createTripSchema = z.object({
 
   call_time: timeSchema,
 
+  // Pickup warehouse and address are optional - will be auto-filled with Imus Plant
   pickup_warehouse: z
     .string()
-    .min(1, 'Pickup warehouse is required')
     .max(200, 'Pickup warehouse name is too long')
-    .trim(),
+    .optional()
+    .or(z.literal('')),
 
   pickup_address: z
     .string()

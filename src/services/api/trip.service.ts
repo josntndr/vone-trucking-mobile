@@ -4,7 +4,7 @@
  * Handles trip CRUD operations, assignments, conflict detection, and status management
  */
 
-import { supabase } from './supabase';
+import { supabase, isSupabaseConfigured } from './supabase';
 import { ApiResponse, PaginatedResponse } from '../../types';
 import type {
   Trip,
@@ -21,11 +21,22 @@ import type {
   DuplicateTripInput,
   TripStatusHistory,
 } from '../../types/trip.types';
+import * as DemoTrips from '../demo/demoTrips.service';
+import { IMUS_PLANT, getDefaultPickupLocation } from '../../config/plant.config';
 
 /**
  * Generate next trip number
  */
 const generateTripNumber = async (): Promise<string> => {
+  if (!isSupabaseConfigured() || !supabase) {
+    // Generate a demo trip number
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const random = Math.floor(Math.random() * 9999) + 1;
+    return `TRP-${year}${month}-${String(random).padStart(4, '0')}`;
+  }
+
   const today = new Date();
   const year = today.getFullYear();
   const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -50,6 +61,12 @@ export const getTrips = async (
   limit: number = 20
 ): Promise<ApiResponse<PaginatedResponse<Trip>>> => {
   try {
+    // Use demo data if Supabase is not configured
+    if (!isSupabaseConfigured() || !supabase) {
+      console.log('Using demo trips data - Supabase not configured');
+      return await DemoTrips.getDemoTrips(filters, page, limit);
+    }
+
     let query = supabase
       .from('trips')
       .select(`
@@ -126,6 +143,12 @@ export const getTrips = async (
  */
 export const getTripById = async (id: string): Promise<ApiResponse<Trip>> => {
   try {
+    // Use demo data if Supabase is not configured
+    if (!isSupabaseConfigured() || !supabase) {
+      console.log('Using demo trip data - Supabase not configured');
+      return await DemoTrips.getDemoTripById(id);
+    }
+
     const { data, error } = await supabase
       .from('trips')
       .select(`
@@ -198,6 +221,10 @@ export const getTripById = async (id: string): Promise<ApiResponse<Trip>> => {
  */
 export const createTrip = async (input: CreateTripInput): Promise<ApiResponse<Trip>> => {
   try {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { error: 'Cannot create trips in demo mode. Please configure Supabase.' };
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -207,11 +234,20 @@ export const createTrip = async (input: CreateTripInput): Promise<ApiResponse<Tr
     // Generate trip number
     const tripNumber = await generateTripNumber();
 
+    // Automatically set Imus Plant as pickup location for all new trips
+    const plantLocation = getDefaultPickupLocation();
+    const tripData = {
+      ...input,
+      pickup_warehouse: plantLocation.name,
+      pickup_address: plantLocation.address,
+      pickup_location_id: plantLocation.id,
+    };
+
     const { data, error } = await supabase
       .from('trips')
       .insert({
         trip_number: tripNumber,
-        ...input,
+        ...tripData,
         status: input.status || 'draft',
         is_recurring: input.is_recurring || false,
         created_by: user.id,
@@ -251,6 +287,10 @@ export const createTrip = async (input: CreateTripInput): Promise<ApiResponse<Tr
  */
 export const updateTrip = async (input: UpdateTripInput): Promise<ApiResponse<Trip>> => {
   try {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { error: 'Cannot update trips in demo mode. Please configure Supabase.' };
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -304,6 +344,16 @@ export const checkAvailability = async (
   excludeTripId?: string
 ): Promise<ApiResponse<AvailabilityCheckResult>> => {
   try {
+    if (!isSupabaseConfigured() || !supabase) {
+      // In demo mode, always return available
+      return {
+        data: {
+          is_available: true,
+          conflicts: [],
+        },
+      };
+    }
+
     const conflicts: AvailabilityConflict[] = [];
 
     if (!deliveryDate || !callTime) {
@@ -435,6 +485,10 @@ export const assignResources = async (
   input: AssignTripResourcesInput
 ): Promise<ApiResponse<void>> => {
   try {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { error: 'Cannot assign resources in demo mode. Please configure Supabase.' };
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -546,6 +600,10 @@ export const updateTripStatus = async (
   input: UpdateTripStatusInput
 ): Promise<ApiResponse<void>> => {
   try {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { error: 'Cannot update trip status in demo mode. Please configure Supabase.' };
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -609,6 +667,10 @@ export const updateTripStatus = async (
  */
 export const cancelTrip = async (input: CancelTripInput): Promise<ApiResponse<void>> => {
   try {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { error: 'Cannot cancel trips in demo mode. Please configure Supabase.' };
+    }
+
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -649,6 +711,10 @@ export const cancelTrip = async (input: CancelTripInput): Promise<ApiResponse<vo
  */
 export const duplicateTrip = async (input: DuplicateTripInput): Promise<ApiResponse<Trip>> => {
   try {
+    if (!isSupabaseConfigured() || !supabase) {
+      return { error: 'Cannot duplicate trips in demo mode. Please configure Supabase.' };
+    }
+
     const { data: sourceTrip } = await supabase
       .from('trips')
       .select('*')
@@ -659,13 +725,16 @@ export const duplicateTrip = async (input: DuplicateTripInput): Promise<ApiRespo
       return { error: 'Source trip not found' };
     }
 
+    // Ensure new trip uses Imus Plant as origin
+    const plantLocation = getDefaultPickupLocation();
+
     // Create new trip with copied data
     const newTripInput: CreateTripInput = {
       delivery_reference: `${sourceTrip.delivery_reference}-COPY`,
       delivery_date: input.new_delivery_date,
       call_time: input.new_call_time,
-      pickup_warehouse: sourceTrip.pickup_warehouse,
-      pickup_address: sourceTrip.pickup_address,
+      pickup_warehouse: plantLocation.name,
+      pickup_address: plantLocation.address,
       delivery_destination: sourceTrip.delivery_destination,
       delivery_address: sourceTrip.delivery_address,
       store_branch_name: sourceTrip.store_branch_name,
@@ -732,6 +801,20 @@ export const getTripStats = async (
   dateTo?: string
 ): Promise<ApiResponse<TripStats>> => {
   try {
+    if (!isSupabaseConfigured() || !supabase) {
+      // Return demo stats
+      return {
+        data: {
+          total_trips: 5,
+          scheduled_trips: 1,
+          in_progress_trips: 1,
+          completed_trips: 1,
+          cancelled_trips: 1,
+          delayed_trips: 0,
+        },
+      };
+    }
+
     let query = supabase.from('trips').select('status', { count: 'exact', head: true });
 
     if (dateFrom) {

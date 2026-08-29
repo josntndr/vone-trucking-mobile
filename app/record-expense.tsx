@@ -461,6 +461,8 @@ export default function RecordExpenseScreen() {
   };
 
   const handleCancel = () => {
+    console.log('handleCancel called, hasUnsavedChanges:', hasUnsavedChanges);
+    
     if (hasUnsavedChanges) {
       Alert.alert(
         'Unsaved Changes',
@@ -470,11 +472,15 @@ export default function RecordExpenseScreen() {
           {
             text: 'Leave',
             style: 'destructive',
-            onPress: () => router.back(),
+            onPress: () => {
+              console.log('User confirmed leave, navigating back');
+              router.back();
+            },
           },
         ]
       );
     } else {
+      console.log('No unsaved changes, navigating back immediately');
       router.back();
     }
   };

@@ -62,9 +62,12 @@ export interface Trip {
   actual_end_time?: string;
   
   // Locations
-  pickup_warehouse: string;
+  // Note: All new trips originate from Imus Plant (see plant.config.ts)
+  // Legacy fields preserved for historical data compatibility
+  pickup_warehouse: string; // For new trips, always "Imus Plant"
   pickup_address?: string;
   pickup_location?: string; // Legacy alias for pickup_warehouse
+  pickup_location_id?: string; // Reference to plant configuration
   delivery_destination: string;
   delivery_address: string;
   store_branch_name?: string;
@@ -116,8 +119,11 @@ export interface CreateTripInput {
   delivery_reference: string;
   delivery_date: string;
   call_time: string;
-  pickup_warehouse: string;
-  pickup_address?: string;
+  // pickup_warehouse and pickup_address are now automatically set to Imus Plant
+  // These fields are optional in input and will be populated by the service
+  pickup_warehouse?: string; // Will be set to IMUS_PLANT.name if not provided
+  pickup_address?: string; // Will be set to IMUS_PLANT.address if not provided
+  pickup_location_id?: string; // Will be set to IMUS_PLANT.id if not provided
   delivery_destination: string;
   delivery_address: string;
   store_branch_name?: string;
