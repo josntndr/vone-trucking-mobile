@@ -979,7 +979,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: 84, // Tab bar base height (64px) + comfortable spacing (20px)
+    paddingBottom: 70, // Reduced spacing for tighter layout with FAB
   },
   listContentEmpty: {
     flexGrow: 1,
