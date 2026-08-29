@@ -979,7 +979,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: 96, // FAB bottom (90px) + small buffer for iOS
+    paddingBottom: 76, // Optimized: accounts for 64px tab bar + 12px spacing
   },
   listContentEmpty: {
     flexGrow: 1,
