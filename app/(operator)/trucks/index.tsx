@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.xs,
-    paddingBottom: 64, // Match tab bar height exactly for minimal spacing
+    paddingBottom: 48, // Ultra-tight spacing below tab bar
   },
   truckCard: {
     padding: SPACING.md,

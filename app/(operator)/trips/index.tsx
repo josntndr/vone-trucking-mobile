@@ -979,7 +979,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: 64, // Match tab bar height exactly for minimal spacing
+    paddingBottom: 48, // Ultra-tight spacing below tab bar
   },
   listContentEmpty: {
     flexGrow: 1,
