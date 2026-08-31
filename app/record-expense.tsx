@@ -497,12 +497,12 @@ export default function RecordExpenseScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: COLORS.background }]}
+      style={[styles.container, { backgroundColor: '#0B1120' }]}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}>
+      <View style={[styles.header, { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
         <TouchableOpacity
           onPress={handleCancel}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -510,9 +510,9 @@ export default function RecordExpenseScreen() {
           accessibilityLabel="Cancel"
           accessibilityRole="button"
         >
-          <Ionicons name="close" size={24} color={COLORS.navy} />
+          <Ionicons name="close" size={24} color="#F8FAFC" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: COLORS.navy }]}>
+        <Text style={[styles.headerTitle, { color: '#F8FAFC' }]}>
           Record Expense
         </Text>
         <View style={{ width: 24 }} />
@@ -526,8 +526,8 @@ export default function RecordExpenseScreen() {
       >
         {/* Expense Category */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: COLORS.navy }]}>
-            Expense Category <Text style={{ color: COLORS.error }}>*</Text>
+          <Text style={[styles.label, { color: '#F8FAFC' }]}>
+            Expense Category <Text style={{ color: '#EF4444' }}>*</Text>
           </Text>
           <View style={styles.categoryGrid}>
             {Object.entries(EXPENSE_CATEGORY_LABELS).map(([key, label]) => (
@@ -536,8 +536,8 @@ export default function RecordExpenseScreen() {
                 style={[
                   styles.categoryButton,
                   {
-                    backgroundColor: category === key ? COLORS.navy : COLORS.white,
-                    borderColor: category === key ? COLORS.navy : COLORS.divider,
+                    backgroundColor: category === key ? '#0EA5E9' : '#1E293B',
+                    borderColor: category === key ? '#0EA5E9' : '#334155',
                   },
                 ]}
                 onPress={() => handleCategorySelect(key as ExpenseCategory)}
@@ -550,7 +550,10 @@ export default function RecordExpenseScreen() {
                 <Text
                   style={[
                     styles.categoryText,
-                    { color: category === key ? COLORS.white : COLORS.text },
+                    {
+                      color: category === key ? '#FFFFFF' : '#94A3B8',
+                      fontWeight: category === key ? '700' : '600',
+                    },
                   ]}
                 >
                   {label}
@@ -559,7 +562,7 @@ export default function RecordExpenseScreen() {
             ))}
           </View>
           {errors.category && (
-            <Text style={[styles.errorText, { color: COLORS.error }]}>
+            <Text style={[styles.errorText, { color: '#EF4444' }]}>
               {errors.category}
             </Text>
           )}
@@ -567,23 +570,23 @@ export default function RecordExpenseScreen() {
 
         {/* Amount */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: COLORS.navy }]}>
-            Amount (PHP) <Text style={{ color: COLORS.error }}>*</Text>
+          <Text style={[styles.label, { color: '#F8FAFC' }]}>
+            Amount (PHP) <Text style={{ color: '#EF4444' }}>*</Text>
           </Text>
           <View
             style={[
               styles.inputWrapper,
               {
-                backgroundColor: COLORS.white,
-                borderColor: amountFocused ? COLORS.navy : errors.amount ? COLORS.error : COLORS.divider,
+                backgroundColor: '#0F172A',
+                borderColor: amountFocused ? '#0EA5E9' : errors.amount ? '#EF4444' : '#334155',
               },
             ]}
           >
-            <Text style={[styles.currencySymbol, { color: COLORS.textMuted }]}>₱</Text>
+            <Text style={[styles.currencySymbol, { color: '#0EA5E9' }]}>₱</Text>
             <TextInput
-              style={[styles.input, { color: COLORS.text }]}
+              style={[styles.input, { color: '#F8FAFC' }]}
               placeholder="0.00"
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor="#64748B"
               value={amount}
               onChangeText={handleAmountChange}
               onFocus={() => setAmountFocused(true)}
@@ -595,7 +598,7 @@ export default function RecordExpenseScreen() {
             />
           </View>
           {errors.amount && (
-            <Text style={[styles.errorText, { color: COLORS.error }]}>
+            <Text style={[styles.errorText, { color: '#EF4444' }]}>
               {errors.amount}
             </Text>
           )}
@@ -603,19 +606,19 @@ export default function RecordExpenseScreen() {
 
         {/* Expense Date */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: COLORS.navy }]}>
-            Expense Date <Text style={{ color: COLORS.error }}>*</Text>
+          <Text style={[styles.label, { color: '#F8FAFC' }]}>
+            Expense Date <Text style={{ color: '#EF4444' }}>*</Text>
           </Text>
           <TouchableOpacity
-            style={[styles.dateButton, { backgroundColor: COLORS.white, borderColor: errors.expenseDate ? COLORS.error : COLORS.divider }]}
+            style={[styles.dateButton, { backgroundColor: '#0F172A', borderColor: errors.expenseDate ? '#EF4444' : '#334155' }]}
             onPress={() => setShowDatePicker(true)}
             activeOpacity={0.7}
             accessible={true}
             accessibilityLabel="Select expense date"
             accessibilityRole="button"
           >
-            <Ionicons name="calendar-outline" size={20} color={COLORS.navy} />
-            <Text style={[styles.dateText, { color: COLORS.text }]}>
+            <Ionicons name="calendar-outline" size={20} color="#0EA5E9" />
+            <Text style={[styles.dateText, { color: '#F8FAFC' }]}>
               {new Date(expenseDate).toLocaleDateString('en-PH', {
                 year: 'numeric',
                 month: 'long',
@@ -624,7 +627,7 @@ export default function RecordExpenseScreen() {
             </Text>
           </TouchableOpacity>
           {errors.expenseDate && (
-            <Text style={[styles.errorText, { color: COLORS.error }]}>
+            <Text style={[styles.errorText, { color: '#EF4444' }]}>
               {errors.expenseDate}
             </Text>
           )}
@@ -642,8 +645,8 @@ export default function RecordExpenseScreen() {
 
         {/* Payment Method */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: COLORS.navy }]}>
-            Payment Method <Text style={{ color: COLORS.error }}>*</Text>
+          <Text style={[styles.label, { color: '#F8FAFC' }]}>
+            Payment Method <Text style={{ color: '#EF4444' }}>*</Text>
           </Text>
           <View style={styles.paymentGrid}>
             {Object.entries(PAYMENT_METHOD_LABELS).map(([key, label]) => (
@@ -652,8 +655,8 @@ export default function RecordExpenseScreen() {
                 style={[
                   styles.paymentButton,
                   {
-                    backgroundColor: paymentMethod === key ? COLORS.teal : COLORS.white,
-                    borderColor: paymentMethod === key ? COLORS.teal : COLORS.divider,
+                    backgroundColor: paymentMethod === key ? '#0EA5E9' : '#1E293B',
+                    borderColor: paymentMethod === key ? '#0EA5E9' : '#334155',
                   },
                 ]}
                 onPress={() => {
@@ -671,7 +674,10 @@ export default function RecordExpenseScreen() {
                 <Text
                   style={[
                     styles.paymentText,
-                    { color: paymentMethod === key ? COLORS.white : COLORS.text },
+                    {
+                      color: paymentMethod === key ? '#FFFFFF' : '#94A3B8',
+                      fontWeight: paymentMethod === key ? '700' : '600',
+                    },
                   ]}
                 >
                   {label}
@@ -680,7 +686,7 @@ export default function RecordExpenseScreen() {
             ))}
           </View>
           {errors.paymentMethod && (
-            <Text style={[styles.errorText, { color: COLORS.error }]}>
+            <Text style={[styles.errorText, { color: '#EF4444' }]}>
               {errors.paymentMethod}
             </Text>
           )}
@@ -689,11 +695,11 @@ export default function RecordExpenseScreen() {
         {/* Conditional: Trip Selection (for trip-related expenses) */}
         {category && TRIP_RELATED_CATEGORIES.includes(category) && (
           <View style={styles.section}>
-            <Text style={[styles.label, { color: COLORS.navy }]}>
-              Related Trip <Text style={{ color: COLORS.error }}>*</Text>
+            <Text style={[styles.label, { color: '#F8FAFC' }]}>
+              Related Trip <Text style={{ color: '#EF4444' }}>*</Text>
             </Text>
             <TouchableOpacity
-              style={[styles.selectorButton, { backgroundColor: COLORS.white, borderColor: errors.trip ? COLORS.error : COLORS.divider }]}
+              style={[styles.selectorButton, { backgroundColor: '#0F172A', borderColor: errors.trip ? '#EF4444' : '#334155' }]}
               onPress={() => setShowTripModal(true)}
               activeOpacity={0.7}
               accessible={true}
@@ -703,27 +709,27 @@ export default function RecordExpenseScreen() {
               {selectedTrip ? (
                 <View style={styles.selectedItem}>
                   <View>
-                    <Text style={[styles.selectedItemTitle, { color: COLORS.navy }]}>
+                    <Text style={[styles.selectedItemTitle, { color: '#F8FAFC' }]}>
                       {selectedTrip.trip_number}
                     </Text>
-                    <Text style={[styles.selectedItemSubtitle, { color: COLORS.textMuted }]}>
+                    <Text style={[styles.selectedItemSubtitle, { color: '#94A3B8' }]}>
                       {selectedTrip.delivery_destination}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
                 </View>
               ) : (
                 <View style={styles.selectorPlaceholder}>
-                  <Ionicons name="car-outline" size={20} color={COLORS.textMuted} />
-                  <Text style={[styles.selectorPlaceholderText, { color: COLORS.textMuted }]}>
+                  <Ionicons name="car-outline" size={20} color="#0EA5E9" />
+                  <Text style={[styles.selectorPlaceholderText, { color: '#94A3B8' }]}>
                     Select Trip
                   </Text>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
                 </View>
               )}
             </TouchableOpacity>
             {errors.trip && (
-              <Text style={[styles.errorText, { color: COLORS.error }]}>
+              <Text style={[styles.errorText, { color: '#EF4444' }]}>
                 {errors.trip}
               </Text>
             )}
@@ -733,11 +739,11 @@ export default function RecordExpenseScreen() {
         {/* Conditional: Truck Selection (for truck-related expenses) */}
         {category && TRUCK_RELATED_CATEGORIES.includes(category) && !selectedTrip && (
           <View style={styles.section}>
-            <Text style={[styles.label, { color: COLORS.navy }]}>
-              Related Truck <Text style={{ color: COLORS.error }}>*</Text>
+            <Text style={[styles.label, { color: '#F8FAFC' }]}>
+              Related Truck <Text style={{ color: '#EF4444' }}>*</Text>
             </Text>
             <TouchableOpacity
-              style={[styles.selectorButton, { backgroundColor: COLORS.white, borderColor: errors.truck ? COLORS.error : COLORS.divider }]}
+              style={[styles.selectorButton, { backgroundColor: '#0F172A', borderColor: errors.truck ? '#EF4444' : '#334155' }]}
               onPress={() => setShowTruckModal(true)}
               activeOpacity={0.7}
               accessible={true}
@@ -747,27 +753,27 @@ export default function RecordExpenseScreen() {
               {selectedTruck ? (
                 <View style={styles.selectedItem}>
                   <View>
-                    <Text style={[styles.selectedItemTitle, { color: COLORS.navy }]}>
+                    <Text style={[styles.selectedItemTitle, { color: '#F8FAFC' }]}>
                       {selectedTruck.truck_number}
                     </Text>
-                    <Text style={[styles.selectedItemSubtitle, { color: COLORS.textMuted }]}>
+                    <Text style={[styles.selectedItemSubtitle, { color: '#94A3B8' }]}>
                       {selectedTruck.license_plate}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
                 </View>
               ) : (
                 <View style={styles.selectorPlaceholder}>
-                  <Ionicons name="car-sport-outline" size={20} color={COLORS.textMuted} />
-                  <Text style={[styles.selectorPlaceholderText, { color: COLORS.textMuted }]}>
+                  <Ionicons name="car-sport-outline" size={20} color="#0EA5E9" />
+                  <Text style={[styles.selectorPlaceholderText, { color: '#94A3B8' }]}>
                     Select Truck
                   </Text>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
                 </View>
               )}
             </TouchableOpacity>
             {errors.truck && (
-              <Text style={[styles.errorText, { color: COLORS.error }]}>
+              <Text style={[styles.errorText, { color: '#EF4444' }]}>
                 {errors.truck}
               </Text>
             )}
@@ -777,12 +783,12 @@ export default function RecordExpenseScreen() {
         {/* Auto-selected Truck (from Trip) */}
         {selectedTrip && selectedTruck && (
           <View style={styles.section}>
-            <Text style={[styles.label, { color: COLORS.navy }]}>
+            <Text style={[styles.label, { color: '#F8FAFC' }]}>
               Assigned Truck
             </Text>
-            <View style={[styles.infoBox, { backgroundColor: COLORS.statusScheduled, borderColor: COLORS.divider }]}>
-              <Ionicons name="information-circle" size={20} color={COLORS.teal} />
-              <Text style={[styles.infoText, { color: COLORS.text }]}>
+            <View style={[styles.infoBox, { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+              <Ionicons name="information-circle" size={20} color="#0EA5E9" />
+              <Text style={[styles.infoText, { color: '#F8FAFC' }]}>
                 {selectedTruck.truck_number} ({selectedTruck.license_plate})
               </Text>
             </View>
@@ -791,23 +797,23 @@ export default function RecordExpenseScreen() {
 
         {/* Transaction Reference (Optional) */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: COLORS.navy }]}>
+          <Text style={[styles.label, { color: '#F8FAFC' }]}>
             Transaction Reference (Optional)
           </Text>
           <View
             style={[
               styles.inputWrapper,
               {
-                backgroundColor: COLORS.white,
-                borderColor: refFocused ? COLORS.navy : COLORS.divider,
+                backgroundColor: '#0F172A',
+                borderColor: refFocused ? '#0EA5E9' : '#334155',
               },
             ]}
           >
-            <Ionicons name="document-text-outline" size={20} color={COLORS.textMuted} style={{ marginRight: 8 }} />
+            <Ionicons name="document-text-outline" size={20} color="#0EA5E9" style={{ marginRight: 8 }} />
             <TextInput
-              style={[styles.input, { color: COLORS.text }]}
+              style={[styles.input, { color: '#F8FAFC' }]}
               placeholder="e.g., Receipt #12345, OR #67890"
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor="#64748B"
               value={transactionRef}
               onChangeText={setTransactionRef}
               onFocus={() => setRefFocused(true)}
@@ -820,22 +826,22 @@ export default function RecordExpenseScreen() {
 
         {/* Description */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: COLORS.navy }]}>
-            Description {REQUIRES_DESCRIPTION.includes(category!) && <Text style={{ color: COLORS.error }}>*</Text>}
+          <Text style={[styles.label, { color: '#F8FAFC' }]}>
+            Description {REQUIRES_DESCRIPTION.includes(category!) && <Text style={{ color: '#EF4444' }}>*</Text>}
           </Text>
           <View
             style={[
               styles.textAreaWrapper,
               {
-                backgroundColor: COLORS.white,
-                borderColor: descriptionFocused ? COLORS.navy : errors.description ? COLORS.error : COLORS.divider,
+                backgroundColor: '#0F172A',
+                borderColor: descriptionFocused ? '#0EA5E9' : errors.description ? '#EF4444' : '#334155',
               },
             ]}
           >
             <TextInput
-              style={[styles.textArea, { color: COLORS.text }]}
+              style={[styles.textArea, { color: '#F8FAFC' }]}
               placeholder="What was this expense for?"
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor="#64748B"
               value={description}
               onChangeText={(text) => {
                 setDescription(text);
@@ -853,7 +859,7 @@ export default function RecordExpenseScreen() {
             />
           </View>
           {errors.description && (
-            <Text style={[styles.errorText, { color: COLORS.error }]}>
+            <Text style={[styles.errorText, { color: '#EF4444' }]}>
               {errors.description}
             </Text>
           )}
@@ -861,22 +867,22 @@ export default function RecordExpenseScreen() {
 
         {/* Notes */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: COLORS.navy }]}>
+          <Text style={[styles.label, { color: '#F8FAFC' }]}>
             Notes (Optional)
           </Text>
           <View
             style={[
               styles.textAreaWrapper,
               {
-                backgroundColor: COLORS.white,
-                borderColor: notesFocused ? COLORS.navy : COLORS.divider,
+                backgroundColor: '#0F172A',
+                borderColor: notesFocused ? '#0EA5E9' : '#334155',
               },
             ]}
           >
             <TextInput
-              style={[styles.textArea, { color: COLORS.text }]}
+              style={[styles.textArea, { color: '#F8FAFC' }]}
               placeholder="Additional notes or details..."
-              placeholderTextColor={COLORS.textMuted}
+              placeholderTextColor="#64748B"
               value={notes}
               onChangeText={setNotes}
               onFocus={() => setNotesFocused(true)}
@@ -892,66 +898,66 @@ export default function RecordExpenseScreen() {
 
         {/* Receipt Upload */}
         <View style={styles.section}>
-          <Text style={[styles.label, { color: COLORS.navy }]}>
+          <Text style={[styles.label, { color: '#F8FAFC' }]}>
             Receipt (Optional)
           </Text>
           
           {!receipt ? (
             <View style={styles.uploadButtons}>
               <TouchableOpacity
-                style={[styles.uploadButton, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}
+                style={[styles.uploadButton, { backgroundColor: '#1E293B', borderColor: '#334155' }]}
                 onPress={handlePickImage}
                 activeOpacity={0.7}
                 accessible={true}
                 accessibilityLabel="Upload photo from gallery"
                 accessibilityRole="button"
               >
-                <Ionicons name="images-outline" size={20} color={COLORS.teal} />
-                <Text style={[styles.uploadButtonText, { color: COLORS.text }]}>
+                <Ionicons name="images-outline" size={20} color="#0EA5E9" />
+                <Text style={[styles.uploadButtonText, { color: '#F8FAFC' }]}>
                   Photo
                 </Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.uploadButton, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}
+                style={[styles.uploadButton, { backgroundColor: '#1E293B', borderColor: '#334155' }]}
                 onPress={handlePickDocument}
                 activeOpacity={0.7}
                 accessible={true}
                 accessibilityLabel="Upload document"
                 accessibilityRole="button"
               >
-                <Ionicons name="document-outline" size={20} color={COLORS.teal} />
-                <Text style={[styles.uploadButtonText, { color: COLORS.text }]}>
+                <Ionicons name="document-outline" size={20} color="#0EA5E9" />
+                <Text style={[styles.uploadButtonText, { color: '#F8FAFC' }]}>
                   Document
                 </Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <View style={[styles.receiptPreview, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}>
+            <View style={[styles.receiptPreview, { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
               {receipt.type.startsWith('image/') ? (
                 <Image source={{ uri: receipt.uri }} style={styles.receiptImage} resizeMode="cover" />
               ) : (
                 <View style={styles.receiptPdf}>
-                  <Ionicons name="document-text" size={48} color={COLORS.teal} />
-                  <Text style={[styles.receiptPdfName, { color: COLORS.text }]}>
+                  <Ionicons name="document-text" size={48} color="#0EA5E9" />
+                  <Text style={[styles.receiptPdfName, { color: '#F8FAFC' }]}>
                     {receipt.name}
                   </Text>
                 </View>
               )}
               <TouchableOpacity
-                style={[styles.removeReceiptButton, { backgroundColor: COLORS.error }]}
+                style={[styles.removeReceiptButton, { backgroundColor: '#EF4444' }]}
                 onPress={handleRemoveReceipt}
                 activeOpacity={0.7}
                 accessible={true}
                 accessibilityLabel="Remove receipt"
                 accessibilityRole="button"
               >
-                <Ionicons name="close" size={20} color={COLORS.white} />
+                <Ionicons name="close" size={20} color="#FFFFFF" />
               </TouchableOpacity>
             </View>
           )}
           
-          <Text style={[styles.uploadHint, { color: COLORS.textMuted }]}>
+          <Text style={[styles.uploadHint, { color: '#94A3B8' }]}>
             JPG, PNG, or PDF • Max 10MB
           </Text>
         </View>
@@ -961,7 +967,7 @@ export default function RecordExpenseScreen() {
           style={[
             styles.submitButton,
             {
-              backgroundColor: loading ? COLORS.textMuted : COLORS.navy,
+              backgroundColor: loading ? '#64748B' : '#0EA5E9',
               opacity: loading ? 0.6 : 1,
             },
           ]}
@@ -975,13 +981,13 @@ export default function RecordExpenseScreen() {
         >
           {loading || uploadingReceipt ? (
             <View style={styles.loadingContainer}>
-              <ActivityIndicator color={COLORS.white} size="small" />
-              <Text style={[styles.submitButtonText, { color: COLORS.white, marginLeft: 12 }]}>
+              <ActivityIndicator color="#FFFFFF" size="small" />
+              <Text style={[styles.submitButtonText, { color: '#FFFFFF', marginLeft: 12 }]}>
                 {uploadingReceipt ? 'Uploading Receipt...' : 'Saving...'}
               </Text>
             </View>
           ) : (
-            <Text style={[styles.submitButtonText, { color: COLORS.white }]}>
+            <Text style={[styles.submitButtonText, { color: '#FFFFFF' }]}>
               Save Expense
             </Text>
           )}
@@ -998,22 +1004,22 @@ export default function RecordExpenseScreen() {
         transparent={false}
         onRequestClose={() => setShowTripModal(false)}
       >
-        <View style={[styles.modalContainer, { backgroundColor: COLORS.background }]}>
-          <View style={[styles.modalHeader, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}>
+        <View style={[styles.modalContainer, { backgroundColor: '#0B1120' }]}>
+          <View style={[styles.modalHeader, { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
             <TouchableOpacity onPress={() => setShowTripModal(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="close" size={24} color={COLORS.navy} />
+              <Ionicons name="close" size={24} color="#F8FAFC" />
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: COLORS.navy }]}>Select Trip</Text>
+            <Text style={[styles.modalTitle, { color: '#F8FAFC' }]}>Select Trip</Text>
             <View style={{ width: 24 }} />
           </View>
           
           <View style={{ padding: SPACING.base }}>
-            <View style={[styles.searchBar, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}>
-              <Ionicons name="search" size={20} color={COLORS.textMuted} />
+            <View style={[styles.searchBar, { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+              <Ionicons name="search" size={20} color="#0EA5E9" />
               <TextInput
-                style={[styles.searchInput, { color: COLORS.text }]}
+                style={[styles.searchInput, { color: '#F8FAFC' }]}
                 placeholder="Search by trip number or destination"
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor="#64748B"
                 value={tripSearch}
                 onChangeText={setTripSearch}
               />
@@ -1023,13 +1029,13 @@ export default function RecordExpenseScreen() {
           <ScrollView style={styles.modalList}>
             {loadingTrips ? (
               <View style={styles.loadingState}>
-                <ActivityIndicator color={COLORS.navy} size="large" />
-                <Text style={[styles.loadingText, { color: COLORS.textMuted }]}>Loading trips...</Text>
+                <ActivityIndicator color="#0EA5E9" size="large" />
+                <Text style={[styles.loadingText, { color: '#94A3B8' }]}>Loading trips...</Text>
               </View>
             ) : filteredTrips.length === 0 ? (
               <View style={styles.emptyState}>
-                <Ionicons name="car-outline" size={48} color={COLORS.textMuted} />
-                <Text style={[styles.emptyText, { color: COLORS.textMuted }]}>
+                <Ionicons name="car-outline" size={48} color="#64748B" />
+                <Text style={[styles.emptyText, { color: '#94A3B8' }]}>
                   {tripSearch ? 'No matching trips found' : 'No active trips available'}
                 </Text>
               </View>
@@ -1037,7 +1043,7 @@ export default function RecordExpenseScreen() {
               filteredTrips.map((trip) => (
                 <TouchableOpacity
                   key={trip.id}
-                  style={[styles.modalItem, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}
+                  style={[styles.modalItem, { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}
                   onPress={() => {
                     setSelectedTrip(trip);
                     setShowTripModal(false);
@@ -1048,19 +1054,19 @@ export default function RecordExpenseScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={styles.modalItemContent}>
-                    <Text style={[styles.modalItemTitle, { color: COLORS.navy }]}>
+                    <Text style={[styles.modalItemTitle, { color: '#F8FAFC' }]}>
                       {trip.trip_number}
                     </Text>
-                    <Text style={[styles.modalItemSubtitle, { color: COLORS.textMuted }]}>
+                    <Text style={[styles.modalItemSubtitle, { color: '#94A3B8' }]}>
                       {trip.delivery_destination}
                     </Text>
                     {trip.assigned_truck_number && (
-                      <Text style={[styles.modalItemMeta, { color: COLORS.textMuted }]}>
+                      <Text style={[styles.modalItemMeta, { color: '#64748B' }]}>
                         Truck: {trip.assigned_truck_number}
                       </Text>
                     )}
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
                 </TouchableOpacity>
               ))
             )}
@@ -1075,22 +1081,22 @@ export default function RecordExpenseScreen() {
         transparent={false}
         onRequestClose={() => setShowTruckModal(false)}
       >
-        <View style={[styles.modalContainer, { backgroundColor: COLORS.background }]}>
-          <View style={[styles.modalHeader, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}>
+        <View style={[styles.modalContainer, { backgroundColor: '#0B1120' }]}>
+          <View style={[styles.modalHeader, { backgroundColor: '#0B1120', borderBottomColor: '#1E293B' }]}>
             <TouchableOpacity onPress={() => setShowTruckModal(false)} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="close" size={24} color={COLORS.navy} />
+              <Ionicons name="close" size={24} color="#F8FAFC" />
             </TouchableOpacity>
-            <Text style={[styles.modalTitle, { color: COLORS.navy }]}>Select Truck</Text>
+            <Text style={[styles.modalTitle, { color: '#F8FAFC' }]}>Select Truck</Text>
             <View style={{ width: 24 }} />
           </View>
           
           <View style={{ padding: SPACING.base }}>
-            <View style={[styles.searchBar, { backgroundColor: COLORS.white, borderColor: COLORS.divider }]}>
-              <Ionicons name="search" size={20} color={COLORS.textMuted} />
+            <View style={[styles.searchBar, { backgroundColor: '#0F172A', borderColor: '#334155' }]}>
+              <Ionicons name="search" size={20} color="#0EA5E9" />
               <TextInput
-                style={[styles.searchInput, { color: COLORS.text }]}
+                style={[styles.searchInput, { color: '#F8FAFC' }]}
                 placeholder="Search by truck number or plate"
-                placeholderTextColor={COLORS.textMuted}
+                placeholderTextColor="#64748B"
                 value={truckSearch}
                 onChangeText={setTruckSearch}
               />
@@ -1100,13 +1106,13 @@ export default function RecordExpenseScreen() {
           <ScrollView style={styles.modalList}>
             {loadingTrucks ? (
               <View style={styles.loadingState}>
-                <ActivityIndicator color={COLORS.navy} size="large" />
-                <Text style={[styles.loadingText, { color: COLORS.textMuted }]}>Loading trucks...</Text>
+                <ActivityIndicator color="#0EA5E9" size="large" />
+                <Text style={[styles.loadingText, { color: '#94A3B8' }]}>Loading trucks...</Text>
               </View>
             ) : filteredTrucks.length === 0 ? (
               <View style={styles.emptyState}>
-                <Ionicons name="car-sport-outline" size={48} color={COLORS.textMuted} />
-                <Text style={[styles.emptyText, { color: COLORS.textMuted }]}>
+                <Ionicons name="car-sport-outline" size={48} color="#64748B" />
+                <Text style={[styles.emptyText, { color: '#94A3B8' }]}>
                   {truckSearch ? 'No matching trucks found' : 'No trucks available'}
                 </Text>
               </View>
@@ -1114,7 +1120,7 @@ export default function RecordExpenseScreen() {
               filteredTrucks.map((truck) => (
                 <TouchableOpacity
                   key={truck.id}
-                  style={[styles.modalItem, { backgroundColor: COLORS.white, borderBottomColor: COLORS.divider }]}
+                  style={[styles.modalItem, { backgroundColor: '#1E293B', borderBottomColor: '#334155' }]}
                   onPress={() => {
                     setSelectedTruck(truck);
                     setShowTruckModal(false);
@@ -1125,17 +1131,19 @@ export default function RecordExpenseScreen() {
                   activeOpacity={0.7}
                 >
                   <View style={styles.modalItemContent}>
-                    <Text style={[styles.modalItemTitle, { color: COLORS.navy }]}>
+                    <Text style={[styles.modalItemTitle, { color: '#F8FAFC' }]}>
                       {truck.truck_number}
                     </Text>
-                    <Text style={[styles.modalItemSubtitle, { color: COLORS.textMuted }]}>
+                    <Text style={[styles.modalItemSubtitle, { color: '#94A3B8' }]}>
                       {truck.license_plate}
                     </Text>
-                    <Text style={[styles.modalItemMeta, { color: COLORS.textMuted }]}>
-                      {truck.make} {truck.model}
-                    </Text>
+                    {truck.make && truck.model && (
+                      <Text style={[styles.modalItemMeta, { color: '#64748B' }]}>
+                        {truck.make} {truck.model}
+                      </Text>
+                    )}
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
+                  <Ionicons name="chevron-forward" size={20} color="#94A3B8" />
                 </TouchableOpacity>
               ))
             )}
@@ -1381,7 +1389,11 @@ const styles = StyleSheet.create({
     marginTop: SPACING.lg,
     minHeight: 56,
     justifyContent: 'center',
-    ...DS.shadows.base,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
   },
   submitButtonText: {
     fontSize: DS.typography.fontSize.base,
