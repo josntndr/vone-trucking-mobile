@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     // Dynamic styles applied inline
   },
   overlayContainer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 9999,
   },
   modalOverlay: {

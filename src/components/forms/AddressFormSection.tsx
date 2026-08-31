@@ -1,28 +1,29 @@
 /**
  * AddressFormSection Component
- * Structured address form with dependent Country → Province → City → Barangay selectors
- * and real-time formatted address preview
+ * Structured address form with proper Region/Province separation
+ * Hierarchy: Country → Region → Province (optional for NCR) → City → Barangay
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
-  TextInput,
   StyleSheet,
-  ScrollView,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Control, Controller, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { useTheme } from '../../hooks';
 import { SearchableSelect, SelectOption } from './SearchableSelect';
 import { Input } from '../ui/Input';
 import {
-  getCountries,
+  getRegions,
   getProvinces,
   getCities,
+  getCityByCode,
   getBarangays,
-  getSuggestedPostalCode,
-  formatAddressWithLine2,
+  getSuggestedPostalCodes,
+  formatAddress,
+  regionHasProvinces,
 } from '../../services/location.service';
 
 export interface AddressFormSectionProps {
@@ -42,8 +43,9 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
 }) => {
   const theme = useTheme();
 
-  // Watch all address fields for live preview
+  // Watch all address fields for dependent selectors and live preview
   const countryCode = 'PH'; // Fixed to Philippines
+  const regionCode = watch('region_code');
   const provinceCode = watch('province_code');
   const cityCode = watch('city_code');
   const barangayCode = watch('barangay_code');
@@ -52,36 +54,102 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
   const addressLine2 = watch('address_line_2');
 
   // Location options state
+  const [regionOptions, setRegionOptions] = useState<SelectOption[]>([]);
   const [provinceOptions, setProvinceOptions] = useState<SelectOption[]>([]);
   const [cityOptions, setCityOptions] = useState<SelectOption[]>([]);
   const [barangayOptions, setBarangayOptions] = useState<SelectOption[]>([]);
 
   // Loading states
+  const [loadingRegions, setLoadingRegions] = useState(false);
   const [loadingProvinces, setLoadingProvinces] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
   const [loadingBarangays, setLoadingBarangays] = useState(false);
+  const previousRegionCode = useRef<string | undefined>(undefined);
+  const previousProvinceCode = useRef<string | undefined>(undefined);
+  const previousCityCode = useRef<string | undefined>(undefined);
 
-  // Load provinces on mount (Philippines only)
+  // Check if current region requires a province
+  const requiresProvince = useMemo(() => {
+    return regionCode ? regionHasProvinces(regionCode) : true;
+  }, [regionCode]);
+
+  const selectedCity = useMemo(() => {
+    return cityCode ? getCityByCode(cityCode) : undefined;
+  }, [cityCode]);
+
+  const hasIndependentCities = useMemo(() => {
+    return regionCode ? getCities({ regionCode }).length > 0 : false;
+  }, [regionCode]);
+
+  const provinceIsRequired = requiresProvince && (!hasIndependentCities || Boolean(selectedCity?.provinceCode));
+  const mustSelectProvinceBeforeCity = requiresProvince && !provinceCode && !hasIndependentCities;
+
+  // Load regions on mount (Philippines only)
   useEffect(() => {
-    setLoadingProvinces(true);
+    setLoadingRegions(true);
     try {
-      const provinces = getProvinces('PH');
-      setProvinceOptions(provinces);
+      const regions = getRegions('PH');
+      const options = regions.map(r => ({
+        code: r.code,
+        label: r.name,
+        name: r.name,
+      }));
+      setRegionOptions(options);
     } catch (error) {
-      console.error('Error loading provinces:', error);
-      setProvinceOptions([]);
+      console.error('Error loading regions:', error);
+      setRegionOptions([]);
     } finally {
-      setLoadingProvinces(false);
+      setLoadingRegions(false);
     }
   }, []);
 
-  // Load cities when province changes
+  // Load provinces when region changes
   useEffect(() => {
-    if (provinceCode) {
+    if (regionCode) {
+      if (!regionHasProvinces(regionCode)) {
+        // NCR - no provinces
+        setProvinceOptions([]);
+        // Clear province fields
+        setValue('province', '');
+        setValue('province_code', '');
+      } else {
+        // Other regions - load provinces
+        setLoadingProvinces(true);
+        try {
+          const provinces = getProvinces(regionCode);
+          const options = provinces.map(p => ({
+            code: p.code,
+            label: p.name,
+            name: p.name,
+          }));
+          setProvinceOptions(options);
+        } catch (error) {
+          console.error('Error loading provinces:', error);
+          setProvinceOptions([]);
+        } finally {
+          setLoadingProvinces(false);
+        }
+      }
+    } else {
+      setProvinceOptions([]);
+    }
+  }, [regionCode, setValue]);
+
+  // Load cities when region or province changes
+  useEffect(() => {
+    if (regionCode) {
       setLoadingCities(true);
       try {
-        const cities = getCities(provinceCode);
-        setCityOptions(cities);
+        const cities = getCities({
+          regionCode,
+          provinceCode: provinceCode || undefined,
+        });
+        const options = cities.map(c => ({
+          code: c.code,
+          label: `${c.name} (${c.type === 'municipality' ? 'Municipality' : 'City'})`,
+          name: c.name,
+        }));
+        setCityOptions(options);
       } catch (error) {
         console.error('Error loading cities:', error);
         setCityOptions([]);
@@ -90,9 +158,8 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
       }
     } else {
       setCityOptions([]);
-      setBarangayOptions([]);
     }
-  }, [provinceCode]);
+  }, [regionCode, provinceCode]);
 
   // Load barangays when city changes
   useEffect(() => {
@@ -100,12 +167,17 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
       setLoadingBarangays(true);
       try {
         const barangays = getBarangays(cityCode);
-        setBarangayOptions(barangays);
+        const options = barangays.map(b => ({
+          code: b.code,
+          label: b.name,
+          name: b.name,
+        }));
+        setBarangayOptions(options);
         
-        // Suggest postal code
-        const suggested = getSuggestedPostalCode(cityCode);
-        if (suggested && !postalCode) {
-          setValue('postal_code', suggested);
+        // Suggest postal code(s)
+        const suggested = getSuggestedPostalCodes(cityCode);
+        if (suggested && suggested.length > 0 && !postalCode) {
+          setValue('postal_code', suggested[0]);
         }
       } catch (error) {
         console.error('Error loading barangays:', error);
@@ -120,6 +192,42 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
 
   // Clear dependent fields when parent changes
   useEffect(() => {
+    if (previousRegionCode.current === undefined) {
+      previousRegionCode.current = regionCode;
+      return;
+    }
+
+    if (previousRegionCode.current === regionCode) {
+      return;
+    }
+
+    if (regionCode) {
+      // Region changed, clear province and below
+      if (!regionHasProvinces(regionCode)) {
+        // NCR - clear province immediately
+        setValue('province', '');
+        setValue('province_code', '');
+      }
+      setValue('city', '');
+      setValue('city_code', '');
+      setValue('barangay', '');
+      setValue('barangay_code', '');
+      setValue('postal_code', '');
+    }
+    previousRegionCode.current = regionCode;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [regionCode]);
+
+  useEffect(() => {
+    if (previousProvinceCode.current === undefined) {
+      previousProvinceCode.current = provinceCode;
+      return;
+    }
+
+    if (previousProvinceCode.current === provinceCode) {
+      return;
+    }
+
     if (provinceCode) {
       // Province changed, clear city and below
       setValue('city', '');
@@ -128,36 +236,76 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
       setValue('barangay_code', '');
       setValue('postal_code', '');
     }
-  }, [provinceCode, setValue]);
+    previousProvinceCode.current = provinceCode;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [provinceCode]);
 
   useEffect(() => {
+    if (previousCityCode.current === undefined) {
+      previousCityCode.current = cityCode;
+      return;
+    }
+
+    if (previousCityCode.current === cityCode) {
+      return;
+    }
+
     if (cityCode) {
       // City changed, clear barangay and postal code
       setValue('barangay', '');
       setValue('barangay_code', '');
     }
-  }, [cityCode, setValue]);
+    previousCityCode.current = cityCode;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cityCode]);
+
+  // Get names for preview
+  const regionName = useMemo(() => {
+    const region = regionOptions.find(r => r.code === regionCode);
+    return region?.name || '';
+  }, [regionCode, regionOptions]);
+
+  const provinceName = useMemo(() => {
+    const province = provinceOptions.find(p => p.code === provinceCode);
+    return province?.name || '';
+  }, [provinceCode, provinceOptions]);
+
+  const cityName = useMemo(() => {
+    const city = cityOptions.find(c => c.code === cityCode);
+    return city?.name || '';
+  }, [cityCode, cityOptions]);
+
+  const barangayName = useMemo(() => {
+    const barangay = barangayOptions.find(b => b.code === barangayCode);
+    return barangay?.name || '';
+  }, [barangayCode, barangayOptions]);
 
   // Generate formatted address preview
   const formattedPreview = useMemo(() => {
-    if (!addressLine1 || !barangayCode || !cityCode || !provinceCode || !postalCode) {
+    if (!addressLine1 || !barangayCode || !cityCode || !regionCode || !postalCode) {
       return null;
     }
 
     try {
-      return formatAddressWithLine2({
+      return formatAddress({
+        countryCode: 'PH',
+        countryName: 'Philippines',
+        regionCode,
+        regionName,
+        provinceCode: requiresProvince ? provinceCode : undefined,
+        provinceName: requiresProvince ? provinceName : undefined,
+        cityCode,
+        cityName,
+        barangayCode,
+        barangayName,
+        postalCode,
         addressLine1,
         addressLine2,
-        barangayCode,
-        cityCode,
-        provinceCode,
-        postalCode,
-        countryCode: 'PH', // Fixed to Philippines
       });
     } catch (error) {
       return null;
     }
-  }, [addressLine1, addressLine2, barangayCode, cityCode, provinceCode, postalCode]);
+  }, [addressLine1, addressLine2, barangayCode, barangayName, cityCode, cityName, provinceCode, provinceName, regionCode, regionName, postalCode, requiresProvince]);
 
   return (
     <View style={styles.container}>
@@ -185,7 +333,7 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
             },
           ]}
         >
-          Enter the employee's detailed address in the Philippines
+          Enter the employee's detailed Philippine address
         </Text>
       </View>
 
@@ -228,44 +376,109 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
           >
             Philippines
           </Text>
-          <Text style={{ color: theme.colors.textSecondary, fontSize: 18 }}>🇵🇭</Text>
+          <Ionicons name="location-outline" size={20} color={theme.colors.textSecondary} />
         </View>
-        <Text
-          style={[
-            {
-              color: theme.colors.textSecondary,
-              fontSize: theme.fontSizes.xs,
-              marginTop: theme.spacing[1],
-            },
-          ]}
-        >
-          All employee addresses must be in the Philippines
-        </Text>
       </View>
 
-      {/* Province/Region */}
+      {/* Region (New field - separate from Province) */}
       <Controller
         control={control}
-        name="province_code"
+        name="region_code"
         render={({ field: { onChange, value } }) => (
           <SearchableSelect
-            label="Province/Region"
+            label="Region"
             value={value}
-            options={provinceOptions}
+            options={regionOptions}
             onSelect={(option) => {
               onChange(option.code);
-              setValue('province', option.name);
+              setValue('region', option.name);
             }}
-            placeholder="Select province or region"
-            error={errors.province_code?.message || errors.province?.message}
+            placeholder="Select region"
+            error={errors.region_code?.message || errors.region?.message}
             disabled={disabled}
             required
-            loading={loadingProvinces}
-            searchPlaceholder="Search provinces..."
-            emptyMessage="No provinces found"
+            loading={loadingRegions}
+            searchPlaceholder="Search regions..."
+            emptyMessage="No regions found"
           />
         )}
       />
+
+      {/* Province (Separate field - optional for NCR) */}
+      {requiresProvince ? (
+        <Controller
+          control={control}
+          name="province_code"
+          render={({ field: { onChange, value } }) => (
+            <SearchableSelect
+              label="Province"
+              value={value}
+              options={provinceOptions}
+              onSelect={(option) => {
+                onChange(option.code);
+                setValue('province', option.name);
+              }}
+              placeholder={regionCode ? "Select province" : "Select region first"}
+              error={errors.province_code?.message || errors.province?.message}
+              disabled={disabled || !regionCode}
+              required={provinceIsRequired}
+              loading={loadingProvinces}
+              searchPlaceholder="Search provinces..."
+              emptyMessage={regionCode ? "No provinces found" : "Select a region first"}
+            />
+          )}
+        />
+      ) : regionCode ? (
+        <View style={{ marginBottom: theme.spacing[4] }}>
+          <Text
+            style={[
+              {
+                color: theme.colors.text,
+                fontSize: theme.fontSizes.sm,
+                fontWeight: theme.fontWeights.medium,
+                marginBottom: theme.spacing[2],
+              },
+            ]}
+          >
+            Province
+          </Text>
+          <View
+            style={[
+              {
+                backgroundColor: theme.colors.backgroundSecondary,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: theme.borderRadius.md,
+                paddingVertical: theme.spacing[3],
+                paddingHorizontal: theme.spacing[4],
+              },
+            ]}
+          >
+            <Text
+              style={[
+                {
+                  color: theme.colors.textSecondary,
+                  fontSize: theme.fontSizes.base,
+                  fontStyle: 'italic',
+                },
+              ]}
+            >
+              Not applicable for {regionName}
+            </Text>
+          </View>
+          <Text
+            style={[
+              {
+                color: theme.colors.textSecondary,
+                fontSize: theme.fontSizes.xs,
+                marginTop: theme.spacing[1],
+              },
+            ]}
+          >
+            {regionName} does not have provinces
+          </Text>
+        </View>
+      ) : null}
 
       {/* City/Municipality */}
       <Controller
@@ -280,18 +493,30 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
               onChange(option.code);
               setValue('city', option.name);
             }}
-            placeholder={provinceCode ? "Select city or municipality" : "Select province first"}
+            placeholder={
+              !regionCode
+                ? "Select region first"
+                : mustSelectProvinceBeforeCity
+                ? "Select province first"
+                : "Select city or municipality"
+            }
             error={errors.city_code?.message || errors.city?.message}
-            disabled={disabled || !provinceCode}
+            disabled={disabled || !regionCode || mustSelectProvinceBeforeCity}
             required
             loading={loadingCities}
             searchPlaceholder="Search cities..."
-            emptyMessage={provinceCode ? "No cities found" : "Select a province first"}
+            emptyMessage={
+              !regionCode
+                ? "Select a region first"
+                : mustSelectProvinceBeforeCity
+                ? "Select a province first"
+                : "No cities or municipalities found"
+            }
           />
         )}
       />
 
-      {/* Barangay */}
+      {/* Barangay (Fixed spelling) */}
       <Controller
         control={control}
         name="barangay_code"
@@ -310,7 +535,7 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
             required
             loading={loadingBarangays}
             searchPlaceholder="Search barangays..."
-            emptyMessage={cityCode ? "No barangays found for this city" : "Select a city first"}
+            emptyMessage={cityCode ? "Barangay data could not be loaded. Please retry." : "Select a city first"}
           />
         )}
       />

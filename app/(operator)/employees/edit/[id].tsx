@@ -74,6 +74,8 @@ export default function EditEmployeeScreen() {
       // Structured address fields
       country: '',
       country_code: '',
+      region: '',
+      region_code: '',
       province: '',
       province_code: '',
       city: '',
@@ -129,6 +131,8 @@ export default function EditEmployeeScreen() {
             // Structured address (if available)
             country: emp.country || 'Philippines',
             country_code: emp.country_code || 'PH',
+            region: emp.region || '',
+            region_code: emp.region_code || '',
             province: emp.province || '',
             province_code: emp.province_code || '',
             city: emp.city || '',

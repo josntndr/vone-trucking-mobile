@@ -14,7 +14,7 @@ import type {
   EmployeeFilters,
   AccountStatus,
 } from '../../types/employee.types';
-import { formatAddressWithLine2 } from '../location.service';
+import { formatAddress } from '../location.service';
 
 /**
  * Check if username is available
@@ -175,16 +175,22 @@ export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiRes
 
     // Generate formatted address from structured fields
     let formattedAddress: string | undefined;
-    if (input.address_line_1 && input.barangay_code && input.city_code && input.province_code && input.postal_code && input.country_code) {
+    if (input.address_line_1 && input.barangay_code && input.city_code && input.region_code && input.postal_code && input.country_code) {
       try {
-        formattedAddress = formatAddressWithLine2({
+        formattedAddress = formatAddress({
+          countryCode: input.country_code,
+          countryName: input.country || 'Philippines',
+          regionCode: input.region_code,
+          regionName: input.region || '',
+          provinceCode: input.province_code,
+          provinceName: input.province,
+          cityCode: input.city_code,
+          cityName: input.city || '',
+          barangayCode: input.barangay_code,
+          barangayName: input.barangay || '',
+          postalCode: input.postal_code,
           addressLine1: input.address_line_1,
           addressLine2: input.address_line_2,
-          barangayCode: input.barangay_code,
-          cityCode: input.city_code,
-          provinceCode: input.province_code,
-          postalCode: input.postal_code,
-          countryCode: input.country_code,
         });
       } catch (error) {
         console.error('Error formatting address:', error);
@@ -229,8 +235,10 @@ export const createEmployee = async (input: CreateEmployeeInput): Promise<ApiRes
         // Structured address fields
         country: input.country,
         country_code: input.country_code,
-        province: input.province,
-        province_code: input.province_code,
+        region: input.region,
+        region_code: input.region_code,
+        province: input.province || null,
+        province_code: input.province_code || null,
         city: input.city,
         city_code: input.city_code,
         barangay: input.barangay,
@@ -295,16 +303,22 @@ export const updateEmployee = async (input: UpdateEmployeeInput): Promise<ApiRes
 
     // Generate formatted address if structured fields are provided
     let formattedAddress: string | undefined;
-    if (updates.address_line_1 && updates.barangay_code && updates.city_code && updates.province_code && updates.postal_code && updates.country_code) {
+    if (updates.address_line_1 && updates.barangay_code && updates.city_code && updates.region_code && updates.postal_code && updates.country_code) {
       try {
-        formattedAddress = formatAddressWithLine2({
+        formattedAddress = formatAddress({
+          countryCode: updates.country_code,
+          countryName: updates.country || 'Philippines',
+          regionCode: updates.region_code,
+          regionName: updates.region || '',
+          provinceCode: updates.province_code,
+          provinceName: updates.province,
+          cityCode: updates.city_code,
+          cityName: updates.city || '',
+          barangayCode: updates.barangay_code,
+          barangayName: updates.barangay || '',
+          postalCode: updates.postal_code,
           addressLine1: updates.address_line_1,
           addressLine2: updates.address_line_2,
-          barangayCode: updates.barangay_code,
-          cityCode: updates.city_code,
-          provinceCode: updates.province_code,
-          postalCode: updates.postal_code,
-          countryCode: updates.country_code,
         });
       } catch (error) {
         console.error('Error formatting address:', error);

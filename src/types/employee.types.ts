@@ -40,21 +40,34 @@ export interface EmergencyContact {
 
 /**
  * Structured Address Components
- * Replaces single-string address field with structured location data
+ * Follows Philippine PSGC hierarchy: Country → Region → Province → City → Barangay
+ * Note: Province is optional for NCR (National Capital Region) which has no provinces
  */
 export interface StructuredAddress {
-  // Location hierarchy (all required)
+  // Country (required)
   country: string;
   country_code: string;
-  province: string;
-  province_code: string;
+  
+  // Region (required) - separate from Province
+  region: string;
+  region_code: string;
+  
+  // Province (optional - not applicable for NCR)
+  province?: string;
+  province_code?: string;
+  
+  // City/Municipality (required)
   city: string;
   city_code: string;
+  
+  // Barangay (required)
   barangay: string;
   barangay_code: string;
+  
+  // Postal code (required)
   postal_code: string;
   
-  // Address lines
+  // Address lines (required)
   address_line_1: string; // House/Unit, Building, Street, Subdivision
   address_line_2?: string; // Apartment, floor, landmark, additional directions
   
@@ -100,10 +113,12 @@ export interface Employee {
   phone: string;
   address: string; // Legacy single-string address (for backward compatibility)
   
-  // Structured Address (new fields)
+  // Structured Address (new fields with Region/Province separation)
   country?: string;
   country_code?: string;
-  province?: string;
+  region?: string;
+  region_code?: string;
+  province?: string; // Optional - not applicable for NCR
   province_code?: string;
   city?: string;
   city_code?: string;
@@ -180,11 +195,13 @@ export interface CreateEmployeeInput {
   // Address (legacy single-string, optional for backward compatibility)
   address?: string;
   
-  // Structured Address (new required fields)
+  // Structured Address (new required fields with Region/Province separation)
   country: string;
   country_code: string;
-  province: string;
-  province_code: string;
+  region: string;
+  region_code: string;
+  province?: string; // Optional - not required for NCR
+  province_code?: string;
   city: string;
   city_code: string;
   barangay: string;
@@ -231,10 +248,12 @@ export interface UpdateEmployeeInput {
   // Address (legacy single-string, optional for backward compatibility)
   address?: string;
   
-  // Structured Address (new fields)
+  // Structured Address (new fields with Region/Province separation)
   country?: string;
   country_code?: string;
-  province?: string;
+  region?: string;
+  region_code?: string;
+  province?: string; // Optional - not applicable for NCR
   province_code?: string;
   city?: string;
   city_code?: string;
@@ -286,7 +305,9 @@ export interface EmployeeFilters {
 export function hasStructuredAddress(employee: Employee): boolean {
   return !!(
     employee.country_code &&
-    employee.province_code &&
+    employee.region_code &&
+    // Province is optional for NCR (region_code '13')
+    (employee.region_code === '13' || (employee.province_code && employee.province)) &&
     employee.city_code &&
     employee.barangay_code &&
     employee.postal_code &&
@@ -315,8 +336,10 @@ export function getStructuredAddress(employee: Employee): StructuredAddress | nu
   return {
     country: employee.country!,
     country_code: employee.country_code!,
-    province: employee.province!,
-    province_code: employee.province_code!,
+    region: employee.region!,
+    region_code: employee.region_code!,
+    province: employee.province,
+    province_code: employee.province_code,
     city: employee.city!,
     city_code: employee.city_code!,
     barangay: employee.barangay!,
