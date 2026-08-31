@@ -1,6 +1,6 @@
 /**
  * Driver Home Screen - Redesigned with Executive Dark Theme
- * 100% In-App Turn-by-Turn GPS Navigation & Functional Start Trip Workflow
+ * 100% In-App Google Maps Style Turn-by-Turn Navigation & Functional Start Trip Workflow
  */
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
@@ -13,6 +13,7 @@ import {
   RefreshControl,
   Animated,
   Easing,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons, Ionicons, FontAwesome5 } from '@expo/vector-icons';
@@ -49,6 +50,9 @@ const COLORS = {
   warning: '#F59E0B',
   info: '#38BDF8',
   white: '#FFFFFF',
+  googleGreen: '#0F9D58',
+  googleGreenDark: '#0B8043',
+  googleBlue: '#1A73E8',
 };
 
 // Initial trip assignment data
@@ -85,15 +89,16 @@ const DEMO_UPCOMING_TRIPS = [
   },
 ];
 
-// Turn-by-turn navigation steps for in-app GPS
-const NAVIGATION_STEPS = [
+// Google Maps Turn-by-Turn Navigation Steps
+const GOOGLE_NAV_STEPS = [
   {
     id: 1,
     maneuver: 'arrow-up-bold',
     distance: '350 m',
-    instruction: 'Head south on Quezon Ave towards EDSA',
-    subtext: 'Stay on the middle 2 lanes',
-    eta: '28 mins',
+    street: 'Quezon Avenue (Route 170)',
+    instruction: 'Head southwest on Quezon Ave toward EDSA',
+    nextStreet: 'Then 1.2 km, Merge onto EDSA Southbound',
+    etaMin: '28 min',
     remKm: '14.8 km',
     speed: 42,
   },
@@ -101,9 +106,10 @@ const NAVIGATION_STEPS = [
     id: 2,
     maneuver: 'arrow-top-right-thick',
     distance: '1.2 km',
-    instruction: 'Take the ramp onto EDSA Southbound Flyover',
-    subtext: 'Approaching North Ave MRT Station',
-    eta: '24 mins',
+    street: 'EDSA / AH26 Southbound Flyover',
+    instruction: 'Keep right at the fork, merge onto EDSA Southbound',
+    nextStreet: 'Then 4.5 km, Pass North Ave Station',
+    etaMin: '24 min',
     remKm: '12.4 km',
     speed: 55,
   },
@@ -111,9 +117,10 @@ const NAVIGATION_STEPS = [
     id: 3,
     maneuver: 'arrow-up-bold',
     distance: '4.8 km',
-    instruction: 'Continue on EDSA Southbound past Ortigas',
-    subtext: 'Keep right for Shaw Blvd Underpass exit',
-    eta: '16 mins',
+    street: 'EDSA (Epifanio de los Santos Ave)',
+    instruction: 'Continue straight on EDSA past Ortigas Avenue',
+    nextStreet: 'Then 850 m, Use right lane toward Shaw Blvd',
+    etaMin: '16 min',
     remKm: '7.6 km',
     speed: 48,
   },
@@ -121,9 +128,10 @@ const NAVIGATION_STEPS = [
     id: 4,
     maneuver: 'arrow-top-right-thick',
     distance: '850 m',
-    instruction: 'Turn right into SM Megamall Service Road',
-    subtext: 'Enter Cargo Gate B (Loading Bay 3)',
-    eta: '5 mins',
+    street: 'SM Megamall Service Road',
+    instruction: 'Turn right onto SM Megamall Cargo Access Road',
+    nextStreet: 'Then 200 m, Gate B Loading Bay 3',
+    etaMin: '5 min',
     remKm: '1.2 km',
     speed: 25,
   },
@@ -131,9 +139,10 @@ const NAVIGATION_STEPS = [
     id: 5,
     maneuver: 'flag-checkered',
     distance: '0 m',
-    instruction: 'Arrived at SM Megamall Cargo Bay B',
-    subtext: 'Prepare for cargo inspection & unloading',
-    eta: 'Arrived',
+    street: 'SM Megamall Cargo Bay B',
+    instruction: 'You have arrived at your delivery destination',
+    nextStreet: 'Destination is on the right',
+    etaMin: 'Arrived',
     remKm: '0.0 km',
     speed: 0,
   },
@@ -152,35 +161,13 @@ export default function DriverHome() {
   const [actionModalVisible, setActionModalVisible] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
 
-  // In-app GPS Navigation state
+  // Google Maps navigation state
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [isSimulatingGps, setIsSimulatingGps] = useState(true);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [mapType, setMapType] = useState<'directions' | 'vector'>('directions');
   const truckGpsAnim = useRef(new Animated.Value(0)).current;
-  const radarPulseAnim = useRef(new Animated.Value(0)).current;
 
-  const currentStep = NAVIGATION_STEPS[currentStepIndex];
-
-  useEffect(() => {
-    // Pulse animation for GPS radar beacon
-    const radarLoop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(radarPulseAnim, {
-          toValue: 1,
-          duration: 1800,
-          easing: Easing.out(Easing.quad),
-          useNativeDriver: true,
-        }),
-        Animated.timing(radarPulseAnim, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    radarLoop.start();
-
-    return () => radarLoop.stop();
-  }, []);
+  const currentStep = GOOGLE_NAV_STEPS[currentStepIndex];
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -189,22 +176,20 @@ export default function DriverHome() {
     }, 800);
   }, []);
 
-  // Advance to next GPS navigation waypoint in-app
+  // Advance to next Google Maps GPS waypoint
   const handleNextGpsStep = () => {
-    if (currentStepIndex < NAVIGATION_STEPS.length - 1) {
+    if (currentStepIndex < GOOGLE_NAV_STEPS.length - 1) {
       const nextIdx = currentStepIndex + 1;
       setCurrentStepIndex(nextIdx);
 
-      // Smoothly animate truck pin along the map route
       Animated.timing(truckGpsAnim, {
-        toValue: nextIdx / (NAVIGATION_STEPS.length - 1),
-        duration: 600,
+        toValue: nextIdx / (GOOGLE_NAV_STEPS.length - 1),
+        duration: 500,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: false,
       }).start();
 
-      if (nextIdx === NAVIGATION_STEPS.length - 1) {
-        // Automatically update trip status to arrived/unloading
+      if (nextIdx === GOOGLE_NAV_STEPS.length - 1) {
         setCurrentTrip((prev) => ({
           ...prev,
           status: TripStatus.UNLOADING,
@@ -218,7 +203,7 @@ export default function DriverHome() {
       const prevIdx = currentStepIndex - 1;
       setCurrentStepIndex(prevIdx);
       Animated.timing(truckGpsAnim, {
-        toValue: prevIdx / (NAVIGATION_STEPS.length - 1),
+        toValue: prevIdx / (GOOGLE_NAV_STEPS.length - 1),
         duration: 400,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: false,
@@ -236,7 +221,7 @@ export default function DriverHome() {
         ...prev,
         status: TripStatus.IN_TRANSIT,
       }));
-      setFeedbackMessage('🚚 Trip started! Live In-App GPS navigation active.');
+      setFeedbackMessage('🚚 Trip started! Live In-App Navigation is active.');
       setTimeout(() => setFeedbackMessage(null), 5000);
     } else if (status === TripStatus.IN_TRANSIT) {
       setCurrentTrip((prev) => ({
@@ -271,7 +256,7 @@ export default function DriverHome() {
           icon: 'truck-fast' as const,
           color: COLORS.primary,
           modalTitle: 'Start Trip',
-          modalDesc: `Departing from ${currentTrip.pickup} to ${currentTrip.delivery}. Live in-app GPS navigation will activate for this trip.`,
+          modalDesc: `Departing from ${currentTrip.pickup} to ${currentTrip.delivery}. Live in-app navigation will activate for this trip.`,
           confirmLabel: 'Confirm Departure & Start Trip',
         };
       case TripStatus.IN_TRANSIT:
@@ -318,7 +303,7 @@ export default function DriverHome() {
       case TripStatus.LOADING:
         return { status: 'in-progress' as const, label: 'Loading Cargo' };
       case TripStatus.IN_TRANSIT:
-        return { status: 'in-progress' as const, label: 'In Transit • In-App GPS Live' };
+        return { status: 'in-progress' as const, label: 'In Transit • GPS Live' };
       case TripStatus.UNLOADING:
         return { status: 'in-progress' as const, label: 'Unloading Cargo' };
       case TripStatus.COMPLETED:
@@ -330,6 +315,9 @@ export default function DriverHome() {
 
   const actionConfig = getPrimaryActionConfig();
   const statusChipConfig = getStatusChipConfig();
+
+  // Embedded Google Maps Directions URL
+  const googleMapsDirectionsUrl = `https://maps.google.com/maps?saddr=123+Quezon+Ave+Quezon+City+Philippines&daddr=SM+Megamall+EDSA+Mandaluyong+Philippines&t=m&z=13&output=embed`;
 
   return (
     <View style={styles.container}>
@@ -441,7 +429,7 @@ export default function DriverHome() {
                 <Text style={styles.primaryButtonText}>{actionConfig.label}</Text>
               </TouchableOpacity>
 
-              {/* Secondary Actions (In-App Navigate / Report Issue) */}
+              {/* Secondary Actions (Navigate / Report Issue) */}
               <View style={styles.secondaryActions}>
                 <TouchableOpacity
                   style={styles.secondaryButton}
@@ -450,7 +438,7 @@ export default function DriverHome() {
                 >
                   <Ionicons name="navigate" size={18} color={COLORS.primary} />
                   <Text style={[styles.secondaryButtonText, { color: COLORS.primary }]}>
-                    In-App GPS Navigate
+                    Navigate
                   </Text>
                 </TouchableOpacity>
 
@@ -567,182 +555,238 @@ export default function DriverHome() {
         </View>
       </Modal>
 
-      {/* ==================== 2. IN-APP GPS NAVIGATION MODAL ==================== */}
+      {/* ==================== 2. GOOGLE MAPS IN-APP NAVIGATION MODAL ==================== */}
       <Modal
         isOpen={navModalVisible}
         onClose={() => setNavModalVisible(false)}
-        title="In-App Turn-by-Turn GPS HUD"
+        title="Google Maps Navigation"
         size="lg"
       >
-        <View style={styles.modalBody}>
-          {/* Top Maneuver Card Banner */}
-          <View style={styles.gpsManeuverBanner}>
-            <View style={styles.gpsManeuverIconCircle}>
+        <View style={styles.googleNavContainer}>
+          {/* Google Maps Iconic Emerald Green Turn Banner */}
+          <View style={styles.gmapsTopBanner}>
+            <View style={styles.gmapsIconBox}>
               <MaterialCommunityIcons
                 name={currentStep.maneuver as any}
-                size={28}
+                size={34}
                 color={COLORS.white}
               />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.gpsManeuverDistance}>{currentStep.distance}</Text>
-              <Text style={styles.gpsManeuverText}>{currentStep.instruction}</Text>
-              <Text style={styles.gpsManeuverSubtext}>{currentStep.subtext}</Text>
+              <View style={styles.gmapsDistRow}>
+                <Text style={styles.gmapsDistText}>{currentStep.distance}</Text>
+                <View style={styles.gmapsNextChip}>
+                  <Text style={styles.gmapsNextChipText}>NEXT</Text>
+                </View>
+              </View>
+              <Text style={styles.gmapsStreetText} numberOfLines={1}>
+                {currentStep.street}
+              </Text>
+              <Text style={styles.gmapsSubInstruction} numberOfLines={1}>
+                {currentStep.nextStreet}
+              </Text>
             </View>
           </View>
 
-          {/* Simulated In-App Visual Vector Map */}
-          <View style={styles.gpsMapContainer}>
-            <Svg height="160" width="100%" viewBox="0 0 340 160">
-              <Defs>
-                <LinearGradient id="roadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <Stop offset="0%" stopColor="#0EA5E9" stopOpacity="0.8" />
-                  <Stop offset="100%" stopColor="#10B981" stopOpacity="0.9" />
-                </LinearGradient>
-                <LinearGradient id="bgGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <Stop offset="0%" stopColor="#0F172A" />
-                  <Stop offset="100%" stopColor="#0B1120" />
-                </LinearGradient>
-              </Defs>
-
-              {/* Map Canvas Background */}
-              <Rect x="0" y="0" width="340" height="160" rx="14" fill="url(#bgGrad)" />
-
-              {/* Street grid lines */}
-              <Line x1="20" y1="40" x2="320" y2="40" stroke="#1E293B" strokeWidth="2" strokeDasharray="4,4" />
-              <Line x1="20" y1="80" x2="320" y2="80" stroke="#334155" strokeWidth="3" />
-              <Line x1="20" y1="120" x2="320" y2="120" stroke="#1E293B" strokeWidth="2" strokeDasharray="4,4" />
-              <Line x1="90" y1="10" x2="90" y2="150" stroke="#1E293B" strokeWidth="2" />
-              <Line x1="180" y1="10" x2="180" y2="150" stroke="#1E293B" strokeWidth="2" strokeDasharray="4,4" />
-              <Line x1="270" y1="10" x2="270" y2="150" stroke="#1E293B" strokeWidth="2" />
-
-              {/* Glowing Highway Route Path */}
-              <Path
-                d="M 40 120 Q 120 120 160 80 T 300 40"
-                fill="none"
-                stroke="url(#roadGrad)"
-                strokeWidth="6"
-                strokeLinecap="round"
+          {/* Embedded Google Maps View Container */}
+          <View style={styles.gmapsCanvasBox}>
+            {Platform.OS === 'web' && mapType === 'directions' ? (
+              // Real Interactive Google Maps Embedded Iframe
+              <iframe
+                src={googleMapsDirectionsUrl}
+                style={{
+                  width: '100%',
+                  height: '220px',
+                  border: '0',
+                  borderRadius: '12px',
+                }}
+                loading="lazy"
+                title="Google Maps Directions"
               />
+            ) : (
+              // High-fidelity Google Maps Dark Navigation Vector Map
+              <View style={{ width: '100%', height: 220, position: 'relative' }}>
+                <Svg height="220" width="100%" viewBox="0 0 340 220">
+                  <Defs>
+                    <LinearGradient id="gmapRouteGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <Stop offset="0%" stopColor="#4285F4" />
+                      <Stop offset="100%" stopColor="#0F9D58" />
+                    </LinearGradient>
+                  </Defs>
+                  {/* Dark Map Canvas */}
+                  <Rect x="0" y="0" width="340" height="220" rx="12" fill="#182335" />
 
-              {/* Origin Pin: Quezon Ave Warehouse */}
-              <Circle cx="40" cy="120" r="9" fill="#0EA5E9" />
-              <Circle cx="40" cy="120" r="4" fill="#FFFFFF" />
+                  {/* Secondary Streets */}
+                  <Line x1="10" y1="50" x2="330" y2="50" stroke="#253549" strokeWidth="4" />
+                  <Line x1="10" y1="110" x2="330" y2="110" stroke="#253549" strokeWidth="4" />
+                  <Line x1="10" y1="170" x2="330" y2="170" stroke="#253549" strokeWidth="4" />
+                  <Line x1="80" y1="10" x2="80" y2="210" stroke="#253549" strokeWidth="4" />
+                  <Line x1="170" y1="10" x2="170" y2="210" stroke="#253549" strokeWidth="4" />
+                  <Line x1="260" y1="10" x2="260" y2="210" stroke="#253549" strokeWidth="4" />
 
-              {/* Destination Pin: SM Megamall */}
-              <Circle cx="300" cy="40" r="9" fill="#10B981" />
-              <Circle cx="300" cy="40" r="4" fill="#FFFFFF" />
-            </Svg>
+                  {/* Main EDSA Highway (Thick Slate Gray Base) */}
+                  <Path
+                    d="M 40 180 Q 120 180 170 110 T 300 50"
+                    fill="none"
+                    stroke="#37475A"
+                    strokeWidth="16"
+                    strokeLinecap="round"
+                  />
 
-            {/* In-Map Telemetry Speed Badge */}
-            <View style={styles.inMapSpeedBadge}>
-              <Text style={styles.inMapSpeedVal}>{currentStep.speed}</Text>
-              <Text style={styles.inMapSpeedUnit}>KM/H</Text>
+                  {/* Active Google Blue Route Polyline */}
+                  <Path
+                    d="M 40 180 Q 120 180 170 110 T 300 50"
+                    fill="none"
+                    stroke="url(#gmapRouteGrad)"
+                    strokeWidth="10"
+                    strokeLinecap="round"
+                  />
+
+                  {/* Origin Marker */}
+                  <Circle cx="40" cy="180" r="10" fill="#4285F4" />
+                  <Circle cx="40" cy="180" r="5" fill="#FFFFFF" />
+
+                  {/* Destination Marker */}
+                  <Circle cx="300" cy="50" r="10" fill="#EA4335" />
+                  <Circle cx="300" cy="50" r="5" fill="#FFFFFF" />
+                </Svg>
+              </View>
+            )}
+
+            {/* Google Maps Floating Speedometer & Controls */}
+            <View style={styles.gmapsSpeedBubble}>
+              <Text style={styles.gmapsSpeedNum}>{currentStep.speed}</Text>
+              <Text style={styles.gmapsSpeedUnit}>km/h</Text>
             </View>
 
-            {/* In-Map Compass Heading */}
-            <View style={styles.inMapCompassBadge}>
-              <MaterialCommunityIcons name="compass" size={14} color={COLORS.primary} />
-              <Text style={styles.inMapCompassText}>EDSA • SSE 158°</Text>
+            <View style={styles.gmapsFloatingControls}>
+              <TouchableOpacity
+                style={styles.gmapsCircleBtn}
+                onPress={() => setIsAudioMuted(!isAudioMuted)}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name={isAudioMuted ? 'volume-mute' : 'volume-high'}
+                  size={18}
+                  color={COLORS.white}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.gmapsCircleBtn}
+                onPress={() => setMapType(mapType === 'directions' ? 'vector' : 'directions')}
+                activeOpacity={0.8}
+              >
+                <MaterialCommunityIcons
+                  name={mapType === 'directions' ? 'layers-outline' : 'google-maps'}
+                  size={18}
+                  color={COLORS.white}
+                />
+              </TouchableOpacity>
             </View>
           </View>
 
-          {/* Live Telemetry Metrics Row */}
-          <View style={styles.gpsMetricsCard}>
-            <View style={styles.gpsMetricItem}>
-              <Text style={styles.gpsMetricVal}>{currentStep.remKm}</Text>
-              <Text style={styles.gpsMetricLabel}>REMAINING</Text>
+          {/* Google Maps Bottom ETA & Travel Time Dashboard */}
+          <View style={styles.gmapsBottomHud}>
+            <View style={styles.gmapsEtaLeft}>
+              <Text style={styles.gmapsEtaDuration}>{currentStep.etaMin}</Text>
+              <View style={styles.gmapsEtaSubRow}>
+                <Text style={styles.gmapsDistanceText}>{currentStep.remKm}</Text>
+                <Text style={styles.gmapsDotSep}>•</Text>
+                <Text style={styles.gmapsArrivalText}>10:30 AM</Text>
+              </View>
             </View>
-            <View style={styles.gpsMetricDivider} />
-            <View style={styles.gpsMetricItem}>
-              <Text style={[styles.gpsMetricVal, { color: COLORS.orange }]}>{currentStep.eta}</Text>
-              <Text style={styles.gpsMetricLabel}>EST. ARRIVAL</Text>
-            </View>
-            <View style={styles.gpsMetricDivider} />
-            <View style={styles.gpsMetricItem}>
-              <Text style={[styles.gpsMetricVal, { color: COLORS.success }]}>Normal</Text>
-              <Text style={styles.gpsMetricLabel}>TRAFFIC</Text>
-            </View>
-          </View>
 
-          {/* Step Controls (Simulate / Previous / Next Step) */}
-          <View style={styles.gpsControlsRow}>
+            {/* Google Maps Exit Red Button */}
             <TouchableOpacity
-              style={[
-                styles.gpsNavStepBtn,
-                currentStepIndex === 0 && { opacity: 0.4 },
-              ]}
+              style={styles.gmapsExitBtn}
+              onPress={() => setNavModalVisible(false)}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="close" size={24} color={COLORS.white} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Turn Step Stepper (Prev / Next Step) */}
+          <View style={styles.gmapsStepStepper}>
+            <TouchableOpacity
+              style={[styles.gmapsStepperBtn, currentStepIndex === 0 && { opacity: 0.35 }]}
               onPress={handlePrevGpsStep}
               disabled={currentStepIndex === 0}
               activeOpacity={0.7}
             >
-              <Ionicons name="chevron-back" size={18} color={COLORS.white} />
-              <Text style={styles.gpsNavStepBtnText}>Prev Step</Text>
+              <Ionicons name="arrow-back" size={16} color={COLORS.white} />
+              <Text style={styles.gmapsStepperBtnText}>Previous</Text>
             </TouchableOpacity>
+
+            <View style={styles.gmapsStepperIndicator}>
+              <Text style={styles.gmapsStepCountText}>
+                Step {currentStepIndex + 1} of {GOOGLE_NAV_STEPS.length}
+              </Text>
+            </View>
 
             <TouchableOpacity
               style={[
-                styles.gpsNavStepBtn,
-                styles.gpsNavStepBtnPrimary,
-                currentStepIndex === NAVIGATION_STEPS.length - 1 && { backgroundColor: COLORS.success },
+                styles.gmapsStepperBtn,
+                styles.gmapsStepperBtnNext,
+                currentStepIndex === GOOGLE_NAV_STEPS.length - 1 && { backgroundColor: COLORS.googleGreen },
               ]}
               onPress={handleNextGpsStep}
               activeOpacity={0.8}
             >
-              <Text style={styles.gpsNavStepBtnPrimaryText}>
-                {currentStepIndex === NAVIGATION_STEPS.length - 1
-                  ? 'Arrived at Destination ✓'
-                  : 'Next Waypoint →'}
+              <Text style={styles.gmapsStepperBtnNextText}>
+                {currentStepIndex === GOOGLE_NAV_STEPS.length - 1 ? 'Arrived ✓' : 'Next Turn →'}
               </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Waypoints Timeline Preview */}
-          <View style={styles.waypointsContainer}>
-            <Text style={styles.waypointsTitle}>ROUTE WAYPOINTS (STEP {currentStepIndex + 1} OF {NAVIGATION_STEPS.length})</Text>
-            {NAVIGATION_STEPS.map((step, idx) => {
+          {/* Direction Steps Accordion */}
+          <View style={styles.gmapsTurnList}>
+            <Text style={styles.gmapsTurnListHeader}>DIRECTIONS PREVIEW</Text>
+            {GOOGLE_NAV_STEPS.map((step, idx) => {
               const isCurrent = idx === currentStepIndex;
               const isPassed = idx < currentStepIndex;
 
               return (
                 <TouchableOpacity
                   key={step.id}
-                  style={[styles.waypointRow, isCurrent && styles.waypointRowActive]}
+                  style={[styles.gmapsTurnRow, isCurrent && styles.gmapsTurnRowActive]}
                   onPress={() => setCurrentStepIndex(idx)}
                   activeOpacity={0.7}
                 >
                   <View
                     style={[
-                      styles.waypointDot,
-                      isPassed && { backgroundColor: COLORS.success },
-                      isCurrent && { backgroundColor: COLORS.primary, borderColor: COLORS.white, borderWidth: 2 },
+                      styles.gmapsTurnIconWrap,
+                      isCurrent && { backgroundColor: COLORS.googleGreen },
+                      isPassed && { backgroundColor: '#334155' },
                     ]}
-                  />
+                  >
+                    <MaterialCommunityIcons
+                      name={step.maneuver as any}
+                      size={16}
+                      color={isCurrent || isPassed ? COLORS.white : COLORS.textSecondary}
+                    />
+                  </View>
                   <View style={{ flex: 1 }}>
                     <Text
                       style={[
-                        styles.waypointText,
+                        styles.gmapsTurnTitle,
                         isCurrent && { color: COLORS.white, fontWeight: '700' },
                         isPassed && { color: COLORS.textMuted },
                       ]}
+                      numberOfLines={1}
                     >
                       {step.instruction}
                     </Text>
+                    <Text style={styles.gmapsTurnSub} numberOfLines={1}>
+                      {step.street}
+                    </Text>
                   </View>
-                  <Text style={styles.waypointDist}>{step.distance}</Text>
+                  <Text style={styles.gmapsTurnDist}>{step.distance}</Text>
                 </TouchableOpacity>
               );
             })}
           </View>
-
-          {/* Close HUD Button */}
-          <TouchableOpacity
-            style={styles.closeGpsBtn}
-            onPress={() => setNavModalVisible(false)}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.closeGpsBtnText}>Close In-App Navigation</Text>
-          </TouchableOpacity>
         </View>
       </Modal>
     </View>
@@ -1077,176 +1121,226 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // In-App Turn-by-Turn GPS HUD Styles
-  gpsManeuverBanner: {
+  // ==================== Google Maps Styles ====================
+  googleNavContainer: {
+    paddingVertical: 2,
+  },
+  gmapsTopBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0284C7',
+    backgroundColor: COLORS.googleGreen,
     borderRadius: 16,
     padding: 14,
     gap: 12,
-    marginBottom: 12,
-    shadowColor: '#0EA5E9',
+    marginBottom: 10,
+    shadowColor: COLORS.googleGreen,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 4,
   },
-  gpsManeuverIconCircle: {
+  gmapsIconBox: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 12,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  gpsManeuverDistance: {
-    fontSize: 18,
+  gmapsDistRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  gmapsDistText: {
+    fontSize: 22,
     fontWeight: '900',
     color: COLORS.white,
-    letterSpacing: -0.2,
+    letterSpacing: -0.5,
   },
-  gpsManeuverText: {
+  gmapsNextChip: {
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  gmapsNextChipText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: COLORS.white,
+    letterSpacing: 0.5,
+  },
+  gmapsStreetText: {
     fontSize: 14,
     fontWeight: '700',
     color: COLORS.white,
     marginTop: 1,
   },
-  gpsManeuverSubtext: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
+  gmapsSubInstruction: {
+    fontSize: 11,
+    color: 'rgba(255, 255, 255, 0.85)',
     marginTop: 2,
   },
-  gpsMapContainer: {
+  gmapsCanvasBox: {
     position: 'relative',
-    borderRadius: 16,
+    borderRadius: 14,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.border,
-    marginBottom: 12,
+    borderColor: '#334155',
+    marginBottom: 10,
   },
-  inMapSpeedBadge: {
+  gmapsSpeedBubble: {
     position: 'absolute',
     bottom: 10,
     left: 10,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    width: 46,
+    height: 46,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
-  inMapSpeedVal: {
+  gmapsSpeedNum: {
     fontSize: 16,
     fontWeight: '900',
-    color: COLORS.primary,
+    color: '#0F172A',
+    lineHeight: 18,
   },
-  inMapSpeedUnit: {
-    fontSize: 9,
+  gmapsSpeedUnit: {
+    fontSize: 8,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: '#64748B',
   },
-  inMapCompassBadge: {
+  gmapsFloatingControls: {
     position: 'absolute',
     top: 10,
     right: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
+    gap: 8,
+  },
+  gmapsCircleBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(15, 23, 42, 0.85)',
-    borderColor: COLORS.border,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 4,
-  },
-  inMapCompassText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  gpsMetricsCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    borderColor: COLORS.border,
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-  },
-  gpsMetricItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  gpsMetricDivider: {
-    width: 1,
-    height: 24,
-    backgroundColor: COLORS.border,
-    alignSelf: 'center',
-  },
-  gpsMetricVal: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  gpsMetricLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-    marginTop: 2,
-    letterSpacing: 0.5,
-  },
-  gpsControlsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 14,
-  },
-  gpsNavStepBtn: {
-    flexDirection: 'row',
+    borderColor: '#475569',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    borderColor: COLORS.border,
+  },
+  gmapsBottomHud: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 16,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    marginBottom: 10,
+  },
+  gmapsEtaLeft: {
+    flex: 1,
+  },
+  gmapsEtaDuration: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#10B981',
+    letterSpacing: -0.5,
+  },
+  gmapsEtaSubRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 2,
+  },
+  gmapsDistanceText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  gmapsDotSep: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+  },
+  gmapsArrivalText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  gmapsExitBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  gmapsStepStepper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 10,
+  },
+  gmapsStepperBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    borderColor: '#334155',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     gap: 4,
   },
-  gpsNavStepBtnText: {
-    fontSize: 13,
+  gmapsStepperBtnText: {
+    fontSize: 12,
     fontWeight: '700',
     color: COLORS.white,
   },
-  gpsNavStepBtnPrimary: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+  gmapsStepperIndicator: {
+    alignItems: 'center',
   },
-  gpsNavStepBtnPrimaryText: {
-    fontSize: 14,
+  gmapsStepCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  gmapsStepperBtnNext: {
+    backgroundColor: COLORS.googleBlue,
+    borderColor: COLORS.googleBlue,
+  },
+  gmapsStepperBtnNextText: {
+    fontSize: 12,
     fontWeight: '800',
     color: COLORS.white,
   },
-  waypointsContainer: {
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
-    borderColor: COLORS.border,
+  gmapsTurnList: {
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    borderColor: '#334155',
     borderWidth: 1,
     borderRadius: 14,
     padding: 12,
-    marginBottom: 12,
   },
-  waypointsTitle: {
+  gmapsTurnListHeader: {
     fontSize: 10,
     fontWeight: '800',
     color: COLORS.textSecondary,
     letterSpacing: 0.8,
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  waypointRow: {
+  gmapsTurnRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 6,
@@ -1254,36 +1348,30 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     gap: 10,
   },
-  waypointRowActive: {
-    backgroundColor: 'rgba(14, 165, 233, 0.15)',
+  gmapsTurnRowActive: {
+    backgroundColor: 'rgba(15, 157, 88, 0.15)',
   },
-  waypointDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.textSecondary,
+  gmapsTurnIconWrap: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#1E293B',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  waypointText: {
+  gmapsTurnTitle: {
     fontSize: 12,
     color: COLORS.textSecondary,
     lineHeight: 16,
   },
-  waypointDist: {
+  gmapsTurnSub: {
+    fontSize: 10,
+    color: COLORS.textMuted,
+    marginTop: 1,
+  },
+  gmapsTurnDist: {
     fontSize: 11,
     fontWeight: '700',
     color: COLORS.textMuted,
-  },
-  closeGpsBtn: {
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
-    borderColor: 'rgba(239, 68, 68, 0.3)',
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  closeGpsBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.error,
   },
 });
