@@ -208,7 +208,7 @@ export default function EmployeesListScreen() {
           <View style={styles.employeeDetails}>
             <View style={styles.detailRow}>
               <View style={styles.detailIcon}>
-                <Ionicons name="briefcase" size={16} color={COLORS.navy} />
+                <Ionicons name={getRoleIcon(item.role)} size={16} color={getRoleColor(item.role)} />
               </View>
               <Text style={styles.detailText}>
                 {item.role.charAt(0).toUpperCase() + item.role.slice(1)}
@@ -218,7 +218,7 @@ export default function EmployeesListScreen() {
             {item.phone && (
               <View style={styles.detailRow}>
                 <View style={styles.detailIcon}>
-                  <Ionicons name="call" size={16} color={COLORS.teal} />
+                  <Ionicons name="call" size={16} color="#38BDF8" />
                 </View>
                 <Text style={styles.detailText}>
                   {formatPhilippinePhone(item.phone)}
@@ -229,7 +229,7 @@ export default function EmployeesListScreen() {
             {item.role === UserRole.DRIVER && item.license_number && (
               <View style={styles.detailRow}>
                 <View style={styles.detailIcon}>
-                  <Ionicons name="card" size={16} color={COLORS.orange} />
+                  <Ionicons name="card" size={16} color="#F59E0B" />
                 </View>
                 <Text style={styles.detailText}>
                   License: {item.license_number}
@@ -240,7 +240,7 @@ export default function EmployeesListScreen() {
                       styles.warningBadge,
                       {
                         backgroundColor:
-                          licenseStatus === 'expired' ? COLORS.error + '15' : COLORS.warning + '15',
+                          licenseStatus === 'expired' ? COLORS.error + '22' : COLORS.warning + '22',
                       },
                     ]}
                   >
@@ -257,7 +257,7 @@ export default function EmployeesListScreen() {
             {item.assigned_truck_number && (
               <View style={styles.detailRow}>
                 <View style={styles.detailIcon}>
-                  <Ionicons name="car" size={16} color={COLORS.success} />
+                  <Ionicons name="car" size={16} color="#10B981" />
                 </View>
                 <Text style={styles.detailText}>
                   Truck: {item.assigned_truck_number}
@@ -541,13 +541,14 @@ const styles = StyleSheet.create({
   },
   filterScroll: {
     paddingHorizontal: SPACING.md,
+    paddingRight: 24,
     gap: SPACING.xs,
   },
   filterChip: {
     paddingHorizontal: 18,
     paddingVertical: 9,
     borderRadius: 20,
-    borderWidth: 0,
+    borderWidth: 1,
     minHeight: 40,
     justifyContent: 'center',
   },
@@ -558,13 +559,13 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.xs,
-    paddingBottom: 85,
+    paddingBottom: 110,
     flexGrow: 1,
   },
   employeeCard: {
     padding: SPACING.md,
     marginBottom: SPACING.sm,
-    borderRadius: COMPONENTS.card.borderRadius,
+    borderRadius: 18,
     backgroundColor: '#1E293B',
     borderColor: '#334155',
     borderWidth: 1,
