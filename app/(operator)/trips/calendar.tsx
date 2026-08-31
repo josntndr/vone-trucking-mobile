@@ -21,19 +21,18 @@ interface DayTrips {
 }
 
 export default function TripCalendarScreen() {
-  // Force light theme for operator/admin
   const themeObj = useTheme();
   const colors = {
-    background: '#F7F4EF',
-    surface: '#FFFDFC',
-    text: '#24211F',
-    textSecondary: '#746B63',
-    border: '#E5DDD5',
-    primary: '#192A4A',
-    success: '#4F956E',
-    info: '#4D728C',
-    warning: '#C68A24',
-    error: '#C44C47',
+    background: '#0B1120',
+    surface: '#1E293B',
+    text: '#F8FAFC',
+    textSecondary: '#94A3B8',
+    border: '#334155',
+    primary: '#0EA5E9',
+    success: '#10B981',
+    info: '#38BDF8',
+    warning: '#F59E0B',
+    error: '#EF4444',
     white: '#FFFFFF',
   };
   const { spacing } = themeObj;

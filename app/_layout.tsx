@@ -13,12 +13,12 @@ export default function RootLayout() {
   return (
     <ThemeProvider>
       <MobileViewportWrapper>
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
         <Stack
           screenOptions={{
             headerShown: false,
             contentStyle: {
-              backgroundColor: '#F7F4EF',
+              backgroundColor: '#0B1120',
             },
           }}
         >
