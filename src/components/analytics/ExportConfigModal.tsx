@@ -116,7 +116,7 @@ export const ExportConfigModal: React.FC<ExportConfigModalProps> = ({
               accessibilityRole="button"
               accessibilityLabel="Close"
             >
-              <Ionicons name="close" size={24} color={COLORS.text} />
+              <Ionicons name="close" size={24} color="#F8FAFC" />
             </TouchableOpacity>
           </View>
 
@@ -128,7 +128,7 @@ export const ExportConfigModal: React.FC<ExportConfigModalProps> = ({
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>SELECTED DATE RANGE</Text>
               <View style={styles.infoBox}>
-                <Ionicons name="calendar-outline" size={20} color={COLORS.navy} />
+                <Ionicons name="calendar-outline" size={20} color="#0EA5E9" />
                 <Text style={styles.infoText}>{dateRangeLabel}</Text>
               </View>
             </View>
@@ -187,7 +187,7 @@ export const ExportConfigModal: React.FC<ExportConfigModalProps> = ({
                     <Ionicons
                       name={format.icon as any}
                       size={24}
-                      color={selectedFormat === format.value ? COLORS.navy : COLORS.textSecondary}
+                      color={selectedFormat === format.value ? '#0EA5E9' : '#94A3B8'}
                     />
                     <Text
                       style={[
@@ -199,7 +199,7 @@ export const ExportConfigModal: React.FC<ExportConfigModalProps> = ({
                     </Text>
                   </View>
                   {selectedFormat === format.value && (
-                    <Ionicons name="checkmark-circle" size={24} color={COLORS.navy} />
+                    <Ionicons name="checkmark-circle" size={24} color="#0EA5E9" />
                   )}
                 </TouchableOpacity>
               ))}
@@ -248,26 +248,25 @@ export const ExportConfigModal: React.FC<ExportConfigModalProps> = ({
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-    ...(Platform.OS === 'web' && {
-      alignItems: 'center',
-    }),
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
   },
   modalContainer: {
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    maxHeight: '90%',
-    ...(Platform.OS === 'web' && {
-      width: '100%',
-    }),
+    backgroundColor: '#1E293B',
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#334155',
+    width: '100%',
+    maxWidth: 390,
+    maxHeight: '88%',
+    overflow: 'hidden',
   },
   modalContainerWeb: {
-    maxWidth: 430,
-    borderRadius: 20,
-    maxHeight: '85vh',
-    marginVertical: 'auto',
+    maxWidth: 390,
+    borderRadius: 24,
+    maxHeight: '88vh',
   },
   header: {
     flexDirection: 'row',
@@ -276,12 +275,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: '#334155',
+    backgroundColor: '#1E293B',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: DESIGN_SYSTEM.typography.fontWeight.bold,
-    color: COLORS.navy,
+    fontWeight: '800',
+    color: '#F8FAFC',
   },
   closeButton: {
     padding: SPACING.xs,
@@ -294,9 +294,9 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.md,
   },
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: DESIGN_SYSTEM.typography.fontWeight.bold,
-    color: COLORS.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#94A3B8',
     marginBottom: SPACING.sm,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -304,28 +304,30 @@ const styles = StyleSheet.create({
   infoBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
+    backgroundColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: '#334155',
     padding: SPACING.sm,
-    borderRadius: 8,
+    borderRadius: 10,
     gap: SPACING.sm,
   },
   infoText: {
     fontSize: 14,
-    color: COLORS.text,
-    fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
+    color: '#F8FAFC',
+    fontWeight: '600',
   },
   radioOption: {
-    backgroundColor: COLORS.white,
+    backgroundColor: '#0F172A',
     borderWidth: 1.5,
-    borderColor: COLORS.border,
-    borderRadius: 10,
+    borderColor: '#334155',
+    borderRadius: 12,
     padding: SPACING.sm,
     marginBottom: SPACING.xs,
     minHeight: 60,
   },
   radioOptionSelected: {
-    borderColor: COLORS.navy,
-    backgroundColor: COLORS.navy + '08',
+    borderColor: '#0EA5E9',
+    backgroundColor: 'rgba(14, 165, 233, 0.12)',
   },
   radioContent: {
     flexDirection: 'row',
@@ -336,50 +338,50 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: COLORS.border,
+    borderColor: '#475569',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: SPACING.sm,
     marginTop: 2,
   },
   radioCircleSelected: {
-    borderColor: COLORS.navy,
+    borderColor: '#0EA5E9',
   },
   radioDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#0EA5E9',
   },
   radioText: {
     flex: 1,
   },
   radioLabel: {
     fontSize: 14,
-    fontWeight: DESIGN_SYSTEM.typography.fontWeight.semibold,
-    color: COLORS.text,
+    fontWeight: '700',
+    color: '#F8FAFC',
     marginBottom: 4,
   },
   radioDescription: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: '#94A3B8',
     lineHeight: 16,
   },
   formatOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.white,
+    backgroundColor: '#0F172A',
     borderWidth: 1.5,
-    borderColor: COLORS.border,
-    borderRadius: 10,
+    borderColor: '#334155',
+    borderRadius: 12,
     padding: SPACING.sm,
     marginBottom: SPACING.xs,
     minHeight: 56,
   },
   formatOptionSelected: {
-    borderColor: COLORS.navy,
-    backgroundColor: COLORS.navy + '08',
+    borderColor: '#0EA5E9',
+    backgroundColor: 'rgba(14, 165, 233, 0.12)',
   },
   formatContent: {
     flexDirection: 'row',
@@ -388,26 +390,27 @@ const styles = StyleSheet.create({
   },
   formatLabel: {
     fontSize: 14,
-    fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-    color: COLORS.text,
+    fontWeight: '600',
+    color: '#94A3B8',
   },
   formatLabelSelected: {
-    fontWeight: DESIGN_SYSTEM.typography.fontWeight.semibold,
-    color: COLORS.navy,
+    fontWeight: '700',
+    color: '#F8FAFC',
   },
   actions: {
     flexDirection: 'row',
     gap: SPACING.sm,
     padding: SPACING.md,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: '#334155',
+    backgroundColor: '#1E293B',
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: '#0F172A',
     borderWidth: 1.5,
-    borderColor: COLORS.navy,
-    borderRadius: 8,
+    borderColor: '#334155',
+    borderRadius: 12,
     paddingVertical: SPACING.sm,
     alignItems: 'center',
     justifyContent: 'center',
@@ -415,27 +418,32 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: {
     fontSize: 15,
-    fontWeight: DESIGN_SYSTEM.typography.fontWeight.semibold,
-    color: COLORS.navy,
+    fontWeight: '600',
+    color: '#F8FAFC',
   },
   exportButton: {
     flex: 2,
-    backgroundColor: COLORS.navy,
-    borderRadius: 8,
+    backgroundColor: '#0EA5E9',
+    borderRadius: 12,
     paddingVertical: SPACING.sm,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: SPACING.xs,
     minHeight: 48,
+    shadowColor: '#0EA5E9',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   exportButtonDisabled: {
     opacity: 0.6,
   },
   exportButtonText: {
     fontSize: 15,
-    fontWeight: DESIGN_SYSTEM.typography.fontWeight.semibold,
-    color: COLORS.white,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });
 
