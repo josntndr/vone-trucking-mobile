@@ -1,6 +1,6 @@
 /**
  * Driver Home Screen - Redesigned with Executive Dark Theme
- * Modern, high-contrast dashboard for driver operations
+ * Modern, high-contrast dashboard with functional Start Trip & Navigation
  */
 
 import React, { useState, useCallback } from 'react';
@@ -11,6 +11,9 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  Alert,
+  Linking,
+  Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
@@ -38,8 +41,8 @@ const COLORS = {
   white: '#FFFFFF',
 };
 
-// Demo current trip data
-const DEMO_CURRENT_TRIP = {
+// Initial trip assignment data
+const INITIAL_TRIP = {
   id: '1',
   tripNumber: 'VT-2024-001',
   status: TripStatus.LOADING,
@@ -76,47 +79,206 @@ export default function DriverHome() {
   const { user } = useAuth();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const [hasActiveTrip] = useState(true);
+  const [hasActiveTrip, setHasActiveTrip] = useState(true);
+  const [currentTrip, setCurrentTrip] = useState(INITIAL_TRIP);
+  const [completedTripsCount, setCompletedTripsCount] = useState(8);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     setTimeout(() => {
       setRefreshing(false);
-    }, 1000);
+    }, 800);
   }, []);
 
-  const getPrimaryAction = () => {
-    const status = DEMO_CURRENT_TRIP.status;
-    
+  // Launch navigation app
+  const launchMap = (address: string, label: string) => {
+    const encoded = encodeURIComponent(address);
+    Alert.alert(
+      `Navigate to ${label}`,
+      address,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Google Maps',
+          onPress: () => {
+            const nativeUrl =
+              Platform.OS === 'ios'
+                ? `comgooglemaps://?q=${encoded}`
+                : `google.navigation:q=${encoded}`;
+            Linking.openURL(nativeUrl).catch(() => {
+              Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${encoded}`);
+            });
+          },
+        },
+        {
+          text: 'Waze',
+          onPress: () => {
+            const nativeUrl = `waze://?q=${encoded}&navigate=yes`;
+            Linking.openURL(nativeUrl).catch(() => {
+              Linking.openURL(`https://www.waze.com/ul?q=${encoded}`);
+            });
+          },
+        },
+      ]
+    );
+  };
+
+  const handleNavigate = () => {
+    Alert.alert(
+      'Select Route Destination',
+      'Where would you like to navigate?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: `Delivery: ${currentTrip.delivery}`,
+          onPress: () => launchMap(currentTrip.deliveryAddress || currentTrip.delivery, currentTrip.delivery),
+        },
+        {
+          text: `Pickup: ${currentTrip.pickup}`,
+          onPress: () => launchMap(currentTrip.pickupAddress || currentTrip.pickup, currentTrip.pickup),
+        },
+      ]
+    );
+  };
+
+  // State machine for Start Trip -> Arrive -> Complete Delivery
+  const handlePrimaryAction = () => {
+    const status = currentTrip.status;
+
+    if (status === TripStatus.LOADING) {
+      Alert.alert(
+        'Start Trip',
+        `Ready to depart for ${currentTrip.delivery}? Live GPS telemetry will begin recording.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Start Trip Now',
+            onPress: () => {
+              setCurrentTrip((prev) => ({
+                ...prev,
+                status: TripStatus.IN_TRANSIT,
+              }));
+              Alert.alert(
+                'Trip Started! 🚚',
+                `VT-2024-001 is now IN TRANSIT to ${currentTrip.delivery}.\nDrive safely!`
+              );
+            },
+          },
+        ]
+      );
+    } else if (status === TripStatus.IN_TRANSIT) {
+      Alert.alert(
+        'Arrived at Destination',
+        `Confirm arrival at ${currentTrip.delivery}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Confirm Arrival',
+            onPress: () => {
+              setCurrentTrip((prev) => ({
+                ...prev,
+                status: TripStatus.UNLOADING,
+              }));
+              Alert.alert(
+                'Arrived at Delivery Site',
+                `Status updated to UNLOADING.\nPlease coordinate with ${currentTrip.porterName} for cargo handling.`
+              );
+            },
+          },
+        ]
+      );
+    } else if (status === TripStatus.UNLOADING) {
+      Alert.alert(
+        'Complete Delivery',
+        'Have all cargo items been inspected and handed over?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Complete Trip',
+            onPress: () => {
+              setCurrentTrip((prev) => ({
+                ...prev,
+                status: TripStatus.COMPLETED,
+              }));
+              setCompletedTripsCount((prev) => prev + 1);
+              Alert.alert(
+                'Trip Completed 🎉',
+                `Trip ${currentTrip.tripNumber} has been successfully completed and recorded to your earnings!`
+              );
+            },
+          },
+        ]
+      );
+    } else if (status === TripStatus.COMPLETED) {
+      Alert.alert(
+        'Trip Completed',
+        'This trip has already been completed. Would you like to view your trip history or reset the demo assignment?',
+        [
+          { text: 'Close', style: 'cancel' },
+          {
+            text: 'View Trips',
+            onPress: () => router.push('/(driver)/trips'),
+          },
+          {
+            text: 'Reset Demo Trip',
+            onPress: () => {
+              setCurrentTrip(INITIAL_TRIP);
+            },
+          },
+        ]
+      );
+    }
+  };
+
+  const getPrimaryActionConfig = () => {
+    const status = currentTrip.status;
+
     switch (status) {
       case TripStatus.LOADING:
         return {
           label: 'Start Trip',
           icon: 'truck-fast' as const,
           color: COLORS.primary,
-          onPress: () => {},
         };
       case TripStatus.IN_TRANSIT:
         return {
           label: 'Arrived at Destination',
           icon: 'map-marker-check' as const,
           color: COLORS.success,
-          onPress: () => {},
         };
       case TripStatus.UNLOADING:
         return {
           label: 'Complete Delivery',
           icon: 'check-circle' as const,
-          color: COLORS.success,
-          onPress: () => {},
+          color: COLORS.orange,
+        };
+      case TripStatus.COMPLETED:
+        return {
+          label: 'Trip Completed ✓',
+          icon: 'check-all' as const,
+          color: COLORS.textSecondary,
         };
       default:
         return {
-          label: 'Acknowledge Trip',
-          icon: 'check-circle-outline' as const,
+          label: 'Start Trip',
+          icon: 'truck-fast' as const,
           color: COLORS.primary,
-          onPress: () => {},
         };
+    }
+  };
+
+  const getStatusChipConfig = () => {
+    switch (currentTrip.status) {
+      case TripStatus.LOADING:
+        return { status: 'in-progress' as const, label: 'Loading Cargo' };
+      case TripStatus.IN_TRANSIT:
+        return { status: 'in-progress' as const, label: 'In Transit' };
+      case TripStatus.UNLOADING:
+        return { status: 'in-progress' as const, label: 'Unloading' };
+      case TripStatus.COMPLETED:
+        return { status: 'completed' as const, label: 'Completed' };
+      default:
+        return { status: 'in-progress' as const, label: 'Active' };
     }
   };
 
@@ -133,7 +295,8 @@ export default function DriverHome() {
       );
     }
 
-    const primaryAction = getPrimaryAction();
+    const actionConfig = getPrimaryActionConfig();
+    const statusChipConfig = getStatusChipConfig();
 
     return (
       <View>
@@ -144,12 +307,12 @@ export default function DriverHome() {
             <View style={styles.tripHeaderLeft}>
               <MaterialCommunityIcons name="truck-delivery" size={24} color={COLORS.primary} />
               <Text style={styles.tripNumber}>
-                {DEMO_CURRENT_TRIP.tripNumber}
+                {currentTrip.tripNumber}
               </Text>
             </View>
             <StatusChip
-              status="in-progress"
-              label={DEMO_CURRENT_TRIP.status === 'loading' ? 'Loading' : 'In Transit'}
+              status={statusChipConfig.status}
+              label={statusChipConfig.label}
               size="md"
             />
           </View>
@@ -160,7 +323,7 @@ export default function DriverHome() {
               <MaterialCommunityIcons name="clock-outline" size={18} color={COLORS.info} />
               <Text style={styles.detailLabel}>Call Time:</Text>
               <Text style={styles.detailValue}>
-                {DEMO_CURRENT_TRIP.callTime}
+                {currentTrip.callTime}
               </Text>
             </View>
 
@@ -168,7 +331,7 @@ export default function DriverHome() {
               <MaterialCommunityIcons name="truck" size={18} color={COLORS.orange} />
               <Text style={styles.detailLabel}>Truck:</Text>
               <Text style={styles.detailValue}>
-                {DEMO_CURRENT_TRIP.truckNumber}
+                {currentTrip.truckNumber}
               </Text>
             </View>
 
@@ -176,12 +339,12 @@ export default function DriverHome() {
               <MaterialCommunityIcons name="account-hard-hat" size={18} color={COLORS.success} />
               <Text style={styles.detailLabel}>Porter:</Text>
               <Text style={styles.detailValue}>
-                {DEMO_CURRENT_TRIP.porterName}
+                {currentTrip.porterName}
               </Text>
             </View>
           </View>
 
-          {/* Route */}
+          {/* Route Section */}
           <View style={styles.routeSection}>
             <View style={styles.routePoint}>
               <View style={[styles.routeDot, { backgroundColor: COLORS.info }]} />
@@ -190,10 +353,10 @@ export default function DriverHome() {
                   PICKUP
                 </Text>
                 <Text style={styles.routeLocation}>
-                  {DEMO_CURRENT_TRIP.pickup}
+                  {currentTrip.pickup}
                 </Text>
                 <Text style={styles.routeAddress}>
-                  {DEMO_CURRENT_TRIP.pickupAddress}
+                  {currentTrip.pickupAddress}
                 </Text>
               </View>
             </View>
@@ -207,39 +370,39 @@ export default function DriverHome() {
                   DELIVERY
                 </Text>
                 <Text style={styles.routeLocation}>
-                  {DEMO_CURRENT_TRIP.delivery}
+                  {currentTrip.delivery}
                 </Text>
                 <Text style={styles.routeAddress}>
-                  {DEMO_CURRENT_TRIP.deliveryAddress}
+                  {currentTrip.deliveryAddress}
                 </Text>
               </View>
             </View>
           </View>
 
-          {/* Primary Action Button */}
+          {/* Primary Action Button (Start Trip / Arrived / Complete) */}
           <TouchableOpacity
             style={[
               styles.primaryButton,
-              { backgroundColor: primaryAction.color },
+              { backgroundColor: actionConfig.color },
             ]}
-            onPress={primaryAction.onPress}
+            onPress={handlePrimaryAction}
             activeOpacity={0.8}
           >
-            <MaterialCommunityIcons name={primaryAction.icon} size={22} color={COLORS.white} />
+            <MaterialCommunityIcons name={actionConfig.icon} size={22} color={COLORS.white} />
             <Text style={styles.primaryButtonText}>
-              {primaryAction.label}
+              {actionConfig.label}
             </Text>
           </TouchableOpacity>
 
-          {/* Secondary Actions */}
+          {/* Secondary Actions (Navigate / Report Issue) */}
           <View style={styles.secondaryActions}>
             <TouchableOpacity
               style={styles.secondaryButton}
-              onPress={() => {}}
+              onPress={handleNavigate}
               activeOpacity={0.7}
             >
-              <Ionicons name="navigate-outline" size={18} color={COLORS.info} />
-              <Text style={styles.secondaryButtonText}>
+              <Ionicons name="navigate" size={18} color={COLORS.primary} />
+              <Text style={[styles.secondaryButtonText, { color: COLORS.primary }]}>
                 Navigate
               </Text>
             </TouchableOpacity>
@@ -291,7 +454,7 @@ export default function DriverHome() {
               THIS WEEK
             </Text>
             <View style={styles.statsRow}>
-              <StatCard label="Completed" value={8} icon="check-circle" variant="success" />
+              <StatCard label="Completed" value={completedTripsCount} icon="check-circle" variant="success" />
               <StatCard label="Total Trips" value={12} icon="truck-delivery" variant="primary" />
             </View>
           </View>
@@ -312,8 +475,10 @@ export default function DriverHome() {
 
           <View style={styles.upcomingTripsContainer}>
             {DEMO_UPCOMING_TRIPS.map((trip, index) => (
-              <View
+              <TouchableOpacity
                 key={trip.id}
+                onPress={() => router.push('/(driver)/trips')}
+                activeOpacity={0.75}
                 style={[
                   styles.upcomingTripCard,
                   index < DEMO_UPCOMING_TRIPS.length - 1 && styles.upcomingTripCardMargin,
@@ -335,7 +500,7 @@ export default function DriverHome() {
                   <MaterialCommunityIcons name="map-marker" size={14} color={COLORS.info} />
                   <Text style={styles.upcomingTripDestinationText}>{trip.destination}</Text>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </View>
         </View>
@@ -524,7 +689,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   secondaryButtonText: {
-    color: COLORS.text,
     fontSize: 13,
     fontWeight: '700',
   },
