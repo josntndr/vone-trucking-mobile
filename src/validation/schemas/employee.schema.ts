@@ -97,9 +97,13 @@ const structuredAddressSchema = z.object({
   country: z.string().min(1, 'Select a country'),
   country_code: z.string().min(1, 'Country code is required'),
   
-  // Province/Region (required)
-  province: z.string().min(1, 'Select a province or region'),
-  province_code: z.string().min(1, 'Province code is required'),
+  // Region (required - separate from Province)
+  region: z.string().min(1, 'Select a region'),
+  region_code: z.string().min(1, 'Region code is required'),
+  
+  // Province (optional - not required for NCR region code '13')
+  province: z.string().optional().or(z.literal('')),
+  province_code: z.string().optional().or(z.literal('')),
   
   // City/Municipality (required)
   city: z.string().min(1, 'Select a city or municipality'),
@@ -141,7 +145,19 @@ const structuredAddressSchema = z.object({
     .trim()
     .optional()
     .or(z.literal('')),
-});
+}).refine(
+  (data) => {
+    // Province is required for all regions except NCR (region code '13')
+    if (data.region_code && data.region_code !== '13') {
+      return !!(data.province && data.province_code);
+    }
+    return true;
+  },
+  {
+    message: 'Select a province (required for this region)',
+    path: ['province'],
+  }
+);
 
 // Create Employee Schema
 export const employeeSchema = z
@@ -183,8 +199,10 @@ export const employeeSchema = z
     // Structured Address (required) - Country is always Philippines
     country: z.string().default('Philippines'),
     country_code: z.string().default('PH'),
-    province: z.string().min(1, 'Select a province or region'),
-    province_code: z.string().min(1, 'Province code is required'),
+    region: z.string().min(1, 'Select a region'),
+    region_code: z.string().min(1, 'Region code is required'),
+    province: z.string().optional().or(z.literal('')),
+    province_code: z.string().optional().or(z.literal('')),
     city: z.string().min(1, 'Select a city or municipality'),
     city_code: z.string().min(1, 'City code is required'),
     barangay: z.string().min(1, 'Select a barangay'),
@@ -284,6 +302,19 @@ export const employeeSchema = z
   )
   .refine(
     (data) => {
+      // Province is required for all regions except NCR (region code '13')
+      if (data.region_code && data.region_code !== '13') {
+        return !!(data.province && data.province_code);
+      }
+      return true;
+    },
+    {
+      message: 'Select a province (required for this region)',
+      path: ['province'],
+    }
+  )
+  .refine(
+    (data) => {
       // If role is DRIVER, license_number and license_expiry are required
       if (data.role === UserRole.DRIVER) {
         return !!(data.license_number && data.license_expiry);
@@ -361,8 +392,10 @@ export const updateEmployeeSchema = z.object({
   // Structured Address (optional for updates) - Country is always Philippines
   country: z.string().default('Philippines').optional(),
   country_code: z.string().default('PH').optional(),
-  province: z.string().min(1, 'Select a province or region').optional(),
-  province_code: z.string().optional(),
+  region: z.string().min(1, 'Select a region').optional(),
+  region_code: z.string().optional(),
+  province: z.string().optional().or(z.literal('')),
+  province_code: z.string().optional().or(z.literal('')),
   city: z.string().min(1, 'Select a city or municipality').optional(),
   city_code: z.string().optional(),
   barangay: z.string().min(1, 'Select a barangay').optional(),
@@ -495,38 +528,13 @@ export const generateSecurePassword = (): string => {
 };
 
 /**
- * Validate structured address hierarchy
- * Ensures city belongs to province and barangay belongs to city
- */
-export const validateAddressHierarchy = async (
-  provinceCode: string,
-  cityCode: string,
-  barangayCode: string
-): Promise<{ valid: boolean; error?: string }> => {
-  // Import location service dynamically to avoid circular dependencies
-  const locationService = await import('../../services/location.service');
-  return locationService.validateLocationHierarchy(provinceCode, cityCode, barangayCode);
-};
-
-/**
- * Validate postal code for a city
- */
-export const validatePostalCodeForCity = async (
-  postalCode: string,
-  cityCode: string
-): Promise<{ valid: boolean; error?: string }> => {
-  // Import location service dynamically to avoid circular dependencies
-  const locationService = await import('../../services/location.service');
-  return locationService.validatePostalCode(postalCode, cityCode);
-};
-
-/**
  * Validate complete structured address
  * Returns detailed validation errors for each field
  */
 export const validateStructuredAddress = async (address: {
   country_code: string;
-  province_code: string;
+  region_code: string;
+  province_code?: string;
   city_code: string;
   barangay_code: string;
   postal_code: string;
@@ -536,7 +544,8 @@ export const validateStructuredAddress = async (address: {
 
   // Validate required fields
   if (!address.country_code) errors.country = 'Select a country';
-  if (!address.province_code) errors.province = 'Select a province or region';
+  if (!address.region_code) errors.region = 'Select a region';
+  
   if (!address.city_code) errors.city = 'Select a city or municipality';
   if (!address.barangay_code) errors.barangay = 'Select a barangay';
   if (!address.postal_code) errors.postal_code = 'Enter a postal code';
@@ -550,31 +559,36 @@ export const validateStructuredAddress = async (address: {
   }
 
   // Validate location hierarchy
-  const hierarchyResult = await validateAddressHierarchy(
-    address.province_code,
-    address.city_code,
-    address.barangay_code
-  );
+  const locationService = await import('../../services/location.service');
+  const hierarchyResult = await locationService.validateAddress({
+    regionCode: address.region_code,
+    provinceCode: address.province_code,
+    cityCode: address.city_code,
+    barangayCode: address.barangay_code,
+  });
   
-  if (!hierarchyResult.valid && hierarchyResult.error) {
+  if (!hierarchyResult.isValid) {
+    const hierarchyError = hierarchyResult.errors[0] || 'Invalid address hierarchy';
     // Determine which field caused the error
-    if (hierarchyResult.error.includes('city')) {
-      errors.city = hierarchyResult.error;
-    } else if (hierarchyResult.error.includes('barangay')) {
-      errors.barangay = hierarchyResult.error;
+    if (hierarchyError.toLowerCase().includes('city')) {
+      errors.city = hierarchyError;
+    } else if (hierarchyError.toLowerCase().includes('barangay')) {
+      errors.barangay = hierarchyError;
+    } else if (hierarchyError.toLowerCase().includes('province')) {
+      errors.province = hierarchyError;
     } else {
-      errors.barangay = hierarchyResult.error;
+      errors.barangay = hierarchyError;
     }
   }
 
   // Validate postal code
-  const postalResult = await validatePostalCodeForCity(
+  const postalValid = locationService.validatePostalCode(
     address.postal_code,
-    address.city_code
+    address.country_code || 'PH'
   );
   
-  if (!postalResult.valid && postalResult.error) {
-    errors.postal_code = postalResult.error;
+  if (!postalValid) {
+    errors.postal_code = 'Enter a valid 4-digit Philippine postal code';
   }
 
   return {
