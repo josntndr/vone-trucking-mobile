@@ -1,2 +1,2 @@
-// @ts-nocheck - TODO: Fix type errors
-
+export { default } from '../ui/Modal';
+export * from '../ui/Modal';

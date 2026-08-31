@@ -14,7 +14,6 @@ import {
   ActivityIndicator,
   TextInput,
   ScrollView,
-  Modal,
   Animated,
   Keyboard,
   Platform,
@@ -25,6 +24,7 @@ import {
   Screen,
   Card,
   LoadingSpinner,
+  Modal,
 } from '../../../src/components';
 import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../../src/theme/designSystem';
 import { getTrips } from '../../../src/services/api/trip.service';
@@ -736,42 +736,80 @@ export default function TripsListScreen() {
         {/* Sort Modal */}
         <Modal
           visible={showSortModal}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowSortModal(false)}
+          onClose={() => setShowSortModal(false)}
+          title="Sort Trips"
         >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            activeOpacity={1}
-            onPress={() => setShowSortModal(false)}
-          >
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Sort By</Text>
-                <TouchableOpacity onPress={() => setShowSortModal(false)}>
-                  <Ionicons name="close" size={24} color={COLORS.text} />
-                </TouchableOpacity>
-              </View>
-              {SORT_OPTIONS.map((option) => (
+          <View style={styles.modalOptionsContainer}>
+            {SORT_OPTIONS.map((option) => {
+              const isSelected = sortBy === option.value;
+              return (
                 <TouchableOpacity
                   key={option.value}
-                  style={styles.modalOption}
+                  style={[
+                    styles.sortModalOption,
+                    isSelected && styles.sortModalOptionSelected,
+                  ]}
                   onPress={() => {
                     setSortBy(option.value);
                     setShowSortModal(false);
                   }}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.modalOptionText}>
+                  <Text
+                    style={[
+                      styles.sortModalOptionText,
+                      isSelected && styles.sortModalOptionTextSelected,
+                    ]}
+                  >
                     {option.label}
                   </Text>
-                  {sortBy === option.value && (
-                    <Ionicons name="checkmark" size={20} color={COLORS.navy} />
+                  {isSelected && (
+                    <Ionicons name="checkmark-circle" size={20} color="#0EA5E9" />
                   )}
                 </TouchableOpacity>
-              ))}
-            </View>
-          </TouchableOpacity>
+              );
+            })}
+          </View>
+        </Modal>
+
+        {/* Filter Modal */}
+        <Modal
+          visible={showFilterModal}
+          onClose={() => setShowFilterModal(false)}
+          title="Filter by Status"
+        >
+          <View style={styles.modalOptionsContainer}>
+            {STATUS_FILTERS.map((filter) => {
+              const isSelected = statusFilter === filter.value;
+              return (
+                <TouchableOpacity
+                  key={filter.label}
+                  style={[
+                    styles.sortModalOption,
+                    isSelected && styles.sortModalOptionSelected,
+                  ]}
+                  onPress={() => {
+                    setStatusFilter(filter.value);
+                    setFilterCount(filter.value ? 1 : 0);
+                    setShowFilterModal(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.sortModalOptionText,
+                      isSelected && styles.sortModalOptionTextSelected,
+                    ]}
+                  >
+                    {filter.label}
+                  </Text>
+                  {isSelected && (
+                    <Ionicons name="checkmark-circle" size={20} color="#0EA5E9" />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </Modal>
       </View>
     </Screen>
@@ -1228,43 +1266,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
+  modalOptionsContainer: {
+    paddingVertical: 6,
   },
-  modalContent: {
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingBottom: 32,
-  },
-  modalHeader: {
+  sortModalOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 6,
+    backgroundColor: 'transparent',
   },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: DS.typography.fontWeight.bold,
-    color: COLORS.text,
+  sortModalOptionSelected: {
+    backgroundColor: 'rgba(14, 165, 233, 0.12)',
   },
-  modalOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: SPACING.md,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    minHeight: 56,
+  sortModalOptionText: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#94A3B8',
   },
-  modalOptionText: {
-    fontSize: 16,
-    color: COLORS.text,
+  sortModalOptionTextSelected: {
+    color: '#38BDF8',
+    fontWeight: '700',
   },
 });

@@ -1,25 +1,30 @@
-// @ts-nocheck
 /**
- * Modal Component
- * Accessible modal dialog with backdrop
+ * Universal Modal Component
+ * Portal-powered modal dialog & bottom sheet that strictly stays INSIDE
+ * the mobile application container (including web simulator & native)
  */
 
-import React from 'react';
+import React, { useEffect, useId, useRef } from 'react';
 import {
-  Modal as RNModal,
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ModalProps as RNModalProps,
-  ViewStyle,
   ScrollView,
+  Animated,
+  Easing,
+  Keyboard,
+  BackHandler,
+  Platform,
+  ViewStyle,
 } from 'react-native';
-import { useTheme } from '../../hooks';
-import { Button } from './Button';
+import { Ionicons } from '@expo/vector-icons';
+import { usePortal } from '../../contexts/PortalContext';
+import { useThemeContext } from '../../contexts/ThemeContext';
 
-export interface ModalProps extends Omit<RNModalProps, 'children'> {
-  isOpen: boolean;
+export interface ModalProps {
+  isOpen?: boolean;
+  visible?: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
@@ -28,10 +33,13 @@ export interface ModalProps extends Omit<RNModalProps, 'children'> {
   showCloseButton?: boolean;
   closeOnBackdropPress?: boolean;
   containerStyle?: ViewStyle;
+  maxHeight?: number | string;
+  onRequestClose?: () => void;
 }
 
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
+  visible,
   onClose,
   title,
   children,
@@ -40,171 +48,274 @@ export const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   closeOnBackdropPress = true,
   containerStyle,
-  ...props
+  maxHeight = '85%',
+  onRequestClose,
 }) => {
-  const theme = useTheme();
+  const isModalOpen = Boolean(isOpen ?? visible);
+  const portal = usePortal();
+  const portalId = useId();
+  const { isDarkMode } = useThemeContext();
 
-  const getModalWidth = (): ViewStyle => {
-    switch (size) {
-      case 'sm':
-        return { maxWidth: 340 };
-      case 'md':
-        return { maxWidth: 460 };
-      case 'lg':
-        return { maxWidth: 600 };
-      case 'full':
-        return { width: '100%', height: '100%', maxWidth: '100%' };
-      default:
-        return {};
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(60)).current;
+
+  const handleClose = () => {
+    Keyboard.dismiss();
+    if (onRequestClose) {
+      onRequestClose();
     }
+    onClose();
   };
 
-  const handleBackdropPress = () => {
-    if (closeOnBackdropPress) {
-      onClose();
-    }
-  };
+  // Hardware back button support
+  useEffect(() => {
+    if (!isModalOpen) return;
 
-  return (
-    <RNModal
-      visible={isOpen}
-      transparent={size !== 'full'}
-      animationType="fade"
-      onRequestClose={onClose}
-      statusBarTranslucent
-      {...props}
-    >
-      <View style={styles.backdrop}>
+    const onBackPress = () => {
+      handleClose();
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [isModalOpen]);
+
+  // Animated in/out
+  useEffect(() => {
+    if (isModalOpen) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 200,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          tension: 80,
+          friction: 9,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 150,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 60,
+          duration: 150,
+          easing: Easing.in(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isModalOpen]);
+
+  // Register in PortalProvider
+  useEffect(() => {
+    if (isModalOpen) {
+      portal.registerPortal(portalId, renderOverlay());
+    } else {
+      portal.unregisterPortal(portalId);
+    }
+
+    return () => {
+      portal.unregisterPortal(portalId);
+    };
+  }, [isModalOpen, title, children, footer, size, isDarkMode, containerStyle]);
+
+  const renderOverlay = () => (
+    <View style={styles.portalHost} pointerEvents="box-none">
+      {/* Dimmed Backdrop */}
+      <Animated.View
+        style={[
+          styles.backdrop,
+          {
+            opacity: fadeAnim,
+          },
+        ]}
+      >
         <TouchableOpacity
-          style={styles.backdropTouchable}
+          style={StyleSheet.absoluteFill}
           activeOpacity={1}
-          onPress={handleBackdropPress}
+          onPress={() => {
+            if (closeOnBackdropPress) {
+              handleClose();
+            }
+          }}
         />
+      </Animated.View>
 
-        <View
-          style={[
-            styles.modalContainer,
-            {
-              backgroundColor: '#FFFFFF',
-              borderRadius: size === 'full' ? 0 : 20,
-            },
-            getModalWidth(),
-            containerStyle,
-          ]}
-        >
-          {title && (
-            <View style={styles.header}>
-              <Text
-                style={[
-                  styles.title,
-                  {
-                    color: theme.colors.text || '#0F1E36',
-                    fontSize: 18,
-                    fontWeight: '800',
-                  },
-                ]}
-              >
-                {title}
-              </Text>
-              {showCloseButton && (
-                <TouchableOpacity
-                  onPress={onClose}
-                  style={styles.closeButton}
-                  accessible={true}
-                  accessibilityRole="button"
-                  accessibilityLabel="Close modal"
-                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                >
-                  <Text style={styles.closeButtonText}>✕</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-
-          <ScrollView
-            style={styles.content}
-            contentContainerStyle={styles.contentContainer}
-            showsVerticalScrollIndicator={false}
-          >
-            {children}
-          </ScrollView>
-
-          {footer && (
-            <View style={styles.footer}>
-              {footer}
-            </View>
-          )}
+      {/* Modal / Bottom Sheet Container */}
+      <Animated.View
+        style={[
+          styles.sheetContainer,
+          {
+            backgroundColor: isDarkMode ? '#1E293B' : '#FFFFFF',
+            borderColor: isDarkMode ? '#334155' : '#E2E8F0',
+            maxHeight: maxHeight as any,
+            transform: [{ translateY: slideAnim }],
+          },
+          containerStyle,
+        ]}
+      >
+        {/* Drag Handle Bar */}
+        <View style={styles.handleContainer}>
+          <View style={[styles.handleBar, { backgroundColor: isDarkMode ? '#475569' : '#CBD5E1' }]} />
         </View>
-      </View>
-    </RNModal>
+
+        {/* Modal Header */}
+        {(title || showCloseButton) && (
+          <View
+            style={[
+              styles.header,
+              {
+                borderBottomColor: isDarkMode ? '#334155' : '#E2E8F0',
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.titleText,
+                { color: isDarkMode ? '#F8FAFC' : '#0F172A' },
+              ]}
+              numberOfLines={1}
+            >
+              {title || ''}
+            </Text>
+
+            {showCloseButton && (
+              <TouchableOpacity
+                onPress={handleClose}
+                style={[
+                  styles.closeButton,
+                  { backgroundColor: isDarkMode ? '#0F172A' : '#F1F5F9' },
+                ]}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons
+                  name="close"
+                  size={18}
+                  color={isDarkMode ? '#94A3B8' : '#64748B'}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {/* Modal Body */}
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {children}
+        </ScrollView>
+
+        {/* Modal Footer */}
+        {footer && (
+          <View
+            style={[
+              styles.footer,
+              { borderTopColor: isDarkMode ? '#334155' : '#E2E8F0' },
+            ]}
+          >
+            {footer}
+          </View>
+        )}
+      </Animated.View>
+    </View>
   );
+
+  return null;
 };
 
+export default Modal;
+
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+  portalHost: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'flex-end',
     zIndex: 9999,
   },
-  backdropTouchable: {
+  backdrop: {
     position: 'absolute',
-    width: '100%',
-    height: '100%',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
   },
-  modalContainer: {
+  sheetContainer: {
     width: '100%',
-    maxHeight: '85%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    borderTopWidth: 1,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.25,
-    shadowRadius: 20,
+    shadowRadius: 16,
     elevation: 12,
     zIndex: 10000,
+  },
+  handleContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingBottom: 6,
+  },
+  handleBar: {
+    width: 36,
+    height: 4,
+    borderRadius: 2,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
   },
-  title: {
+  titleText: {
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: -0.2,
     flex: 1,
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#0F1E36',
   },
   closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#F1F5F9',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 12,
-  },
-  closeButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#64748B',
   },
   content: {
     flexGrow: 0,
   },
   contentContainer: {
-    paddingVertical: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
     gap: 10,
-    marginTop: 20,
-    width: '100%',
   },
 });
-
