@@ -1,12 +1,14 @@
 /**
  * ConfirmDialog Component
  * Modern confirmation modal for destructive and confirmation actions
+ * Theme-aware with high contrast dark mode support
  */
 
 import React from 'react';
 import { Text, View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, ModalProps } from './Modal';
+import { useThemeContext } from '../../contexts/ThemeContext';
 
 export interface ConfirmDialogProps extends Omit<ModalProps, 'children' | 'footer'> {
   message: string;
@@ -29,6 +31,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   loading = false,
   ...props
 }) => {
+  const { isDarkMode } = useThemeContext();
+
   return (
     <Modal
       isOpen={isOpen}
@@ -39,12 +43,26 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       footer={
         <View style={styles.footer}>
           <TouchableOpacity
-            style={styles.cancelButton}
+            style={[
+              styles.cancelButton,
+              {
+                backgroundColor: isDarkMode ? '#334155' : '#F1F5F9',
+                borderColor: isDarkMode ? '#475569' : '#E2E8F0',
+                borderWidth: 1,
+              },
+            ]}
             onPress={onClose}
             disabled={loading}
             activeOpacity={0.7}
           >
-            <Text style={styles.cancelButtonText}>{cancelLabel}</Text>
+            <Text
+              style={[
+                styles.cancelButtonText,
+                { color: isDarkMode ? '#F8FAFC' : '#475569' },
+              ]}
+            >
+              {cancelLabel}
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -70,7 +88,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <View
           style={[
             styles.iconCircle,
-            isDestructive ? styles.destructiveIconCircle : styles.infoIconCircle,
+            isDestructive
+              ? { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.18)' : '#FEE2E2' }
+              : { backgroundColor: isDarkMode ? 'rgba(14, 165, 233, 0.18)' : '#F0F9FF' },
           ]}
         >
           <Ionicons
@@ -80,8 +100,22 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           />
         </View>
 
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.message}>{message}</Text>
+        <Text
+          style={[
+            styles.title,
+            { color: isDarkMode ? '#F8FAFC' : '#0F1E36' },
+          ]}
+        >
+          {title}
+        </Text>
+        <Text
+          style={[
+            styles.message,
+            { color: isDarkMode ? '#94A3B8' : '#64748B' },
+          ]}
+        >
+          {message}
+        </Text>
       </View>
     </Modal>
   );
@@ -101,62 +135,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12,
   },
-  destructiveIconCircle: {
-    backgroundColor: '#FEE2E2',
-  },
-  infoIconCircle: {
-    backgroundColor: '#F0F9FF',
-  },
   title: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#0F1E36',
     marginBottom: 8,
     textAlign: 'center',
   },
   message: {
     fontSize: 14,
     lineHeight: 20,
-    color: '#64748B',
     textAlign: 'center',
-    paddingHorizontal: 8,
+    marginBottom: 8,
   },
   footer: {
     flexDirection: 'row',
     gap: 12,
-    width: '100%',
+    marginTop: 8,
   },
   cancelButton: {
     flex: 1,
-    height: 46,
+    paddingVertical: 12,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   cancelButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#64748B',
+    fontSize: 14,
+    fontWeight: '700',
   },
   confirmButton: {
     flex: 1,
-    height: 46,
+    paddingVertical: 12,
     borderRadius: 12,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  primaryButton: {
+    backgroundColor: '#0EA5E9',
   },
   destructiveButton: {
     backgroundColor: '#EF4444',
   },
-  primaryButton: {
-    backgroundColor: '#0F1E36',
-  },
   confirmButtonText: {
-    fontSize: 15,
-    fontWeight: '700',
     color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

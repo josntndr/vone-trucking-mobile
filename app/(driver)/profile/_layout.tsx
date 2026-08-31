@@ -6,15 +6,20 @@ import { Stack } from 'expo-router';
 import { useThemeContext } from '../../../src/contexts/ThemeContext';
 
 export default function DriverProfileLayout() {
-  const { colors, isDarkMode } = useThemeContext();
+  const { isDarkMode } = useThemeContext();
 
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.surface || (isDarkMode ? '#1E293B' : '#FFFFFF'),
+          backgroundColor: isDarkMode ? '#0B1120' : '#FFFFFF',
         },
-        headerTintColor: colors.text || (isDarkMode ? '#F8FAFC' : '#0F172A'),
+        headerTintColor: isDarkMode ? '#F8FAFC' : '#0F172A',
+        headerTitleStyle: {
+          fontWeight: '800',
+          fontSize: 18,
+          color: isDarkMode ? '#F8FAFC' : '#0F172A',
+        },
         headerShadowVisible: false,
       }}
     >
