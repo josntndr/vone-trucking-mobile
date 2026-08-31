@@ -159,7 +159,7 @@ export default function TrucksListScreen() {
           <View style={styles.truckDetails}>
             <View style={styles.detailRow}>
               <View style={styles.detailIcon}>
-                <Ionicons name="car-sport" size={16} color={COLORS.navy} />
+                <Ionicons name="car-sport" size={16} color="#0EA5E9" />
               </View>
               <Text style={styles.detailText}>
                 {item.make} {item.model} ({item.year})
@@ -169,7 +169,7 @@ export default function TrucksListScreen() {
             {item.truck_type && (
               <View style={styles.detailRow}>
                 <View style={styles.detailIcon}>
-                  <Ionicons name="cube" size={16} color={COLORS.teal} />
+                  <Ionicons name="cube" size={16} color="#38BDF8" />
                 </View>
                 <Text style={styles.detailText}>
                   {item.truck_type} - {item.capacity_kg}kg
@@ -180,7 +180,7 @@ export default function TrucksListScreen() {
             {item.assigned_driver_name && (
               <View style={styles.detailRow}>
                 <View style={styles.detailIcon}>
-                  <Ionicons name="person" size={16} color={COLORS.orange} />
+                  <Ionicons name="person" size={16} color="#F59E0B" />
                 </View>
                 <Text style={styles.detailText}>
                   {item.assigned_driver_name}
@@ -451,12 +451,15 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.xs,
-    paddingBottom: 32, // Extremely tight spacing for maximum content density
+    paddingBottom: 120,
   },
   truckCard: {
     padding: SPACING.md,
     marginBottom: SPACING.sm,
     borderRadius: COMPONENTS.card.borderRadius,
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+    borderWidth: 1,
   },
   truckHeader: {
     flexDirection: 'row',
@@ -469,14 +472,14 @@ const styles = StyleSheet.create({
   },
   truckNumber: {
     fontSize: 18,
-    fontWeight: DS.typography.fontWeight.bold,
-    color: COLORS.navy,
+    fontWeight: '800',
+    color: '#F8FAFC',
     marginBottom: 4,
   },
   plateNumber: {
     fontSize: 14,
-    fontWeight: DS.typography.fontWeight.semibold,
-    color: COLORS.textSecondary,
+    fontWeight: '700',
+    color: '#94A3B8',
   },
   statusBadge: {
     flexDirection: 'row',
@@ -510,8 +513,9 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 14,
-    color: COLORS.text,
+    color: '#F8FAFC',
     flex: 1,
+    fontWeight: '500',
   },
   truckFooter: {
     flexDirection: 'row',
@@ -519,7 +523,7 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
     paddingTop: SPACING.sm,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: '#334155',
   },
   footerMetric: {
     flexDirection: 'row',
@@ -528,7 +532,8 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: '#94A3B8',
+    fontWeight: '500',
   },
   footerLoader: {
     paddingVertical: 20,
@@ -557,7 +562,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emptyButton: {
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#0EA5E9',
     borderRadius: 12,
     paddingHorizontal: 32,
     paddingVertical: 14,
@@ -576,12 +581,12 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#0EA5E9',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#0EA5E9',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 8,
   },

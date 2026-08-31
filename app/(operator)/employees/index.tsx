@@ -156,13 +156,13 @@ export default function EmployeesListScreen() {
   const getRoleColor = (role: UserRole) => {
     switch (role) {
       case UserRole.DRIVER:
-        return COLORS.navy;
+        return '#0EA5E9';
       case UserRole.PORTER:
-        return COLORS.orange;
+        return '#F59E0B';
       case UserRole.OPERATOR:
-        return COLORS.teal;
+        return '#10B981';
       default:
-        return COLORS.textSecondary;
+        return '#94A3B8';
     }
   };
 
@@ -558,13 +558,16 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.xs,
-    paddingBottom: 100,
+    paddingBottom: 120,
     flexGrow: 1,
   },
   employeeCard: {
     padding: SPACING.md,
     marginBottom: SPACING.sm,
     borderRadius: COMPONENTS.card.borderRadius,
+    backgroundColor: '#1E293B',
+    borderColor: '#334155',
+    borderWidth: 1,
   },
   employeeHeader: {
     flexDirection: 'row',
@@ -592,14 +595,14 @@ const styles = StyleSheet.create({
   },
   employeeName: {
     fontSize: 18,
-    fontWeight: DS.typography.fontWeight.bold,
-    color: COLORS.navy,
+    fontWeight: '800',
+    color: '#F8FAFC',
     marginBottom: 2,
   },
   employeeId: {
     fontSize: 14,
-    fontWeight: DS.typography.fontWeight.medium,
-    color: COLORS.textSecondary,
+    fontWeight: '600',
+    color: '#94A3B8',
   },
   statusBadge: {
     flexDirection: 'row',
@@ -633,8 +636,9 @@ const styles = StyleSheet.create({
   },
   detailText: {
     fontSize: 14,
-    color: COLORS.text,
+    color: '#F8FAFC',
     flex: 1,
+    fontWeight: '500',
   },
   warningBadge: {
     width: 20,
@@ -671,7 +675,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   emptyButton: {
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#0EA5E9',
     borderRadius: 12,
     paddingHorizontal: 32,
     paddingVertical: 14,
@@ -690,12 +694,12 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#0EA5E9',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: '#0EA5E9',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.4,
     shadowRadius: 8,
     elevation: 8,
   },
