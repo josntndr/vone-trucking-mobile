@@ -1,6 +1,6 @@
 /**
  * Porter Layout
- * Modern navigation for porter/helper workflow with active pill indicators
+ * Modern 5-tab navigation for porter/helper workflow: Dashboard, Assignments, Earnings, Alerts, Profile
  */
 
 import { Tabs } from 'expo-router';
@@ -32,7 +32,7 @@ export default function PorterLayout() {
           borderTopWidth: 1,
           borderTopColor: porterNavColors.border,
           height: 64 + (insets.bottom > 0 ? insets.bottom : 6),
-          paddingBottom: (insets.bottom > 0 ? insets.bottom : 6),
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
           paddingTop: 6,
           shadowColor: '#0F172A',
           shadowOffset: { width: 0, height: -3 },
@@ -46,7 +46,7 @@ export default function PorterLayout() {
           alignItems: 'center',
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
           marginTop: 1,
           marginBottom: 2,
@@ -58,69 +58,117 @@ export default function PorterLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <MaterialCommunityIcons name={focused ? 'dolly' : 'dolly'} size={22} color={color} />
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons name="dolly" size={20} color={color} />
             </View>
           ),
         }}
       />
+
       <Tabs.Screen
         name="trips"
         options={{
           title: 'Assignments',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <MaterialCommunityIcons name={focused ? 'clipboard-check' : 'clipboard-check-outline'} size={22} color={color} />
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={focused ? 'clipboard-check' : 'clipboard-check-outline'}
+                size={20}
+                color={color}
+              />
             </View>
           ),
         }}
       />
+
       <Tabs.Screen
-        name="profile"
+        name="earnings"
         options={{
           title: 'Earnings',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <MaterialCommunityIcons name={focused ? 'cash-multiple' : 'cash'} size={22} color={color} />
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={focused ? 'cash-multiple' : 'cash'}
+                size={20}
+                color={color}
+              />
             </View>
           ),
         }}
       />
+
       <Tabs.Screen
         name="reports"
         options={{
           title: 'Alerts',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <MaterialCommunityIcons name={focused ? 'bell' : 'bell-outline'} size={22} color={color} />
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={focused ? 'bell' : 'bell-outline'}
+                size={20}
+                color={color}
+              />
+            </View>
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? porterNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={focused ? 'account-circle' : 'account-circle-outline'}
+                size={20}
+                color={color}
+              />
             </View>
           ),
         }}
@@ -128,5 +176,3 @@ export default function PorterLayout() {
     </Tabs>
   );
 }
-
-

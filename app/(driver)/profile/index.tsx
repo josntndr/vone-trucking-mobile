@@ -1,9 +1,9 @@
 /**
- * Driver Profile Home Screen
- * Quick access to fuel, history, payslips, cash advance
+ * Driver Profile & Settings Screen
+ * Account management, driver credentials, settings, and sign out
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -11,152 +11,192 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
+  Switch,
   Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTheme } from '../../../src/theme/ThemeProvider';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../../src/hooks';
 import { Card } from '../../../src/components/common/Card';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { ConfirmDialog } from '../../../src/components';
+
+const COLORS = {
+  background: '#0B1120',
+  surface: '#1E293B',
+  surfaceElevated: '#334155',
+  text: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textMuted: '#64748B',
+  border: '#334155',
+  primary: '#0EA5E9',
+  teal: '#0EA5E9',
+  orange: '#F59E0B',
+  success: '#10B981',
+  error: '#EF4444',
+  warning: '#F59E0B',
+  info: '#38BDF8',
+  white: '#FFFFFF',
+};
 
 export default function DriverProfileScreen() {
-  const { colors } = useTheme();
   const router = useRouter();
-  const { signOut, user } = useAuth();
+  const { user, signOut } = useAuth();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
 
-  const profileActions = [
-    {
-      title: 'Fuel & Receipts',
-      description: 'Record fuel purchases and upload receipts',
-      icon: 'gas-station',
-      color: colors.primary,
-      route: '/(driver)/profile/fuel',
-    },
-    {
-      title: 'Trip History',
-      description: 'View completed trips and records',
-      icon: 'history',
-      color: colors.info,
-      route: '/(driver)/profile/history',
-    },
-    {
-      title: 'Payslips',
-      description: 'View and download your payslips',
-      icon: 'file-document',
-      color: colors.success,
-      route: '/(driver)/profile/payslips',
-    },
-    {
-      title: 'Cash Advance',
-      description: 'Request or view cash advance status',
-      icon: 'cash',
-      color: colors.warning,
-      route: '/(driver)/profile/cash-advance',
-    },
-  ];
-
-  const handleLogout = () => {
-    // Direct navigation - no confirmation for testing
+  const handleSignOut = async () => {
+    setLogoutDialogVisible(false);
+    try {
+      if (signOut) {
+        await signOut();
+      }
+    } catch (e) {
+      console.error(e);
+    }
     router.replace('/(auth)/login');
   };
 
-  // Get user display name
-  const displayName = user?.user_metadata?.first_name 
+  const displayName = user?.user_metadata?.first_name
     ? `${user.user_metadata.first_name} ${user.user_metadata.last_name || ''}`
-    : user?.email || 'Driver';
-  const employeeId = user?.user_metadata?.employee_id || 'N/A';
+    : user?.email || 'Juan Dela Cruz';
+  const employeeId = user?.user_metadata?.employee_id || 'DR-001';
+  const email = user?.email || 'driver@vonetrucking.com';
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={styles.container}
       contentContainerStyle={styles.content}
     >
-      {/* Profile Header */}
+      {/* Profile Header Card */}
       <Card style={styles.headerCard}>
-        <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-          <MaterialCommunityIcons name="account" size={48} color="#fff" />
+        <View style={styles.avatarContainer}>
+          <MaterialCommunityIcons name="account" size={48} color={COLORS.white} />
         </View>
-        <Text style={[styles.name, { color: colors.text }]}>{displayName}</Text>
-        <Text style={[styles.role, { color: colors.textSecondary }]}>Driver</Text>
-        <Text style={[styles.employeeId, { color: colors.textSecondary }]}>
-          {employeeId}
-        </Text>
+        <Text style={styles.name}>{displayName}</Text>
+        <Text style={styles.email}>{email}</Text>
+        <View style={styles.badgeRow}>
+          <View style={styles.roleBadge}>
+            <MaterialCommunityIcons name="steering" size={14} color={COLORS.primary} />
+            <Text style={styles.roleBadgeText}>Fleet Driver</Text>
+          </View>
+          <View style={styles.idBadge}>
+            <Text style={styles.idBadgeText}>{employeeId}</Text>
+          </View>
+        </View>
       </Card>
 
-      {/* Quick Actions */}
-      {profileActions.map((action, index) => (
-        <TouchableOpacity
-          key={index}
-          onPress={() => router.push(action.route as any)}
-          activeOpacity={0.7}
-        >
-          <Card style={styles.actionCard}>
-            <View style={[styles.actionIcon, { backgroundColor: action.color + '20' }]}>
-              <MaterialCommunityIcons
-                name={action.icon as any}
-                size={32}
-                color={action.color}
-              />
+      {/* Driver Credentials Card */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>DRIVER CREDENTIALS</Text>
+        <Card style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <View style={styles.infoIcon}>
+              <MaterialCommunityIcons name="card-account-details-outline" size={20} color={COLORS.orange} />
             </View>
-            <View style={styles.actionInfo}>
-              <Text style={[styles.actionTitle, { color: colors.text }]}>
-                {action.title}
-              </Text>
-              <Text style={[styles.actionDescription, { color: colors.textSecondary }]}>
-                {action.description}
-              </Text>
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Driver's License</Text>
+              <Text style={styles.infoValue}>N01-12-345678</Text>
             </View>
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color={colors.textSecondary}
+            <View style={styles.validBadge}>
+              <Text style={styles.validBadgeText}>Valid</Text>
+            </View>
+          </View>
+
+          <View style={styles.cardDivider} />
+
+          <View style={styles.infoRow}>
+            <View style={styles.infoIcon}>
+              <MaterialCommunityIcons name="truck-outline" size={20} color={COLORS.primary} />
+            </View>
+            <View style={styles.infoTextContainer}>
+              <Text style={styles.infoLabel}>Assigned Truck</Text>
+              <Text style={styles.infoValue}>ABC-1234 (Isuzu Giga 10W)</Text>
+            </View>
+          </View>
+        </Card>
+      </View>
+
+      {/* Account Settings */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>ACCOUNT & PREFERENCES</Text>
+        <Card style={styles.menuCard}>
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => Alert.alert('Security', 'Password management is managed via company dispatch portal.')}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: 'rgba(14, 165, 233, 0.12)' }]}>
+              <Ionicons name="key-outline" size={18} color={COLORS.primary} />
+            </View>
+            <Text style={styles.menuTitle}>Change Password</Text>
+            <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+
+          <View style={styles.cardDivider} />
+
+          <View style={styles.menuRow}>
+            <View style={[styles.menuIconCircle, { backgroundColor: 'rgba(56, 189, 248, 0.12)' }]}>
+              <Ionicons name="notifications-outline" size={18} color={COLORS.info} />
+            </View>
+            <Text style={styles.menuTitle}>Push Notifications</Text>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={setNotificationsEnabled}
+              trackColor={{ false: '#334155', true: COLORS.primary }}
+              thumbColor={COLORS.white}
             />
-          </Card>
-        </TouchableOpacity>
-      ))}
+          </View>
+        </Card>
+      </View>
 
-      {/* Contact */}
-      <Card style={styles.contactCard}>
-        <Text style={[styles.contactTitle, { color: colors.text }]}>
-          Need Help?
-        </Text>
-        <TouchableOpacity
-          style={[styles.contactButton, { backgroundColor: colors.primary }]}
-          onPress={() => Linking.openURL('tel:+639171234567')}
-        >
-          <MaterialCommunityIcons name="phone" size={20} color="#fff" />
-          <Text style={styles.contactButtonText}>Call Operator</Text>
-        </TouchableOpacity>
-      </Card>
+      {/* Support Section */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>SUPPORT & DISPATCH</Text>
+        <Card style={styles.menuCard}>
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => Linking.openURL('tel:+639171234567')}
+            activeOpacity={0.7}
+          >
+            <View style={[styles.menuIconCircle, { backgroundColor: 'rgba(16, 185, 129, 0.12)' }]}>
+              <Ionicons name="call-outline" size={18} color={COLORS.success} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.menuTitle}>Call Dispatcher / Operator</Text>
+              <Text style={styles.menuSubtitle}>+63 917 123 4567 (24/7 Operations)</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={COLORS.textSecondary} />
+          </TouchableOpacity>
+        </Card>
+      </View>
 
-      {/* Logout */}
+      {/* Sign Out Button */}
       <TouchableOpacity
-        onPress={handleLogout}
-        style={{
-          borderWidth: 2,
-          borderColor: colors.error,
-          borderRadius: 8,
-          padding: 20,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: colors.surface,
-          marginTop: 10,
-          marginBottom: 20,
-        }}
-        activeOpacity={0.7}
+        onPress={() => setLogoutDialogVisible(true)}
+        style={styles.signOutButton}
+        activeOpacity={0.8}
       >
-        <MaterialCommunityIcons name="logout" size={24} color={colors.error} style={{ marginRight: 8 }} />
-        <Text style={{ color: colors.error, fontSize: 18, fontWeight: '700' }}>
-          Sign Out
-        </Text>
+        <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
+        <Text style={styles.signOutButtonText}>Sign Out</Text>
       </TouchableOpacity>
 
-      <View style={styles.version}>
-        <Text style={[styles.versionText, { color: colors.textSecondary }]}>
-          Vone Trucking v1.0.0
+      {/* App Version */}
+      <View style={styles.versionContainer}>
+        <Text style={styles.versionText}>
+          Vone Trucking v1.0.0 © {new Date().getFullYear()}
         </Text>
       </View>
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={logoutDialogVisible}
+        onClose={() => setLogoutDialogVisible(false)}
+        title="Sign Out"
+        message="Are you sure you want to sign out of your Driver session?"
+        onConfirm={handleSignOut}
+        confirmLabel="Sign Out"
+        isDestructive={true}
+      />
     </ScrollView>
   );
 }
@@ -164,90 +204,196 @@ export default function DriverProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: COLORS.background,
   },
   content: {
     padding: 16,
+    paddingBottom: 40,
   },
   headerCard: {
     alignItems: 'center',
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 20,
     padding: 24,
     marginBottom: 16,
   },
-  avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+  avatarContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   name: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  role: {
-    fontSize: 16,
+    fontSize: 22,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: -0.4,
     marginBottom: 2,
   },
-  employeeId: {
-    fontSize: 14,
-  },
-  actionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    marginBottom: 12,
-  },
-  actionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  actionInfo: {
-    flex: 1,
-  },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  actionDescription: {
+  email: {
     fontSize: 13,
-    lineHeight: 18,
-  },
-  contactCard: {
-    padding: 16,
-    marginBottom: 16,
-  },
-  contactTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+    color: COLORS.textSecondary,
     marginBottom: 12,
   },
-  contactButton: {
+  badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    borderRadius: 8,
     gap: 8,
   },
-  contactButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  version: {
+  roleBadge: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 24,
+    backgroundColor: 'rgba(14, 165, 233, 0.15)',
+    borderColor: 'rgba(14, 165, 233, 0.4)',
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    gap: 5,
+  },
+  roleBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.primary,
+  },
+  idBadge: {
+    backgroundColor: 'rgba(148, 163, 184, 0.15)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  idBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textSecondary,
+  },
+  section: {
     marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.textSecondary,
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  infoCard: {
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 14,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  infoIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoTextContainer: {
+    flex: 1,
+  },
+  infoLabel: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  infoValue: {
+    fontSize: 14,
+    color: COLORS.text,
+    fontWeight: '700',
+  },
+  validBadge: {
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderWidth: 1,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  validBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.success,
+  },
+  cardDivider: {
+    height: 1,
+    backgroundColor: COLORS.border,
+    marginVertical: 10,
+  },
+  menuCard: {
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 14,
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 4,
+  },
+  menuIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  menuTitle: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.text,
+  },
+  menuSubtitle: {
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    marginTop: 2,
+  },
+  signOutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    borderColor: 'rgba(239, 68, 68, 0.35)',
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingVertical: 14,
+    gap: 8,
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  signOutButtonText: {
+    color: COLORS.error,
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  versionContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
   },
   versionText: {
     fontSize: 12,
+    color: COLORS.textMuted,
   },
 });
-

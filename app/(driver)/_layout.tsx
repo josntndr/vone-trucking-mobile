@@ -1,6 +1,6 @@
 /**
  * Driver Layout
- * Modern navigation for driver workflow with active pill indicators
+ * Modern 5-tab navigation for driver workflow: Dashboard, My Trips, Earnings, Alerts, Profile
  */
 
 import { Tabs } from 'expo-router';
@@ -32,7 +32,7 @@ export default function DriverLayout() {
           borderTopWidth: 1,
           borderTopColor: driverNavColors.border,
           height: 64 + (insets.bottom > 0 ? insets.bottom : 6),
-          paddingBottom: (insets.bottom > 0 ? insets.bottom : 6),
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
           paddingTop: 6,
           shadowColor: '#0F172A',
           shadowOffset: { width: 0, height: -3 },
@@ -46,7 +46,7 @@ export default function DriverLayout() {
           alignItems: 'center',
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '600',
           marginTop: 1,
           marginBottom: 2,
@@ -58,69 +58,117 @@ export default function DriverLayout() {
         options={{
           title: 'Dashboard',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <MaterialCommunityIcons name={focused ? 'steering' : 'steering'} size={22} color={color} />
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons name="steering" size={20} color={color} />
             </View>
           ),
         }}
       />
+
       <Tabs.Screen
         name="trips"
         options={{
           title: 'My Trips',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <MaterialCommunityIcons name={focused ? 'truck-delivery' : 'truck-delivery-outline'} size={22} color={color} />
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={focused ? 'truck-delivery' : 'truck-delivery-outline'}
+                size={20}
+                color={color}
+              />
             </View>
           ),
         }}
       />
+
       <Tabs.Screen
-        name="profile"
+        name="earnings"
         options={{
           title: 'Earnings',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <MaterialCommunityIcons name={focused ? 'cash-multiple' : 'cash'} size={22} color={color} />
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={focused ? 'cash-multiple' : 'cash'}
+                size={20}
+                color={color}
+              />
             </View>
           ),
         }}
       />
+
       <Tabs.Screen
         name="reports"
         options={{
           title: 'Alerts',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{
-              width: 38,
-              height: 38,
-              borderRadius: 12,
-              backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              <MaterialCommunityIcons name={focused ? 'bell' : 'bell-outline'} size={22} color={color} />
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={focused ? 'bell' : 'bell-outline'}
+                size={20}
+                color={color}
+              />
+            </View>
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={focused ? 'account-circle' : 'account-circle-outline'}
+                size={20}
+                color={color}
+              />
             </View>
           ),
         }}
@@ -128,5 +176,3 @@ export default function DriverLayout() {
     </Tabs>
   );
 }
-
-
