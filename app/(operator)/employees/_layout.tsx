@@ -9,7 +9,9 @@ export default function EmployeesLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        headerBackTitle: 'Back',
+        contentStyle: {
+          backgroundColor: '#0B1120',
+        },
       }}
     >
       <Stack.Screen
@@ -23,26 +25,23 @@ export default function EmployeesLayout() {
         name="[id]"
         options={{
           title: 'Employee Details',
-          headerShown: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="add"
         options={{
           title: 'Add Employee',
-          presentation: 'modal',
-          headerShown: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="edit/[id]"
         options={{
           title: 'Edit Employee',
-          presentation: 'modal',
-          headerShown: true,
+          headerShown: false,
         }}
       />
     </Stack>
   );
 }
-

@@ -9,7 +9,9 @@ export default function TrucksLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        headerBackTitle: 'Back',
+        contentStyle: {
+          backgroundColor: '#0B1120',
+        },
       }}
     >
       <Stack.Screen
@@ -23,26 +25,23 @@ export default function TrucksLayout() {
         name="[id]"
         options={{
           title: 'Truck Details',
-          headerShown: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="add"
         options={{
           title: 'Add Truck',
-          presentation: 'modal',
-          headerShown: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
         name="edit/[id]"
         options={{
           title: 'Edit Truck',
-          presentation: 'modal',
-          headerShown: true,
+          headerShown: false,
         }}
       />
     </Stack>
   );
 }
-
