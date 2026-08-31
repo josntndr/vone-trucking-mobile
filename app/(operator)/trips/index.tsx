@@ -685,11 +685,12 @@ export default function TripsListScreen() {
   return (
     <Screen>
       <View style={styles.container}>
+        {renderHeader()}
+
         <FlatList
           data={trips}
           renderItem={renderTripItem}
           keyExtractor={(item) => item.id}
-          ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmptyState}
           contentContainerStyle={[
             styles.listContent,
@@ -699,8 +700,8 @@ export default function TripsListScreen() {
             <RefreshControl 
               refreshing={refreshing} 
               onRefresh={onRefresh} 
-              colors={[COLORS.navy]}
-              tintColor={COLORS.navy}
+              colors={['#0EA5E9']}
+              tintColor={'#0EA5E9'}
             />
           }
           onScroll={handleScroll}
@@ -961,7 +962,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: 120,
+    paddingBottom: 85,
   },
   listContentEmpty: {
     flexGrow: 1,

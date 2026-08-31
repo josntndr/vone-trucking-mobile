@@ -451,7 +451,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.xs,
-    paddingBottom: 120,
+    paddingBottom: 85,
   },
   truckCard: {
     padding: SPACING.md,
