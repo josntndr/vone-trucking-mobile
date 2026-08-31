@@ -3,42 +3,53 @@
  */
 
 import { Stack } from 'expo-router';
-import { useTheme } from '../../../src/theme/ThemeProvider';
+import { useThemeContext } from '../../../src/contexts/ThemeContext';
 
 export default function PorterReportsLayout() {
-  const { colors } = useTheme();
+  const { isDarkMode } = useThemeContext();
 
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: isDarkMode ? '#0B1120' : '#FFFFFF',
         },
-        headerTintColor: colors.text,
+        headerTintColor: isDarkMode ? '#F8FAFC' : '#0F172A',
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: '800',
+          fontSize: 18,
+          color: isDarkMode ? '#F8FAFC' : '#0F172A',
         },
+        headerShadowVisible: false,
       }}
     >
+      <Stack.Screen
+        name="index"
+        options={{
+          title: 'Alerts & Reports',
+        }}
+      />
       <Stack.Screen
         name="missing"
         options={{
           title: 'Report Missing Product',
+          headerBackTitle: 'Back',
         }}
       />
       <Stack.Screen
         name="damaged"
         options={{
           title: 'Report Damaged Product',
+          headerBackTitle: 'Back',
         }}
       />
       <Stack.Screen
         name="rejected"
         options={{
           title: 'Report Rejected Product',
+          headerBackTitle: 'Back',
         }}
       />
     </Stack>
   );
 }
-
