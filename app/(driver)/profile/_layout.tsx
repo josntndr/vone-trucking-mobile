@@ -27,6 +27,16 @@ export default function DriverProfileLayout() {
         name="index"
         options={{
           title: 'Profile',
+          headerTitle: 'Profile',
+          headerStyle: {
+            backgroundColor: isDarkMode ? '#0B1120' : '#FFFFFF',
+          },
+          headerTintColor: isDarkMode ? '#F8FAFC' : '#0F172A',
+          headerTitleStyle: {
+            fontWeight: '800',
+            fontSize: 18,
+            color: isDarkMode ? '#F8FAFC' : '#0F172A',
+          },
         }}
       />
       <Stack.Screen

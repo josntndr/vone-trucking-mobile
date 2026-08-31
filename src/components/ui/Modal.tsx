@@ -311,11 +311,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
+    width: '100%',
     paddingHorizontal: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    gap: 10,
   },
 });

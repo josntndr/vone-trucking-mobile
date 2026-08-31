@@ -1,7 +1,7 @@
 /**
  * ConfirmDialog Component
  * Modern confirmation modal for destructive and confirmation actions
- * Theme-aware with high contrast dark mode support
+ * Theme-aware with full-width buttons and high contrast
  */
 
 import React from 'react';
@@ -41,14 +41,14 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       closeOnBackdropPress={!loading}
       showCloseButton={false}
       footer={
-        <View style={styles.footer}>
+        <View style={styles.footerRow}>
           <TouchableOpacity
             style={[
-              styles.cancelButton,
+              styles.btn,
+              styles.cancelBtn,
               {
                 backgroundColor: isDarkMode ? '#334155' : '#F1F5F9',
                 borderColor: isDarkMode ? '#475569' : '#E2E8F0',
-                borderWidth: 1,
               },
             ]}
             onPress={onClose}
@@ -57,7 +57,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           >
             <Text
               style={[
-                styles.cancelButtonText,
+                styles.cancelBtnText,
                 { color: isDarkMode ? '#F8FAFC' : '#475569' },
               ]}
             >
@@ -67,8 +67,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
 
           <TouchableOpacity
             style={[
-              styles.confirmButton,
-              isDestructive ? styles.destructiveButton : styles.primaryButton,
+              styles.btn,
+              isDestructive ? styles.destructiveBtn : styles.primaryBtn,
             ]}
             onPress={onConfirm}
             disabled={loading}
@@ -77,7 +77,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             {loading ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
-              <Text style={styles.confirmButtonText}>{confirmLabel}</Text>
+              <Text style={styles.confirmBtnText}>{confirmLabel}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -147,41 +147,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
   },
-  footer: {
+  footerRow: {
+    width: '100%',
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 12,
-    marginTop: 8,
   },
-  cancelButton: {
+  btn: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cancelButtonText: {
+  cancelBtn: {
+    borderWidth: 1,
+  },
+  cancelBtnText: {
     fontSize: 14,
     fontWeight: '700',
   },
-  confirmButton: {
-    flex: 1,
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  primaryButton: {
+  primaryBtn: {
     backgroundColor: '#0EA5E9',
   },
-  destructiveButton: {
+  destructiveBtn: {
     backgroundColor: '#EF4444',
   },
-  confirmButtonText: {
+  confirmBtnText: {
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
