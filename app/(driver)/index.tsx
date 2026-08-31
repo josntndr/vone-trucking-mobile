@@ -1,6 +1,6 @@
 /**
- * Driver Home Screen - Redesigned with Design System
- * Phase 8: Align Driver/Helper side with modern premium design
+ * Driver Home Screen - Redesigned with Executive Dark Theme
+ * Modern, high-contrast dashboard for driver operations
  */
 
 import React, { useState, useCallback } from 'react';
@@ -13,21 +13,36 @@ import {
   RefreshControl,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { DESIGN_SYSTEM, COLORS, SPACING, COMPONENTS } from '../../src/theme/designSystem';
+import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/hooks';
 import { TripStatus } from '../../src/types/driver-porter.types';
 import StatusChip from '../../src/components/common/StatusChip';
 import EmptyStateCard from '../../src/components/common/EmptyStateCard';
 import StatCard from '../../src/components/common/StatCard';
 
-const DS = DESIGN_SYSTEM;
+const COLORS = {
+  background: '#0B1120',
+  surface: '#1E293B',
+  surfaceElevated: '#334155',
+  text: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textMuted: '#64748B',
+  border: '#334155',
+  primary: '#0EA5E9',
+  teal: '#0EA5E9',
+  orange: '#F59E0B',
+  success: '#10B981',
+  error: '#EF4444',
+  warning: '#F59E0B',
+  info: '#38BDF8',
+  white: '#FFFFFF',
+};
 
 // Demo current trip data
 const DEMO_CURRENT_TRIP = {
   id: '1',
   tripNumber: 'VT-2024-001',
-  status: TripStatus.LOADING, // Use enum value
+  status: TripStatus.LOADING,
   truckNumber: 'ABC-1234',
   porterName: 'Pedro Santos',
   callTime: '06:00 AM',
@@ -37,7 +52,7 @@ const DEMO_CURRENT_TRIP = {
   deliveryAddress: '456 EDSA, Mandaluyong City',
   estimatedArrival: '10:30 AM',
   currentLocation: 'EDSA Northbound',
-  progress: 45, // percentage
+  progress: 45,
 };
 
 const DEMO_UPCOMING_TRIPS = [
@@ -46,7 +61,7 @@ const DEMO_UPCOMING_TRIPS = [
     tripNumber: 'VT-2024-002',
     date: 'Tomorrow',
     callTime: '05:00 AM',
-    destination: 'Robinson\'s Galleria',
+    destination: "Robinson's Galleria",
   },
   {
     id: '3',
@@ -61,7 +76,7 @@ export default function DriverHome() {
   const { user } = useAuth();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
-  const [hasActiveTrip, setHasActiveTrip] = useState(true); // Toggle for demo
+  const [hasActiveTrip] = useState(true);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -78,7 +93,7 @@ export default function DriverHome() {
         return {
           label: 'Start Trip',
           icon: 'truck-fast' as const,
-          color: COLORS.navy,
+          color: COLORS.primary,
           onPress: () => {},
         };
       case TripStatus.IN_TRANSIT:
@@ -99,7 +114,7 @@ export default function DriverHome() {
         return {
           label: 'Acknowledge Trip',
           icon: 'check-circle-outline' as const,
-          color: COLORS.navy,
+          color: COLORS.primary,
           onPress: () => {},
         };
     }
@@ -127,7 +142,7 @@ export default function DriverHome() {
           {/* Header */}
           <View style={styles.tripHeader}>
             <View style={styles.tripHeaderLeft}>
-              <MaterialCommunityIcons name="truck-delivery" size={24} color={COLORS.navy} />
+              <MaterialCommunityIcons name="truck-delivery" size={24} color={COLORS.primary} />
               <Text style={styles.tripNumber}>
                 {DEMO_CURRENT_TRIP.tripNumber}
               </Text>
@@ -142,30 +157,24 @@ export default function DriverHome() {
           {/* Assignment Details */}
           <View style={styles.detailsSection}>
             <View style={styles.detailRow}>
-              <MaterialCommunityIcons name="clock-outline" size={18} color={COLORS.textSecondary} />
-              <Text style={styles.detailLabel}>
-                Call Time:
-              </Text>
+              <MaterialCommunityIcons name="clock-outline" size={18} color={COLORS.info} />
+              <Text style={styles.detailLabel}>Call Time:</Text>
               <Text style={styles.detailValue}>
                 {DEMO_CURRENT_TRIP.callTime}
               </Text>
             </View>
 
             <View style={styles.detailRow}>
-              <MaterialCommunityIcons name="truck" size={18} color={COLORS.textSecondary} />
-              <Text style={styles.detailLabel}>
-                Truck:
-              </Text>
+              <MaterialCommunityIcons name="truck" size={18} color={COLORS.orange} />
+              <Text style={styles.detailLabel}>Truck:</Text>
               <Text style={styles.detailValue}>
                 {DEMO_CURRENT_TRIP.truckNumber}
               </Text>
             </View>
 
             <View style={styles.detailRow}>
-              <MaterialCommunityIcons name="account-hard-hat" size={18} color={COLORS.textSecondary} />
-              <Text style={styles.detailLabel}>
-                Porter:
-              </Text>
+              <MaterialCommunityIcons name="account-hard-hat" size={18} color={COLORS.success} />
+              <Text style={styles.detailLabel}>Porter:</Text>
               <Text style={styles.detailValue}>
                 {DEMO_CURRENT_TRIP.porterName}
               </Text>
@@ -175,10 +184,10 @@ export default function DriverHome() {
           {/* Route */}
           <View style={styles.routeSection}>
             <View style={styles.routePoint}>
-              <View style={[styles.routeDot, { backgroundColor: COLORS.success }]} />
+              <View style={[styles.routeDot, { backgroundColor: COLORS.info }]} />
               <View style={styles.routeContent}>
-                <Text style={styles.routeLabel}>
-                  Pickup
+                <Text style={[styles.routeLabel, { color: COLORS.info }]}>
+                  PICKUP
                 </Text>
                 <Text style={styles.routeLocation}>
                   {DEMO_CURRENT_TRIP.pickup}
@@ -192,10 +201,10 @@ export default function DriverHome() {
             <View style={styles.routeLine} />
 
             <View style={styles.routePoint}>
-              <View style={[styles.routeDot, { backgroundColor: COLORS.error }]} />
+              <View style={[styles.routeDot, { backgroundColor: COLORS.success }]} />
               <View style={styles.routeContent}>
-                <Text style={styles.routeLabel}>
-                  Delivery
+                <Text style={[styles.routeLabel, { color: COLORS.success }]}>
+                  DELIVERY
                 </Text>
                 <Text style={styles.routeLocation}>
                   {DEMO_CURRENT_TRIP.delivery}
@@ -211,14 +220,12 @@ export default function DriverHome() {
           <TouchableOpacity
             style={[
               styles.primaryButton,
-              {
-                backgroundColor: primaryAction.color,
-              },
+              { backgroundColor: primaryAction.color },
             ]}
             onPress={primaryAction.onPress}
             activeOpacity={0.8}
           >
-            <MaterialCommunityIcons name={primaryAction.icon} size={24} color={COLORS.white} />
+            <MaterialCommunityIcons name={primaryAction.icon} size={22} color={COLORS.white} />
             <Text style={styles.primaryButtonText}>
               {primaryAction.label}
             </Text>
@@ -229,8 +236,9 @@ export default function DriverHome() {
             <TouchableOpacity
               style={styles.secondaryButton}
               onPress={() => {}}
+              activeOpacity={0.7}
             >
-              <MaterialCommunityIcons name="navigation" size={20} color={COLORS.navy} />
+              <Ionicons name="navigate-outline" size={18} color={COLORS.info} />
               <Text style={styles.secondaryButtonText}>
                 Navigate
               </Text>
@@ -239,9 +247,10 @@ export default function DriverHome() {
             <TouchableOpacity
               style={styles.secondaryButton}
               onPress={() => router.push('/(driver)/reports')}
+              activeOpacity={0.7}
             >
-              <MaterialCommunityIcons name="alert-circle-outline" size={20} color={COLORS.error} />
-              <Text style={styles.secondaryButtonText}>
+              <Ionicons name="alert-circle-outline" size={18} color={COLORS.error} />
+              <Text style={[styles.secondaryButtonText, { color: COLORS.error }]}>
                 Report Issue
               </Text>
             </TouchableOpacity>
@@ -256,25 +265,21 @@ export default function DriverHome() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.navy]} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} tintColor={COLORS.primary} />
         }
       >
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greeting}>
-              Welcome back
-            </Text>
-            <Text style={styles.name}>
-              {user?.user_metadata?.first_name || 'Driver'}
-            </Text>
-          </View>
+          <Text style={styles.greeting}>Welcome back</Text>
+          <Text style={styles.name}>
+            {user?.user_metadata?.first_name || 'Juan'}
+          </Text>
         </View>
 
         {/* Current Trip Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>
-            Current Assignment
+            CURRENT ASSIGNMENT
           </Text>
           {renderCurrentTrip()}
         </View>
@@ -283,7 +288,7 @@ export default function DriverHome() {
         {hasActiveTrip && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
-              This Week
+              THIS WEEK
             </Text>
             <View style={styles.statsRow}>
               <StatCard label="Completed" value={8} icon="check-circle" variant="success" />
@@ -296,7 +301,7 @@ export default function DriverHome() {
         <View style={[styles.section, styles.lastSection]}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              Upcoming Trips
+              UPCOMING TRIPS
             </Text>
             <TouchableOpacity onPress={() => router.push('/(driver)/trips')}>
               <Text style={styles.viewAllText}>
@@ -316,7 +321,7 @@ export default function DriverHome() {
               >
                 <View style={styles.upcomingTripHeader}>
                   <View style={styles.upcomingTripLeft}>
-                    <MaterialCommunityIcons name="calendar" size={18} color={COLORS.textSecondary} />
+                    <MaterialCommunityIcons name="calendar" size={16} color={COLORS.textSecondary} />
                     <Text style={styles.upcomingTripDate}>
                       {trip.date} • {trip.callTime}
                     </Text>
@@ -327,7 +332,7 @@ export default function DriverHome() {
                   {trip.tripNumber}
                 </Text>
                 <View style={styles.upcomingTripDestination}>
-                  <MaterialCommunityIcons name="map-marker" size={14} color="#64748B" />
+                  <MaterialCommunityIcons name="map-marker" size={14} color={COLORS.info} />
                   <Text style={styles.upcomingTripDestinationText}>{trip.destination}</Text>
                 </View>
               </View>
@@ -342,95 +347,61 @@ export default function DriverHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: COLORS.background,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 28,
+    paddingBottom: 40,
   },
   header: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 24,
     paddingBottom: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-  },
-  headerTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: COLORS.background,
   },
   greeting: {
-    color: '#64748B',
+    color: COLORS.textSecondary,
     fontSize: 13,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   name: {
-    color: '#0F172A',
-    fontSize: 22,
+    color: COLORS.text,
+    fontSize: 24,
     fontWeight: '800',
-    letterSpacing: -0.4,
+    letterSpacing: -0.5,
     marginTop: 2,
   },
-  driverStatusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ECFDF5',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-    gap: 6,
-  },
-  driverDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#10B981',
-  },
-  driverStatusText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#059669',
-  },
   section: {
-    marginTop: 20,
-    paddingHorizontal: 20,
+    marginTop: 16,
+    paddingHorizontal: 16,
   },
   lastSection: {
-    paddingBottom: 20,
+    paddingBottom: 24,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   sectionTitle: {
-    color: '#64748B',
+    color: COLORS.textSecondary,
     fontSize: 12,
     fontWeight: '700',
-    textTransform: 'uppercase',
     letterSpacing: 0.8,
+    marginBottom: 8,
   },
   viewAllText: {
-    color: '#0EA5E9',
+    color: COLORS.primary,
     fontSize: 12,
     fontWeight: '700',
   },
   currentTripCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
+    backgroundColor: COLORS.surface,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
     padding: 16,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
-    elevation: 3,
   },
   tripHeader: {
     flexDirection: 'row',
@@ -445,9 +416,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   tripNumber: {
-    color: '#0F1E36',
-    fontSize: 16,
-    fontWeight: '700',
+    color: COLORS.text,
+    fontSize: 18,
+    fontWeight: '800',
   },
   detailsSection: {
     flexDirection: 'row',
@@ -458,31 +429,31 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    borderColor: COLORS.border,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
-    gap: 4,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    gap: 6,
   },
   detailLabel: {
-    color: '#64748B',
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 12,
+    color: COLORS.textSecondary,
+    fontWeight: '600',
   },
   detailValue: {
-    color: '#0F172A',
-    fontSize: 11,
+    fontSize: 12,
+    color: COLORS.text,
     fontWeight: '700',
   },
   routeSection: {
-    backgroundColor: '#F8FAFC',
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    borderColor: COLORS.border,
+    borderWidth: 1,
     borderRadius: 14,
     padding: 14,
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    marginBottom: 16,
+    marginBottom: 14,
   },
   routePoint: {
     flexDirection: 'row',
@@ -495,123 +466,114 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginTop: 4,
   },
-  routeLine: {
-    width: 2,
-    height: 20,
-    backgroundColor: '#E2E8F0',
-    marginLeft: 4,
-    marginVertical: 2,
-  },
   routeContent: {
     flex: 1,
   },
   routeLabel: {
-    color: '#64748B',
     fontSize: 11,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    marginBottom: 2,
   },
   routeLocation: {
-    color: '#0F172A',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
-    marginTop: 1,
+    color: COLORS.text,
+    marginBottom: 2,
   },
   routeAddress: {
-    color: '#64748B',
-    fontSize: 12,
-    marginTop: 1,
+    fontSize: 13,
+    color: COLORS.textSecondary,
+    lineHeight: 18,
+  },
+  routeLine: {
+    width: 1.5,
+    height: 16,
+    backgroundColor: COLORS.border,
+    marginLeft: 4,
+    marginVertical: 4,
   },
   primaryButton: {
     flexDirection: 'row',
-    justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 14,
+    justifyContent: 'center',
     paddingVertical: 14,
-    paddingHorizontal: 20,
+    borderRadius: 12,
     gap: 8,
-    shadowColor: '#0F1E36',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: 10,
   },
   primaryButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
+    color: COLORS.white,
+    fontSize: 15,
     fontWeight: '700',
-    letterSpacing: 0.2,
   },
   secondaryActions: {
     flexDirection: 'row',
-    marginTop: 10,
-    gap: 8,
+    gap: 10,
   },
   secondaryButton: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingVertical: 11,
+    borderRadius: 12,
     gap: 6,
   },
   secondaryButtonText: {
-    color: '#0F172A',
-    fontSize: 12,
-    fontWeight: '600',
+    color: COLORS.text,
+    fontSize: 13,
+    fontWeight: '700',
   },
   statsRow: {
     flexDirection: 'row',
-    gap: 10,
+    gap: 12,
   },
   upcomingTripsContainer: {
-    gap: 8,
+    gap: 10,
   },
   upcomingTripCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: COLORS.border,
+    borderRadius: 14,
     padding: 14,
   },
   upcomingTripCardMargin: {
-    marginBottom: 0,
+    marginBottom: 2,
   },
   upcomingTripHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 6,
   },
   upcomingTripLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
-    gap: 8,
+    gap: 6,
   },
   upcomingTripDate: {
-    color: '#0F172A',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  upcomingTripNumber: {
-    color: '#0EA5E9',
     fontSize: 12,
     fontWeight: '600',
-    marginTop: 2,
+    color: COLORS.textSecondary,
+  },
+  upcomingTripNumber: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.primary,
+    marginBottom: 4,
   },
   upcomingTripDestination: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 6,
     gap: 4,
   },
   upcomingTripDestinationText: {
-    color: '#64748B',
-    fontSize: 12,
+    fontSize: 13,
+    color: COLORS.text,
   },
 });

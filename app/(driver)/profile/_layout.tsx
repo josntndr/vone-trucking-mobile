@@ -3,15 +3,18 @@
  */
 
 import { Stack } from 'expo-router';
+import { useThemeContext } from '../../../src/contexts/ThemeContext';
 
 export default function DriverProfileLayout() {
+  const { colors, isDarkMode } = useThemeContext();
+
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: colors.surface || (isDarkMode ? '#1E293B' : '#FFFFFF'),
         },
-        headerTintColor: '#1A237E',
+        headerTintColor: colors.text || (isDarkMode ? '#F8FAFC' : '#0F172A'),
         headerShadowVisible: false,
       }}
     >
@@ -52,4 +55,3 @@ export default function DriverProfileLayout() {
     </Stack>
   );
 }
-

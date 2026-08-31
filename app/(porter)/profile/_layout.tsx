@@ -3,18 +3,22 @@
  */
 
 import { Stack } from 'expo-router';
+import { useThemeContext } from '../../../src/contexts/ThemeContext';
 
 export default function PorterProfileLayout() {
+  const { colors, isDarkMode } = useThemeContext();
+
   return (
     <Stack
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: colors.surface || (isDarkMode ? '#1E293B' : '#FFFFFF'),
         },
-        headerTintColor: '#1A237E',
+        headerTintColor: colors.text || (isDarkMode ? '#F8FAFC' : '#0F172A'),
         headerTitleStyle: {
-          fontWeight: '600',
+          fontWeight: '700',
         },
+        headerShadowVisible: false,
       }}
     >
       <Stack.Screen
@@ -27,21 +31,23 @@ export default function PorterProfileLayout() {
         name="history"
         options={{
           title: 'Trip History',
+          headerBackTitle: 'Back',
         }}
       />
       <Stack.Screen
         name="payslips"
         options={{
           title: 'Payslips',
+          headerBackTitle: 'Back',
         }}
       />
       <Stack.Screen
         name="cash-advance"
         options={{
           title: 'Cash Advance',
+          headerBackTitle: 'Back',
         }}
       />
     </Stack>
   );
 }
-

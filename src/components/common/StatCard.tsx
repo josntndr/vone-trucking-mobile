@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '../../theme/ThemeProvider';
+import { useThemeContext } from '../../contexts/ThemeContext';
 
 interface StatCardProps {
   label: string;
@@ -29,38 +29,38 @@ export default function StatCard({
   onPress,
   style,
 }: StatCardProps) {
-  const { colors, shadows } = useTheme();
+  const { colors, isDarkMode } = useThemeContext();
 
   const getVariantStyles = () => {
     switch (variant) {
       case 'primary':
-        return { iconColor: '#0EA5E9', iconBg: '#F0F9FF', textColor: '#0F172A' };
+        return { iconColor: '#0EA5E9', iconBg: 'rgba(14, 165, 233, 0.15)' };
       case 'success':
-        return { iconColor: '#10B981', iconBg: '#ECFDF5', textColor: '#0F172A' };
+        return { iconColor: '#10B981', iconBg: 'rgba(16, 185, 129, 0.15)' };
       case 'warning':
-        return { iconColor: '#F59E0B', iconBg: '#FFFBEB', textColor: '#0F172A' };
+        return { iconColor: '#F59E0B', iconBg: 'rgba(245, 158, 11, 0.15)' };
       case 'error':
-        return { iconColor: '#EF4444', iconBg: '#FEF2F2', textColor: '#0F172A' };
+        return { iconColor: '#EF4444', iconBg: 'rgba(239, 68, 68, 0.15)' };
       case 'teal':
-        return { iconColor: '#0EA5E9', iconBg: '#F0F9FF', textColor: '#0F172A' };
+        return { iconColor: '#0EA5E9', iconBg: 'rgba(14, 165, 233, 0.15)' };
       default:
-        return { iconColor: '#0F1E36', iconBg: '#F1F5F9', textColor: '#0F172A' };
+        return { iconColor: '#38BDF8', iconBg: 'rgba(56, 189, 248, 0.12)' };
     }
   };
 
   const getTrendConfig = () => {
     switch (trend) {
       case 'up':
-        return { icon: 'trending-up' as const, color: '#10B981', bg: '#ECFDF5' };
+        return { icon: 'trending-up' as const, color: '#10B981', bg: 'rgba(16, 185, 129, 0.15)' };
       case 'down':
-        return { icon: 'trending-down' as const, color: '#EF4444', bg: '#FEF2F2' };
+        return { icon: 'trending-down' as const, color: '#EF4444', bg: 'rgba(239, 68, 68, 0.15)' };
       default:
-        return { icon: 'minus' as const, color: '#64748B', bg: '#F1F5F9' };
+        return { icon: 'minus' as const, color: '#94A3B8', bg: 'rgba(148, 163, 184, 0.15)' };
     }
   };
 
   const Container = onPress ? TouchableOpacity : View;
-  const { iconColor, iconBg, textColor } = getVariantStyles();
+  const { iconColor, iconBg } = getVariantStyles();
   const trendConfig = getTrendConfig();
 
   return (
@@ -68,8 +68,8 @@ export default function StatCard({
       style={[
         styles.card,
         {
-          backgroundColor: '#FFFFFF',
-          ...shadows.sm,
+          backgroundColor: colors.surface || (isDarkMode ? '#1E293B' : '#FFFFFF'),
+          borderColor: colors.border || (isDarkMode ? '#334155' : '#E2E8F0'),
         },
         style,
       ]}
@@ -101,11 +101,11 @@ export default function StatCard({
         )}
       </View>
 
-      <Text style={[styles.value, { color: textColor }]}>
+      <Text style={[styles.value, { color: colors.text || (isDarkMode ? '#F8FAFC' : '#0F172A') }]}>
         {value}
       </Text>
 
-      <Text style={styles.label}>
+      <Text style={[styles.label, { color: colors.textSecondary || (isDarkMode ? '#94A3B8' : '#64748B') }]}>
         {label}
       </Text>
     </Container>
@@ -118,7 +118,6 @@ const styles = StyleSheet.create({
     minWidth: 130,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
     padding: 16,
   },
   topRow: {
@@ -155,8 +154,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#64748B',
     letterSpacing: 0.1,
   },
 });
-
