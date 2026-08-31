@@ -147,7 +147,7 @@ export default function PorterProfileScreen() {
           onPress={handleLogout}
         >
           <MaterialCommunityIcons name="logout" size={24} color="#fff" />
-          <Text style={styles.actionButtonText}>Logout</Text>
+          <Text style={styles.actionButtonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

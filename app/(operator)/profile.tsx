@@ -196,7 +196,7 @@ export default function ProfileScreen() {
             </View>
           ))}
 
-          {/* Logout Button */}
+          {/* Sign Out Button */}
           <View style={styles.logoutSection}>
             <TouchableOpacity
               style={[
@@ -211,7 +211,7 @@ export default function ProfileScreen() {
             >
               <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
               <Text style={styles.logoutText}>
-                Log Out of Account
+                Sign Out
               </Text>
             </TouchableOpacity>
           </View>

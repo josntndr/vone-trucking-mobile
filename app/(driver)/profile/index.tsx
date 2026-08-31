@@ -148,7 +148,7 @@ export default function DriverProfileScreen() {
       >
         <MaterialCommunityIcons name="logout" size={24} color={colors.error} style={{ marginRight: 8 }} />
         <Text style={{ color: colors.error, fontSize: 18, fontWeight: '700' }}>
-          Logout
+          Sign Out
         </Text>
       </TouchableOpacity>
 
