@@ -41,119 +41,127 @@ export const ResultModal: React.FC<ResultModalProps> = ({
   onRetry,
   shareLabel = 'Share',
 }) => {
+  if (!visible) return null;
+
   return (
-    <Modal
-      visible={visible}
-      animationType="fade"
-      transparent={true}
-      onRequestClose={type !== 'loading' ? onClose : undefined}
-      presentationStyle="overFullScreen"
-    >
-      <View style={styles.modalOverlay}>
-        <View style={[
-          styles.modalContainer,
-          Platform.OS === 'web' && styles.modalContainerWeb
-        ]}>
-          {/* Icon */}
-          <View
-            style={[
-              styles.iconContainer,
-              type === 'success' && styles.iconContainerSuccess,
-              type === 'error' && styles.iconContainerError,
-            ]}
-          >
-            {type === 'loading' && <ActivityIndicator size="large" color={COLORS.navy} />}
-            {type === 'success' && <Ionicons name="checkmark-circle" size={64} color={COLORS.success} />}
-            {type === 'error' && <Ionicons name="alert-circle" size={64} color={COLORS.error} />}
-          </View>
+    <View style={styles.modalOverlay}>
+      <TouchableOpacity
+        style={styles.backdrop}
+        activeOpacity={1}
+        onPress={type !== 'loading' ? onClose : undefined}
+      />
+      <View style={styles.modalContainer}>
+        {/* Icon */}
+        <View
+          style={[
+            styles.iconContainer,
+            type === 'success' && styles.iconContainerSuccess,
+            type === 'error' && styles.iconContainerError,
+          ]}
+        >
+          {type === 'loading' && <ActivityIndicator size="large" color="#0EA5E9" />}
+          {type === 'success' && <Ionicons name="checkmark-circle" size={64} color="#10B981" />}
+          {type === 'error' && <Ionicons name="alert-circle" size={64} color="#EF4444" />}
+        </View>
 
-          {/* Title */}
-          <Text style={styles.title}>{title}</Text>
+        {/* Title */}
+        <Text style={styles.title}>{title}</Text>
 
-          {/* Message */}
-          <Text style={styles.message}>{message}</Text>
+        {/* Message */}
+        <Text style={styles.message}>{message}</Text>
 
-          {/* File Details */}
-          {type === 'success' && filename && (
-            <View style={styles.detailsCard}>
-              <View style={styles.detailRow}>
-                <Ionicons name="document-outline" size={18} color={COLORS.textSecondary} />
-                <Text style={styles.detailLabel}>Filename:</Text>
-              </View>
-              <Text style={styles.detailValue}>{filename}</Text>
-
-              {recordCount !== undefined && (
-                <>
-                  <View style={[styles.detailRow, { marginTop: SPACING.sm }]}>
-                    <Ionicons name="list-outline" size={18} color={COLORS.textSecondary} />
-                    <Text style={styles.detailLabel}>Records:</Text>
-                  </View>
-                  <Text style={styles.detailValue}>{recordCount.toLocaleString()}</Text>
-                </>
-              )}
+        {/* File Details */}
+        {type === 'success' && filename && (
+          <View style={styles.detailsCard}>
+            <View style={styles.detailRow}>
+              <Ionicons name="document-outline" size={18} color={COLORS.textSecondary} />
+              <Text style={styles.detailLabel}>Filename:</Text>
             </View>
+            <Text style={styles.detailValue}>{filename}</Text>
+
+            {recordCount !== undefined && (
+              <>
+                <View style={[styles.detailRow, { marginTop: SPACING.sm }]}>
+                  <Ionicons name="list-outline" size={18} color={COLORS.textSecondary} />
+                  <Text style={styles.detailLabel}>Records:</Text>
+                </View>
+                <Text style={styles.detailValue}>{recordCount.toLocaleString()}</Text>
+              </>
+            )}
+          </View>
+        )}
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          {type === 'success' && onShare && (
+            <TouchableOpacity
+              style={styles.shareButton}
+              onPress={onShare}
+              accessibilityRole="button"
+              accessibilityLabel={shareLabel}
+            >
+              <Ionicons name="share-outline" size={20} color={COLORS.white} />
+              <Text style={styles.shareButtonText}>{shareLabel}</Text>
+            </TouchableOpacity>
           )}
 
-          {/* Actions */}
-          <View style={styles.actions}>
-            {type === 'success' && onShare && (
-              <TouchableOpacity
-                style={styles.shareButton}
-                onPress={onShare}
-                accessibilityRole="button"
-                accessibilityLabel={shareLabel}
-              >
-                <Ionicons name="share-outline" size={20} color={COLORS.white} />
-                <Text style={styles.shareButtonText}>{shareLabel}</Text>
-              </TouchableOpacity>
-            )}
+          {type === 'error' && onRetry && (
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={onRetry}
+              accessibilityRole="button"
+              accessibilityLabel="Retry"
+            >
+              <Ionicons name="refresh-outline" size={20} color={COLORS.white} />
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          )}
 
-            {type === 'error' && onRetry && (
-              <TouchableOpacity
-                style={styles.retryButton}
-                onPress={onRetry}
-                accessibilityRole="button"
-                accessibilityLabel="Retry"
-              >
-                <Ionicons name="refresh-outline" size={20} color={COLORS.white} />
-                <Text style={styles.retryButtonText}>Retry</Text>
-              </TouchableOpacity>
-            )}
-
-            {type !== 'loading' && (
-              <TouchableOpacity
+          {type !== 'loading' && (
+            <TouchableOpacity
+              style={[
+                styles.closeButton,
+                type === 'success' && onShare && styles.closeButtonSecondary,
+              ]}
+              onPress={onClose}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
+              <Text
                 style={[
-                  styles.closeButton,
-                  type === 'success' && onShare && styles.closeButtonSecondary,
+                  styles.closeButtonText,
+                  type === 'success' && onShare && styles.closeButtonTextSecondary,
                 ]}
-                onPress={onClose}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
               >
-                <Text
-                  style={[
-                    styles.closeButtonText,
-                    type === 'success' && onShare && styles.closeButtonTextSecondary,
-                  ]}
-                >
-                  Close
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
+                Close
+              </Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
-    </Modal>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
   },
   modalContainer: {
     backgroundColor: '#1E293B',
@@ -162,12 +170,13 @@ const styles = StyleSheet.create({
     borderColor: '#334155',
     padding: SPACING.lg,
     width: '100%',
-    maxWidth: 390,
+    maxWidth: 380,
     alignItems: 'center',
-  },
-  modalContainerWeb: {
-    maxWidth: 390,
-    borderRadius: 24,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 10,
   },
   iconContainer: {
     marginBottom: SPACING.md,

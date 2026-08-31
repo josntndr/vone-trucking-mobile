@@ -90,32 +90,30 @@ export const ReportConfigModal: React.FC<ReportConfigModalProps> = ({
     }
   };
 
+  if (!visible) return null;
+
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-      presentationStyle={Platform.OS === 'ios' ? 'pageSheet' : 'overFullScreen'}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={[
-          styles.modalContainer,
-          Platform.OS === 'web' && styles.modalContainerWeb
-        ]}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Generate Report</Text>
-            <TouchableOpacity
-              onPress={onClose}
-              style={styles.closeButton}
-              disabled={generating}
-              accessibilityRole="button"
-              accessibilityLabel="Close"
-            >
-              <Ionicons name="close" size={24} color="#F8FAFC" />
-            </TouchableOpacity>
-          </View>
+    <View style={styles.modalOverlay}>
+      <TouchableOpacity
+        style={styles.backdrop}
+        activeOpacity={1}
+        onPress={onClose}
+        disabled={generating}
+      />
+      <View style={styles.modalContainer}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Generate Report</Text>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.closeButton}
+            disabled={generating}
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+          >
+            <Ionicons name="close" size={24} color="#F8FAFC" />
+          </TouchableOpacity>
+        </View>
 
           <ScrollView
             style={styles.content}
@@ -228,17 +226,28 @@ export const ReportConfigModal: React.FC<ReportConfigModalProps> = ({
           </View>
         </View>
       </View>
-    </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
+  },
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.75)',
   },
   modalContainer: {
     backgroundColor: '#1E293B',
@@ -246,14 +255,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#334155',
     width: '100%',
-    maxWidth: 390,
+    maxWidth: 380,
     maxHeight: '88%',
     overflow: 'hidden',
-  },
-  modalContainerWeb: {
-    maxWidth: 390,
-    borderRadius: 24,
-    maxHeight: '88vh',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 10,
   },
   header: {
     flexDirection: 'row',
