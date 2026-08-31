@@ -63,15 +63,6 @@ export default function ProfileScreen() {
     router.push('/(operator)/notification-settings');
   };
 
-  const handleDarkModeToggle = async () => {
-    try {
-      await toggleTheme();
-    } catch (error) {
-      console.error('Failed to toggle theme:', error);
-      Alert.alert('Error', 'Failed to change theme. Please try again.');
-    }
-  };
-
   const handleAbout = () => {
     router.push('/(operator)/about');
   };
@@ -102,14 +93,6 @@ export default function ProfileScreen() {
       title: 'App Settings',
       items: [
         { 
-          icon: 'moon-outline', 
-          label: 'Dark Mode', 
-          onPress: () => {}, // Handler on switch only
-          hasSwitch: true,
-          switchValue: isDarkMode,
-          onSwitchChange: handleDarkModeToggle,
-        },
-        { 
           icon: 'information-circle-outline', 
           label: 'About', 
           onPress: handleAbout,
@@ -122,129 +105,77 @@ export default function ProfileScreen() {
   return (
     <Screen style={{ backgroundColor: colors.background }}>
       <ScrollView 
-        style={styles.container}
-        contentContainerStyle={{ paddingBottom: spacing[8] }}
+        style={[styles.container, { backgroundColor: colors.background }]}
+        contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Profile Header */}
-        <View style={[styles.header, { 
-          paddingHorizontal: spacing[4], 
-          paddingTop: spacing[6],
-          paddingBottom: spacing[5],
-          backgroundColor: colors.surface,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-        }]}>
-          <View style={[styles.avatarContainer, { 
-            backgroundColor: colors.primary,
-            width: 72,
-            height: 72,
-            borderRadius: 36,
-            marginBottom: spacing[3],
-            borderWidth: 3,
-            borderColor: colors.primary + '40',
-            ...shadows.base,
-          }]}>
-            <Text style={[styles.avatarText, { 
-              color: colors.white,
-              fontSize: 32,
-              fontWeight: fontWeights.bold,
-            }]}>
+        {/* Modern Profile Header */}
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <View style={styles.avatarContainer}>
+            <Text style={styles.avatarText}>
               {user?.email?.charAt(0).toUpperCase() || 'A'}
             </Text>
+            <View style={[styles.avatarOnlineBadge, { borderColor: colors.surface }]} />
           </View>
-          <Text style={[styles.name, { 
-            color: colors.text,
-            fontSize: 18,
-            fontWeight: fontWeights.bold,
-            marginBottom: 8,
-          }]}>
-            {user?.email?.split('@')[0] || 'admin'}
+          <Text style={[styles.name, { color: colors.text }]}>
+            {user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'Admin Operator'}
           </Text>
-          <View style={[styles.roleBadge, { 
-            backgroundColor: colors.primary,
-            paddingHorizontal: 16,
-            paddingVertical: 6,
-            borderRadius: 6,
-          }]}>
-            <Text style={[styles.roleText, { 
-              color: colors.white,
-              fontSize: 12,
-              fontWeight: fontWeights.semibold,
-              letterSpacing: 0.4,
-            }]}>
-              Operator / Admin
+          <Text style={[styles.emailText, { color: colors.textSecondary }]}>
+            {user?.email || 'admin@vonetrucking.com'}
+          </Text>
+          <View style={[
+            styles.roleBadge,
+            {
+              backgroundColor: isDarkMode ? '#1E293B' : '#F0F9FF',
+              borderColor: isDarkMode ? '#334155' : '#BAE6FD',
+            }
+          ]}>
+            <Ionicons name="shield-checkmark" size={13} color="#0EA5E9" style={{ marginRight: 4 }} />
+            <Text style={[styles.roleText, { color: '#0EA5E9' }]}>
+              Fleet Operations Admin
             </Text>
           </View>
         </View>
 
         {/* Profile Sections */}
-        <View style={{ paddingHorizontal: spacing[4], paddingTop: spacing[5] }}>
+        <View style={styles.sectionsContainer}>
           {profileSections.map((section, index) => (
-            <View key={index} style={[styles.section, { marginBottom: spacing[5] }]}>
-              <Text style={[styles.sectionTitle, { 
-                color: colors.textSecondary,
-                fontSize: 12,
-                fontWeight: fontWeights.bold,
-                textTransform: 'uppercase',
-                marginBottom: 12,
-                marginLeft: 16,
-              }]}>
+            <View key={index} style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>
                 {section.title}
               </Text>
-              <Card style={{ 
-                backgroundColor: colors.surface,
-                borderRadius: 14,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 1 },
-                shadowOpacity: 0.05,
-                shadowRadius: 2,
-                elevation: 1,
-              }}>
+              <View style={[
+                styles.cardGroup,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                }
+              ]}>
                 {section.items.map((item, itemIndex) => (
                   <TouchableOpacity
                     key={itemIndex}
                     style={[
                       styles.menuItem,
-                      { 
-                        paddingVertical: 14,
-                        paddingHorizontal: 16,
-                        minHeight: 52,
-                      },
-                      itemIndex < section.items.length - 1 && {
-                        borderBottomWidth: 1,
-                        borderBottomColor: colors.border + '40',
-                      },
+                      itemIndex < section.items.length - 1 && [styles.menuItemDivider, { borderBottomColor: colors.border }],
                     ]}
                     onPress={item.hasSwitch && !item.hasChevron ? undefined : item.onPress}
                     activeOpacity={item.hasSwitch && !item.hasChevron ? 1 : 0.7}
                     disabled={item.hasSwitch && !item.hasChevron}
-                    accessibilityRole={item.hasSwitch ? 'none' : 'button'}
-                    accessibilityLabel={item.label}
-                    accessibilityHint={
-                      item.hasChevron 
-                        ? `Opens ${item.label} screen` 
-                        : item.hasSwitch 
-                        ? undefined 
-                        : `Activates ${item.label}`
-                    }
                   >
                     <View style={styles.menuItemContent}>
-                      <View style={[styles.iconContainer, {
-                        width: 36,
-                        height: 36,
-                        borderRadius: 18,
-                        backgroundColor: colors.primary + '10',
-                        marginRight: 12,
-                      }]}>
-                        <Ionicons name={item.icon as any} size={20} color={colors.primary} />
+                      <View style={[
+                        styles.iconContainer,
+                        {
+                          backgroundColor: isDarkMode ? '#334155' : '#F0F9FF',
+                        }
+                      ]}>
+                        <Ionicons
+                          name={item.icon as any}
+                          size={19}
+                          color={isDarkMode ? '#38BDF8' : '#0F1E36'}
+                        />
                       </View>
-                      <Text style={[styles.menuItemText, { 
-                        color: colors.text,
-                        fontSize: fontSizes.base,
-                        fontWeight: fontWeights.medium,
-                        flex: 1,
-                      }]}>
+                      <Text style={[styles.menuItemText, { color: colors.text }]}>
                         {item.label}
                       </Text>
                     </View>
@@ -252,73 +183,56 @@ export default function ProfileScreen() {
                       <Switch
                         value={item.switchValue}
                         onValueChange={item.onSwitchChange}
-                        trackColor={{ false: colors.border, true: colors.primary + '40' }}
-                        thumbColor={item.switchValue ? colors.primary : colors.textTertiary}
-                        ios_backgroundColor={colors.border}
-                        accessibilityRole="switch"
-                        accessibilityLabel={`${item.label} switch`}
-                        accessibilityState={{ checked: item.switchValue }}
+                        trackColor={{ false: isDarkMode ? '#334155' : '#E2E8F0', true: '#0EA5E9' }}
+                        thumbColor="#FFFFFF"
+                        ios_backgroundColor={isDarkMode ? '#334155' : '#E2E8F0'}
                       />
                     ) : item.hasChevron ? (
-                      <Ionicons name="chevron-forward" size={20} color={colors.textTertiary} />
+                      <Ionicons name="chevron-forward" size={18} color={colors.textTertiary || '#94A3B8'} />
                     ) : null}
                   </TouchableOpacity>
                 ))}
-              </Card>
+              </View>
             </View>
           ))}
 
           {/* Logout Button */}
-          <View style={[styles.section, { marginTop: 20, marginBottom: spacing[6] }]}>
+          <View style={styles.logoutSection}>
             <TouchableOpacity
-              style={[styles.logoutButton, {
-                backgroundColor: colors.error,
-                borderRadius: 14,
-                paddingVertical: 16,
-                paddingHorizontal: 20,
-                minHeight: 52,
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 3,
-                elevation: 2,
-              }]}
+              style={[
+                styles.logoutButton,
+                {
+                  backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2',
+                  borderColor: isDarkMode ? 'rgba(239, 68, 68, 0.35)' : '#FECACA',
+                }
+              ]}
               onPress={() => setLogoutDialogVisible(true)}
               activeOpacity={0.8}
-              accessibilityRole="button"
-              accessibilityLabel="Logout"
-              accessibilityHint="Signs you out of the app"
             >
-              <Ionicons name="log-out-outline" size={20} color={colors.white} style={{ marginRight: 8 }} />
-              <Text style={[styles.logoutText, {
-                color: colors.white,
-                fontSize: 14,
-                fontWeight: fontWeights.bold,
-              }]}>
-                Logout
+              <Ionicons name="log-out-outline" size={20} color="#EF4444" style={{ marginRight: 8 }} />
+              <Text style={styles.logoutText}>
+                Log Out of Account
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Version Info */}
-        <View style={[styles.versionContainer, { paddingBottom: spacing[5] }]}>
-          <Text style={[styles.versionText, { 
-            color: colors.textTertiary,
-            fontSize: 10,
-          }]}>
+        <View style={[styles.versionContainer, { paddingBottom: 20 }]}>
+          <Text style={[styles.versionText, { color: colors.textTertiary }]}>
             Vone Trucking v1.0.0 © {new Date().getFullYear()}
           </Text>
         </View>
       </ScrollView>
 
+      {/* Logout Confirmation Dialog */}
       <ConfirmDialog
         isOpen={logoutDialogVisible}
         onClose={() => setLogoutDialogVisible(false)}
-        title="Logout"
-        message="Are you sure you want to logout?"
+        title="Sign Out"
+        message="Are you sure you want to sign out of your Vone Trucking session?"
         onConfirm={handleLogout}
-        confirmLabel="Logout"
+        confirmLabel="Sign Out"
         isDestructive={true}
       />
     </Screen>
@@ -331,26 +245,94 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
+    paddingTop: 32,
+    paddingBottom: 24,
+    borderBottomWidth: 1,
   },
   avatarContainer: {
-    justifyContent: 'center',
+    width: 76,
+    height: 76,
+    borderRadius: 26,
+    backgroundColor: '#0F1E36',
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    position: 'relative',
+    shadowColor: '#0F1E36',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  avatarText: {},
+  avatarOnlineBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#10B981',
+    borderWidth: 3,
+  },
+  avatarText: {
+    fontSize: 30,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
   name: {
-    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '800',
+    marginBottom: 2,
   },
-  email: {
-    textAlign: 'center',
+  emailText: {
+    fontSize: 13,
+    marginBottom: 10,
   },
-  roleBadge: {},
-  roleText: {},
-  section: {},
-  sectionTitle: {},
+  roleBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  roleText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  sectionsContainer: {
+    padding: 16,
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  cardGroup: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  menuItemDivider: {
+    borderBottomWidth: 1,
   },
   menuItemContent: {
     flexDirection: 'row',
@@ -358,21 +340,40 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   iconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 12,
   },
-  menuItemText: {},
+  menuItemText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  logoutSection: {
+    marginTop: 4,
+    marginBottom: 16,
+  },
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    height: 52,
+    borderRadius: 14,
+    borderWidth: 1.5,
   },
-  logoutText: {},
+  logoutText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#EF4444',
+  },
   versionContainer: {
     alignItems: 'center',
+    paddingTop: 8,
   },
   versionText: {
-    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '500',
   },
 });
-

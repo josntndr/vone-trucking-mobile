@@ -68,21 +68,13 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
   const previousProvinceCode = useRef<string | undefined>(undefined);
   const previousCityCode = useRef<string | undefined>(undefined);
 
-  // Check if current region requires a province
+  // Check if current region requires a province (all regions except NCR)
   const requiresProvince = useMemo(() => {
     return regionCode ? regionHasProvinces(regionCode) : true;
   }, [regionCode]);
 
-  const selectedCity = useMemo(() => {
-    return cityCode ? getCityByCode(cityCode) : undefined;
-  }, [cityCode]);
-
-  const hasIndependentCities = useMemo(() => {
-    return regionCode ? getCities({ regionCode }).length > 0 : false;
-  }, [regionCode]);
-
-  const provinceIsRequired = requiresProvince && (!hasIndependentCities || Boolean(selectedCity?.provinceCode));
-  const mustSelectProvinceBeforeCity = requiresProvince && !provinceCode && !hasIndependentCities;
+  const provinceIsRequired = requiresProvince;
+  const mustSelectProvinceBeforeCity = requiresProvince && !provinceCode;
 
   // Load regions on mount (Philippines only)
   useEffect(() => {
@@ -110,8 +102,8 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
         // NCR - no provinces
         setProvinceOptions([]);
         // Clear province fields
-        setValue('province', '');
-        setValue('province_code', '');
+        setValue('province', '', { shouldValidate: true, shouldDirty: true });
+        setValue('province_code', '', { shouldValidate: true, shouldDirty: true });
       } else {
         // Other regions - load provinces
         setLoadingProvinces(true);
@@ -177,7 +169,7 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
         // Suggest postal code(s)
         const suggested = getSuggestedPostalCodes(cityCode);
         if (suggested && suggested.length > 0 && !postalCode) {
-          setValue('postal_code', suggested[0]);
+          setValue('postal_code', suggested[0], { shouldValidate: true, shouldDirty: true });
         }
       } catch (error) {
         console.error('Error loading barangays:', error);
@@ -205,14 +197,14 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
       // Region changed, clear province and below
       if (!regionHasProvinces(regionCode)) {
         // NCR - clear province immediately
-        setValue('province', '');
-        setValue('province_code', '');
+        setValue('province', '', { shouldValidate: true, shouldDirty: true });
+        setValue('province_code', '', { shouldValidate: true, shouldDirty: true });
       }
-      setValue('city', '');
-      setValue('city_code', '');
-      setValue('barangay', '');
-      setValue('barangay_code', '');
-      setValue('postal_code', '');
+      setValue('city', '', { shouldValidate: true, shouldDirty: true });
+      setValue('city_code', '', { shouldValidate: true, shouldDirty: true });
+      setValue('barangay', '', { shouldValidate: true, shouldDirty: true });
+      setValue('barangay_code', '', { shouldValidate: true, shouldDirty: true });
+      setValue('postal_code', '', { shouldValidate: true, shouldDirty: true });
     }
     previousRegionCode.current = regionCode;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -391,7 +383,7 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
             options={regionOptions}
             onSelect={(option) => {
               onChange(option.code);
-              setValue('region', option.name);
+              setValue('region', option.name, { shouldValidate: true, shouldDirty: true });
             }}
             placeholder="Select region"
             error={errors.region_code?.message || errors.region?.message}
@@ -416,7 +408,7 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
               options={provinceOptions}
               onSelect={(option) => {
                 onChange(option.code);
-                setValue('province', option.name);
+                setValue('province', option.name, { shouldValidate: true, shouldDirty: true });
               }}
               placeholder={regionCode ? "Select province" : "Select region first"}
               error={errors.province_code?.message || errors.province?.message}
@@ -491,7 +483,7 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
             options={cityOptions}
             onSelect={(option) => {
               onChange(option.code);
-              setValue('city', option.name);
+              setValue('city', option.name, { shouldValidate: true, shouldDirty: true });
             }}
             placeholder={
               !regionCode
@@ -527,7 +519,7 @@ export const AddressFormSection: React.FC<AddressFormSectionProps> = ({
             options={barangayOptions}
             onSelect={(option) => {
               onChange(option.code);
-              setValue('barangay', option.name);
+              setValue('barangay', option.name, { shouldValidate: true, shouldDirty: true });
             }}
             placeholder={cityCode ? "Select barangay" : "Select city first"}
             error={errors.barangay_code?.message || errors.barangay?.message}

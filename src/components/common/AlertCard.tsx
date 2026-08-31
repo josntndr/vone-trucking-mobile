@@ -1,6 +1,6 @@
 /**
  * AlertCard Component
- * Card for displaying urgent alerts and notifications
+ * Modern card for displaying urgent alerts and notifications
  */
 
 import React from 'react';
@@ -27,42 +27,50 @@ export default function AlertCard({
   onDismiss,
   style,
 }: AlertCardProps) {
-  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius  } = useTheme();
+  const { spacing, shadows } = useTheme();
 
   const getSeverityConfig = () => {
     switch (severity) {
       case 'error':
         return {
           icon: 'alert-circle' as const,
-          backgroundColor: colors.error + '15',
-          borderColor: colors.error,
-          iconColor: colors.errorDark,
-          textColor: colors.errorDark,
+          backgroundColor: '#FEF2F2',
+          borderColor: '#FCA5A5',
+          borderLeftColor: '#EF4444',
+          iconColor: '#DC2626',
+          titleColor: '#991B1B',
+          textColor: '#7F1D1D',
         };
       case 'warning':
         return {
           icon: 'alert' as const,
-          backgroundColor: colors.warning + '15',
-          borderColor: colors.warning,
-          iconColor: colors.warningDark,
-          textColor: colors.warningDark,
+          backgroundColor: '#FFFBEB',
+          borderColor: '#FDE68A',
+          borderLeftColor: '#F59E0B',
+          iconColor: '#D97706',
+          titleColor: '#92400E',
+          textColor: '#78350F',
         };
       case 'success':
         return {
           icon: 'check-circle' as const,
-          backgroundColor: colors.success + '15',
-          borderColor: colors.success,
-          iconColor: colors.successDark,
-          textColor: colors.successDark,
+          backgroundColor: '#ECFDF5',
+          borderColor: '#A7F3D0',
+          borderLeftColor: '#10B981',
+          iconColor: '#059669',
+          titleColor: '#065F46',
+          textColor: '#047857',
         };
       case 'info':
       default:
         return {
           icon: 'information' as const,
-          backgroundColor: colors.info + '15',
-          borderColor: colors.info,
-          iconColor: colors.infoDark,
-          textColor: colors.infoDark,
+          backgroundColor: '#F0F9FF',
+          borderColor: '#BAE6FD',
+          borderLeftColor: '#0EA5E9',
+          iconColor: '#0284C7',
+          titleColor: '#075985',
+          textColor: '#0369A1',
         };
     }
   };
@@ -76,30 +84,30 @@ export default function AlertCard({
         styles.container,
         {
           backgroundColor: config.backgroundColor,
-          borderLeftColor: config.borderColor,
-          borderRadius: borderRadius.base,
-          padding: spacing[3],
+          borderLeftColor: config.borderLeftColor,
+          borderColor: config.borderColor,
+          ...shadows.sm,
         },
         style,
       ]}
       onPress={onPress}
-      activeOpacity={onPress ? 0.7 : 1}
+      activeOpacity={onPress ? 0.75 : 1}
     >
       <View style={styles.content}>
-        <MaterialCommunityIcons
-          name={config.icon}
-          size={24}
-          color={config.iconColor}
-        />
+        <View style={[styles.iconWrap, { backgroundColor: config.backgroundColor }]}>
+          <MaterialCommunityIcons
+            name={config.icon}
+            size={22}
+            color={config.iconColor}
+          />
+        </View>
         
-        <View style={[styles.textContainer, { marginLeft: spacing[3] }]}>
+        <View style={styles.textContainer}>
           <Text
             style={[
               styles.title,
               {
-                color: config.textColor,
-                fontSize: fontSizes.base,
-                fontWeight: fontWeights.semibold,
+                color: config.titleColor,
               },
             ]}
           >
@@ -110,8 +118,6 @@ export default function AlertCard({
               styles.message,
               {
                 color: config.textColor,
-                fontSize: fontSizes.sm,
-                marginTop: spacing[1],
               },
             ]}
           >
@@ -123,11 +129,11 @@ export default function AlertCard({
           <TouchableOpacity
             onPress={onDismiss}
             hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-            style={{ marginLeft: spacing[2] }}
+            style={styles.closeBtn}
           >
             <MaterialCommunityIcons
               name="close"
-              size={20}
+              size={18}
               color={config.iconColor}
             />
           </TouchableOpacity>
@@ -140,16 +146,35 @@ export default function AlertCard({
 const styles = StyleSheet.create({
   container: {
     borderLeftWidth: 4,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 12,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: 12,
+  },
+  iconWrap: {
+    marginTop: 1,
   },
   textContainer: {
     flex: 1,
+    gap: 3,
   },
-  title: {},
+  title: {
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: -0.1,
+  },
   message: {
-    lineHeight: 20,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '400',
+  },
+  closeBtn: {
+    padding: 2,
   },
 });
+

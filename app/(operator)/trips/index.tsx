@@ -505,7 +505,7 @@ export default function TripsListScreen() {
             onPress={() => setShowFilterModal(true)}
             activeOpacity={0.7}
           >
-            <Ionicons name="funnel-outline" size={18} color={COLORS.navy} />
+            <Ionicons name="funnel-outline" size={18} color={COLORS.teal} />
             <Text style={styles.filterButtonText}>
               Filter
             </Text>
@@ -523,7 +523,7 @@ export default function TripsListScreen() {
             onPress={() => setShowSortModal(true)}
             activeOpacity={0.7}
           >
-            <Ionicons name="swap-vertical-outline" size={18} color={COLORS.navy} />
+            <Ionicons name="swap-vertical-outline" size={18} color={COLORS.teal} />
             <Text style={styles.sortButtonText}>
               Sort
             </Text>
@@ -550,7 +550,7 @@ export default function TripsListScreen() {
             onPress={() => router.push('/(operator)/trips/dispatch')}
             activeOpacity={0.7}
           >
-            <Ionicons name="analytics-outline" size={18} color={COLORS.navy} />
+            <Ionicons name="analytics-outline" size={18} color={COLORS.teal} />
             <Text style={styles.secondaryActionText}>
               Dispatch View
             </Text>
@@ -561,7 +561,7 @@ export default function TripsListScreen() {
             onPress={() => router.push('/(operator)/trips/calendar')}
             activeOpacity={0.7}
           >
-            <Ionicons name="calendar-outline" size={18} color={COLORS.navy} />
+            <Ionicons name="calendar-outline" size={18} color={COLORS.teal} />
             <Text style={styles.secondaryActionText}>
               Calendar
             </Text>
@@ -576,7 +576,6 @@ export default function TripsListScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filtersScrollContent}
           decelerationRate="fast"
-          snapToInterval={undefined}
           snapToAlignment="start"
         >
           {STATUS_FILTERS.map((item) => {
@@ -597,22 +596,21 @@ export default function TripsListScreen() {
                   style={[
                     styles.filterChip,
                     {
-                      backgroundColor: isSelected ? COLORS.navy : COLORS.white,
-                      ...DS.shadows.base,
-                      shadowOpacity: isSelected ? 0.15 : 0.05,
-                      elevation: isSelected ? 3 : 1,
+                      backgroundColor: isSelected ? COLORS.teal : COLORS.surface,
+                      borderColor: isSelected ? COLORS.teal : COLORS.border,
+                      borderWidth: 1,
                     },
                   ]}
                   onPress={() => setStatusFilter(item.value)}
                   activeOpacity={0.7}
                 >
                   {isInProgress && hasActiveTrips && isSelected && (
-                    <View style={[styles.pulseIndicator, { backgroundColor: COLORS.teal }]} />
+                    <View style={[styles.pulseIndicator, { backgroundColor: COLORS.white }]} />
                   )}
                   <Text
                     style={[
                       styles.filterChipText,
-                      { color: isSelected ? COLORS.white : COLORS.text },
+                      { color: isSelected ? COLORS.white : COLORS.textSecondary },
                     ]}
                     numberOfLines={1}
                   >
@@ -623,10 +621,6 @@ export default function TripsListScreen() {
             );
           })}
         </ScrollView>
-        {/* Gradient fade hint */}
-        <View style={styles.gradientFade} pointerEvents="none">
-          <View style={styles.gradientOverlay} />
-        </View>
       </View>
     </View>
   );
@@ -789,16 +783,15 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.sm,
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    paddingTop: 20,
+    paddingBottom: 8,
+    backgroundColor: COLORS.background,
   },
   headerTitle: {
-    fontSize: DS.typography.fontSize['2xl'],
-    fontWeight: DS.typography.fontWeight.bold,
-    color: COLORS.navy,
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: -0.5,
     marginBottom: 4,
     paddingHorizontal: SPACING.md,
   },
@@ -817,7 +810,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderWidth: 1.5,
     borderColor: COLORS.border,
     borderRadius: 12,
@@ -841,18 +834,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     borderRadius: 12,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    ...DS.shadows.base,
   },
   filterButtonText: {
     fontSize: 14,
     fontWeight: DS.typography.fontWeight.semibold,
-    color: COLORS.navy,
+    color: COLORS.text,
   },
   filterBadge: {
     minWidth: 20,
@@ -873,18 +867,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     borderRadius: 12,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    ...DS.shadows.base,
   },
   sortButtonText: {
     fontSize: 14,
     fontWeight: DS.typography.fontWeight.semibold,
-    color: COLORS.navy,
+    color: COLORS.text,
   },
   actionsSection: {
     paddingHorizontal: SPACING.md,
@@ -895,11 +890,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.navy,
+    backgroundColor: COLORS.teal,
     borderRadius: 12,
     paddingVertical: 14,
     gap: SPACING.xs,
     minHeight: 52,
+    shadowColor: COLORS.teal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryActionText: {
     fontSize: 16,
@@ -916,17 +916,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     borderRadius: 12,
     paddingVertical: SPACING.sm,
     gap: 6,
     minHeight: 48,
-    ...DS.shadows.base,
   },
   secondaryActionText: {
     fontSize: 14,
     fontWeight: DS.typography.fontWeight.semibold,
-    color: COLORS.navy,
+    color: COLORS.text,
   },
   filtersSection: {
     position: 'relative',
@@ -936,21 +937,20 @@ const styles = StyleSheet.create({
   filtersScrollContent: {
     paddingHorizontal: SPACING.md,
     gap: SPACING.xs,
-    paddingRight: 32,
+    paddingRight: 20,
   },
   filterChip: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 24,
-    borderWidth: 0,
-    minHeight: 44,
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 20,
+    minHeight: 40,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
     gap: 6,
   },
   filterChipText: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: DS.typography.fontWeight.semibold,
   },
   pulseIndicator: {
@@ -959,27 +959,9 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     marginRight: 2,
   },
-  gradientFade: {
-    position: 'absolute',
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 40,
-    justifyContent: 'center',
-  },
-  gradientOverlay: {
-    width: 40,
-    height: '100%',
-    backgroundColor: COLORS.background,
-    opacity: 0.8,
-    shadowColor: COLORS.background,
-    shadowOffset: { width: -10, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-  },
   listContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: 32, // Extremely tight spacing for maximum content density
+    paddingBottom: 32,
   },
   listContentEmpty: {
     flexGrow: 1,
@@ -988,6 +970,9 @@ const styles = StyleSheet.create({
     padding: SPACING.md,
     marginTop: SPACING.sm,
     borderRadius: COMPONENTS.card.borderRadius,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
   },
   tripHeader: {
     flexDirection: 'row',
@@ -997,7 +982,7 @@ const styles = StyleSheet.create({
   deliveryRef: {
     fontSize: 17,
     fontWeight: DS.typography.fontWeight.bold,
-    color: COLORS.navy,
+    color: COLORS.text,
   },
   statusBadge: {
     flexDirection: 'row',
@@ -1040,7 +1025,7 @@ const styles = StyleSheet.create({
   },
   dateTimeText: {
     fontSize: 14,
-    color: COLORS.text,
+    color: COLORS.textSecondary,
   },
   teamRow: {
     flexDirection: 'row',
@@ -1072,6 +1057,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: COLORS.border,
+    backgroundColor: COLORS.surface,
     borderRadius: 10,
     paddingVertical: 10,
     gap: 6,
@@ -1080,7 +1066,7 @@ const styles = StyleSheet.create({
   actionText: {
     fontSize: 14,
     fontWeight: DS.typography.fontWeight.semibold,
-    color: COLORS.navy,
+    color: COLORS.text,
   },
   emptyState: {
     flex: 1,

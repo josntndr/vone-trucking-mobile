@@ -309,7 +309,7 @@ export default function AnalyticsScreen() {
             style={styles.backButton}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Ionicons name="arrow-back" size={24} color={COLORS.navy} />
+            <Ionicons name="arrow-back" size={24} color={COLORS.text} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Analytics</Text>
           <View style={{ width: 24 }} />
@@ -318,7 +318,7 @@ export default function AnalyticsScreen() {
         <ScrollView
           contentContainerStyle={{ paddingBottom: SPACING['2xl'] }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.navy]} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.teal]} />
           }
           showsVerticalScrollIndicator={false}
         >
@@ -333,7 +333,7 @@ export default function AnalyticsScreen() {
                       <Ionicons name={stat.icon as any} size={28} color={stat.color} style={{ marginBottom: SPACING.sm }} />
                       <Text style={styles.statValue}>{stat.value}</Text>
                       <Text style={styles.statLabel}>{stat.label}</Text>
-                      <View style={[styles.trendBadge, { backgroundColor: stat.isPositive ? COLORS.success + '15' : COLORS.error + '15' }]}>
+                      <View style={[styles.trendBadge, { backgroundColor: stat.isPositive ? COLORS.success + '25' : COLORS.error + '25' }]}>
                         <Text style={[styles.trendText, { color: stat.isPositive ? COLORS.success : COLORS.error }]}>
                           {stat.trend}
                         </Text>
@@ -349,7 +349,7 @@ export default function AnalyticsScreen() {
                       <Ionicons name={stat.icon as any} size={28} color={stat.color} style={{ marginBottom: SPACING.sm }} />
                       <Text style={styles.statValue}>{stat.value}</Text>
                       <Text style={styles.statLabel}>{stat.label}</Text>
-                      <View style={[styles.trendBadge, { backgroundColor: stat.isPositive ? COLORS.success + '15' : COLORS.error + '15' }]}>
+                      <View style={[styles.trendBadge, { backgroundColor: stat.isPositive ? COLORS.success + '25' : COLORS.error + '25' }]}>
                         <Text style={[styles.trendText, { color: stat.isPositive ? COLORS.success : COLORS.error }]}>
                           {stat.trend}
                         </Text>
@@ -456,7 +456,7 @@ export default function AnalyticsScreen() {
                 accessibilityLabel="Export analytics data"
                 accessibilityHint="Opens export configuration to download data"
               >
-                <Ionicons name="download" size={20} color={COLORS.navy} />
+                <Ionicons name="download" size={20} color={COLORS.teal} />
                 <Text style={styles.secondaryActionText}>Export Data</Text>
               </TouchableOpacity>
             </View>
@@ -505,26 +505,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    paddingTop: 20,
+    paddingBottom: 8,
+    backgroundColor: COLORS.background,
   },
   backButton: {
     marginRight: SPACING.md,
   },
   headerTitle: {
     flex: 1,
-    fontSize: DS.typography.fontSize['2xl'],
-    fontWeight: DS.typography.fontWeight.bold,
-    color: COLORS.navy,
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: -0.5,
   },
   section: {
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.lg,
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: DS.typography.fontWeight.bold,
     color: COLORS.textTertiary,
     marginBottom: SPACING.sm,
@@ -543,11 +543,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   statCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
     borderRadius: COMPONENTS.card.borderRadius,
     padding: SPACING.md,
     alignItems: 'center',
-    ...DS.shadows.base,
     minHeight: 130,
   },
   statValue: {
@@ -578,13 +579,14 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 12,
     padding: SPACING.sm,
     minHeight: 90,
     alignItems: 'center',
     justifyContent: 'center',
-    ...DS.shadows.base,
   },
   summaryValue: {
     fontSize: 24,
@@ -600,22 +602,24 @@ const styles = StyleSheet.create({
   },
   summarySubtitle: {
     fontSize: 10,
-    color: COLORS.textTertiary,
+    color: COLORS.textSecondary,
     textAlign: 'center',
   },
   // Chart Styles
   chartCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
     borderRadius: COMPONENTS.card.borderRadius,
     padding: SPACING.md,
-    ...DS.shadows.base,
     overflow: 'hidden',
   },
   // Metrics Styles
   metricsCard: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
+    borderColor: COLORS.border,
+    borderWidth: 1,
     borderRadius: COMPONENTS.card.borderRadius,
-    ...DS.shadows.base,
   },
   metricRow: {
     paddingVertical: SPACING.md,
@@ -659,7 +663,7 @@ const styles = StyleSheet.create({
   },
   progressBarContainer: {
     height: 6,
-    backgroundColor: COLORS.border,
+    backgroundColor: '#334155',
     borderRadius: 3,
     overflow: 'hidden',
     marginLeft: 52,
@@ -673,17 +677,17 @@ const styles = StyleSheet.create({
     gap: SPACING.xs,
   },
   primaryActionButton: {
-    backgroundColor: COLORS.navy,
-    borderRadius: 8,
+    backgroundColor: COLORS.teal,
+    borderRadius: 12,
     padding: SPACING.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowColor: COLORS.teal,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   primaryActionText: {
     fontSize: 15,
@@ -692,20 +696,19 @@ const styles = StyleSheet.create({
     marginLeft: SPACING.xs,
   },
   secondaryActionButton: {
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
     padding: SPACING.md,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: COLORS.navy,
-    ...DS.shadows.base,
+    borderColor: COLORS.border,
   },
   secondaryActionText: {
     fontSize: 15,
     fontWeight: DS.typography.fontWeight.semibold,
-    color: COLORS.navy,
+    color: COLORS.text,
     marginLeft: SPACING.xs,
   },
 });

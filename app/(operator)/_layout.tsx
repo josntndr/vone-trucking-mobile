@@ -9,49 +9,52 @@ import { Tabs } from 'expo-router';
 import { View, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-// Navigation Colors (matching screenshot)
-const NAV_COLORS = {
-  active: '#3A7D8C',         // Teal for active state
-  activeBackground: '#E0F2F7', // Light teal background for active icon
-  inactive: '#9E9E9E',       // Medium grey for inactive
-  background: '#FFFFFF',     // Clean white background
-  border: '#E0E0E0',         // Subtle top border
-};
+import { useThemeContext } from '../../src/contexts/ThemeContext';
 
 export default function OperatorLayout() {
   const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useThemeContext();
+
+  const navColors = {
+    active: '#0EA5E9',
+    activeBackground: isDarkMode ? '#1E293B' : '#F0F9FF',
+    inactive: isDarkMode ? '#94A3B8' : '#64748B',
+    background: colors.surface || (isDarkMode ? '#0B1120' : '#FFFFFF'),
+    border: colors.border || (isDarkMode ? '#1E293B' : '#E2E8F0'),
+  };
   
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: NAV_COLORS.active,
-        tabBarInactiveTintColor: NAV_COLORS.inactive,
+        tabBarActiveTintColor: navColors.active,
+        tabBarInactiveTintColor: navColors.inactive,
         tabBarShowLabel: true,
         tabBarHideOnKeyboard: true,
         tabBarStyle: {
-          backgroundColor: NAV_COLORS.background,
+          backgroundColor: navColors.background,
           borderTopWidth: 1,
-          borderTopColor: NAV_COLORS.border,
-          height: 64 + insets.bottom,
-          paddingBottom: insets.bottom + 4,
-          paddingTop: 8,
+          borderTopColor: navColors.border,
+          height: Platform.OS === 'ios' ? 84 : 64 + (insets.bottom > 0 ? insets.bottom : 6),
+          paddingBottom: Platform.OS === 'ios' ? 22 : (insets.bottom > 0 ? insets.bottom : 6),
+          paddingTop: 6,
           paddingHorizontal: 4,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.08,
-          shadowRadius: 8,
-          elevation: 8,
+          shadowColor: '#0F172A',
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: isDarkMode ? 0.2 : 0.05,
+          shadowRadius: 10,
+          elevation: 6,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 2,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
-          marginTop: 4,
-          marginBottom: 0,
-        },
-        tabBarIconStyle: {
-          marginTop: 4,
+          fontWeight: '600',
+          marginTop: 1,
+          marginBottom: 2,
         },
       }}
     >
@@ -61,16 +64,16 @@ export default function OperatorLayout() {
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
             <View style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              width: 44,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: focused ? navColors.activeBackground : 'transparent',
               justifyContent: 'center',
               alignItems: 'center',
             }}>
               <Ionicons 
                 name={focused ? "home" : "home-outline"} 
-                size={24} 
+                size={22} 
                 color={color} 
               />
             </View>
@@ -83,16 +86,16 @@ export default function OperatorLayout() {
           title: 'Trips',
           tabBarIcon: ({ color, focused }) => (
             <View style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              width: 44,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: focused ? navColors.activeBackground : 'transparent',
               justifyContent: 'center',
               alignItems: 'center',
             }}>
               <Ionicons 
                 name={focused ? "navigate" : "navigate-outline"} 
-                size={24} 
+                size={22} 
                 color={color} 
               />
             </View>
@@ -105,16 +108,16 @@ export default function OperatorLayout() {
           title: 'Trucks',
           tabBarIcon: ({ color, focused }) => (
             <View style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              width: 44,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: focused ? navColors.activeBackground : 'transparent',
               justifyContent: 'center',
               alignItems: 'center',
             }}>
               <Ionicons 
                 name={focused ? "car" : "car-outline"} 
-                size={24} 
+                size={22} 
                 color={color} 
               />
             </View>
@@ -127,16 +130,16 @@ export default function OperatorLayout() {
           title: 'Employees',
           tabBarIcon: ({ color, focused }) => (
             <View style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              width: 44,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: focused ? navColors.activeBackground : 'transparent',
               justifyContent: 'center',
               alignItems: 'center',
             }}>
               <Ionicons 
                 name={focused ? "people" : "people-outline"} 
-                size={24} 
+                size={22} 
                 color={color} 
               />
             </View>
@@ -149,16 +152,16 @@ export default function OperatorLayout() {
           title: 'More',
           tabBarIcon: ({ color, focused }) => (
             <View style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: focused ? NAV_COLORS.activeBackground : 'transparent',
+              width: 44,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: focused ? navColors.activeBackground : 'transparent',
               justifyContent: 'center',
               alignItems: 'center',
             }}>
               <Ionicons 
                 name={focused ? "ellipsis-horizontal-circle" : "ellipsis-horizontal-circle-outline"} 
-                size={24} 
+                size={22} 
                 color={color} 
               />
             </View>

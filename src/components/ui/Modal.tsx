@@ -47,11 +47,11 @@ export const Modal: React.FC<ModalProps> = ({
   const getModalWidth = (): ViewStyle => {
     switch (size) {
       case 'sm':
-        return { maxWidth: 320 };
+        return { maxWidth: 340 };
       case 'md':
-        return { maxWidth: 480 };
+        return { maxWidth: 460 };
       case 'lg':
-        return { maxWidth: 640 };
+        return { maxWidth: 600 };
       case 'full':
         return { width: '100%', height: '100%', maxWidth: '100%' };
       default:
@@ -85,32 +85,22 @@ export const Modal: React.FC<ModalProps> = ({
           style={[
             styles.modalContainer,
             {
-              backgroundColor: theme.colors.surface.elevated,
-              borderRadius: size === 'full' ? 0 : theme.borderRadius.lg,
-              ...theme.shadows.xl,
+              backgroundColor: '#FFFFFF',
+              borderRadius: size === 'full' ? 0 : 20,
             },
             getModalWidth(),
             containerStyle,
           ]}
         >
           {title && (
-            <View
-              style={[
-                styles.header,
-                {
-                  borderBottomWidth: 1,
-                  borderBottomColor: theme.colors.border.light,
-                  padding: theme.spacing[4],
-                },
-              ]}
-            >
+            <View style={styles.header}>
               <Text
                 style={[
                   styles.title,
                   {
-                    color: theme.colors.text,
-                    fontSize: theme.fontSizes['2xl'],
-                    fontWeight: theme.fontWeights.semibold,
+                    color: theme.colors.text || '#0F1E36',
+                    fontSize: 18,
+                    fontWeight: '800',
                   },
                 ]}
               >
@@ -125,37 +115,22 @@ export const Modal: React.FC<ModalProps> = ({
                   accessibilityLabel="Close modal"
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  <Text
-                    style={{
-                      color: theme.colors.textSecondary,
-                      fontSize: theme.fontSizes.xl,
-                    }}
-                  >
-                    ✕
-                  </Text>
+                  <Text style={styles.closeButtonText}>✕</Text>
                 </TouchableOpacity>
               )}
             </View>
           )}
 
           <ScrollView
-            style={[styles.content, { padding: theme.spacing[4] }]}
-            showsVerticalScrollIndicator={true}
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
           >
             {children}
           </ScrollView>
 
           {footer && (
-            <View
-              style={[
-                styles.footer,
-                {
-                  borderTopWidth: 1,
-                  borderTopColor: theme.colors.border.light,
-                  padding: theme.spacing[4],
-                },
-              ]}
-            >
+            <View style={styles.footer}>
               {footer}
             </View>
           )}
@@ -168,9 +143,11 @@ export const Modal: React.FC<ModalProps> = ({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
+    zIndex: 9999,
   },
   backdropTouchable: {
     position: 'absolute',
@@ -178,28 +155,56 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   modalContainer: {
-    width: '90%',
-    maxHeight: '80%',
-    overflow: 'hidden',
+    width: '100%',
+    maxHeight: '85%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 12,
+    zIndex: 10000,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 12,
   },
   title: {
     flex: 1,
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F1E36',
   },
   closeButton: {
-    marginLeft: 16,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 12,
+  },
+  closeButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#64748B',
   },
   content: {
     flexGrow: 0,
   },
+  contentContainer: {
+    paddingVertical: 4,
+  },
   footer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 8,
+    gap: 10,
+    marginTop: 20,
+    width: '100%',
   },
 });
 

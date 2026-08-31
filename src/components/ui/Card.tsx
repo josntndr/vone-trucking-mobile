@@ -1,7 +1,7 @@
 // @ts-nocheck
 /**
  * Card Component
- * Container with elevation and rounded corners
+ * Modern container with subtle border, elevation, and rounded corners
  */
 
 import React from 'react';
@@ -12,7 +12,7 @@ export type CardVariant = 'elevated' | 'outlined' | 'filled';
 
 export interface CardProps extends ViewProps {
   variant?: CardVariant;
-  padding?: keyof typeof import('../../theme').spacing;
+  padding?: keyof typeof import('../../theme').spacing | number;
   children: React.ReactNode;
 }
 
@@ -26,32 +26,51 @@ export const Card: React.FC<CardProps> = ({
   const theme = useTheme();
 
   const getVariantStyles = (): ViewStyle => {
+    const surfaceBg = typeof theme.colors.surface === 'string' ? theme.colors.surface : '#FFFFFF';
+    const borderColor = theme.colors.border || '#E2E8F0';
+
     switch (variant) {
       case 'elevated':
         return {
-          backgroundColor: theme.colors.surface.elevated,
-          ...theme.shadows.md,
+          backgroundColor: surfaceBg,
+          borderWidth: 1,
+          borderColor: borderColor,
+          ...theme.shadows.base,
         };
       case 'outlined':
         return {
-          backgroundColor: theme.colors.surface,
-          borderWidth: 1,
-          borderColor: theme.colors.border,
+          backgroundColor: surfaceBg,
+          borderWidth: 1.5,
+          borderColor: borderColor,
         };
       case 'filled':
         return {
-          backgroundColor: theme.colors.backgroundSecondary,
+          backgroundColor: theme.colors.backgroundSecondary || '#F8FAFC',
+          borderWidth: 1,
+          borderColor: borderColor,
         };
       default:
-        return {};
+        return {
+          backgroundColor: surfaceBg,
+        };
     }
+  };
+
+  const getPaddingValue = () => {
+    if (typeof padding === 'number' && theme.spacing[padding] !== undefined) {
+      return theme.spacing[padding];
+    }
+    if (typeof padding === 'number') {
+      return padding;
+    }
+    return 16;
   };
 
   const cardStyles: ViewStyle[] = [
     styles.card,
     {
-      borderRadius: theme.borderRadius.md,
-      padding: theme.spacing[padding],
+      borderRadius: theme.borderRadius.lg || 18,
+      padding: getPaddingValue(),
     },
     getVariantStyles(),
     style,
@@ -69,4 +88,5 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
 });
+
 

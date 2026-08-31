@@ -25,26 +25,16 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const systemColorScheme = useColorScheme() as ThemeMode | null;
-  const [themeMode, setThemeModeState] = useState<ThemeMode>('light');
-  const [isLoading, setIsLoading] = useState(true);
+  const [themeMode, setThemeModeState] = useState<ThemeMode>('dark');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Load stored theme preference on mount
   useEffect(() => {
     const loadTheme = async () => {
       try {
-        const storedMode = await AsyncStorage.getItem(THEME_STORAGE_KEY);
-        if (storedMode === 'light' || storedMode === 'dark') {
-          setThemeModeState(storedMode);
-        } else {
-          // Default to light mode for new users
-          setThemeModeState('light');
-        }
+        await AsyncStorage.setItem(THEME_STORAGE_KEY, 'dark');
+        setThemeModeState('dark');
       } catch (error) {
-        console.error('Failed to load theme preference:', error);
-        setThemeModeState('light');
-      } finally {
-        setIsLoading(false);
+        setThemeModeState('dark');
       }
     };
 
@@ -53,28 +43,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   const setThemeMode = useCallback(async (mode: ThemeMode) => {
     try {
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode);
-      setThemeModeState(mode);
+      await AsyncStorage.setItem(THEME_STORAGE_KEY, 'dark');
+      setThemeModeState('dark');
     } catch (error) {
       console.error('Failed to save theme preference:', error);
-      throw error;
     }
   }, []);
 
   const toggleTheme = useCallback(async () => {
-    const newMode: ThemeMode = themeMode === 'light' ? 'dark' : 'light';
-    await setThemeMode(newMode);
-  }, [themeMode, setThemeMode]);
+    // Permanent dark mode
+    setThemeModeState('dark');
+  }, []);
 
-  const currentTheme = themeMode === 'dark' ? theme.dark : theme.light;
+  const currentTheme = theme.dark;
 
   const value: ThemeContextValue = {
     ...currentTheme,
-    themeMode,
-    isDarkMode: themeMode === 'dark',
+    themeMode: 'dark',
+    isDarkMode: true,
     setThemeMode,
     toggleTheme,
-    isLoading,
+    isLoading: false,
   };
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

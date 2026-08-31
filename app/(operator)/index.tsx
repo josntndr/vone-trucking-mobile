@@ -17,6 +17,7 @@ import {
 import { router, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/hooks';
+import { useThemeContext } from '../../src/contexts/ThemeContext';
 import { getTrucks } from '../../src/services/api/truck.service';
 import { getEmployees } from '../../src/services/api/employee.service';
 import { getTrips, getTripStats } from '../../src/services/api/trip.service';
@@ -59,6 +60,7 @@ interface UrgentAlert {
 
 export default function OperatorHome() {
   const { user } = useAuth();
+  const { colors, isDarkMode } = useThemeContext();
   const [stats, setStats] = useState<DashboardStats>({
     totalTrips: 0,
     completedTrips: 0,
@@ -245,7 +247,7 @@ export default function OperatorHome() {
         trips = scheduledResponse.data?.data || [];
       }
 
-      setActiveTrips(trips.slice(0, 5)); // Show max 5 trips
+      setActiveTrips(trips.slice(0, 5));
     } catch (error) {
       console.error('Failed to load active trips:', error);
     }
@@ -270,7 +272,7 @@ export default function OperatorHome() {
         });
       });
 
-      // Check for trucks needing maintenance (basic check - would need maintenance tracking in production)
+      // Check for trucks needing maintenance
       const trucksResponse = await getTrucks({}, 1, 100);
       const trucks = trucksResponse.data?.data || [];
       const maintenanceTrucks = trucks.filter(t => t.status === TruckStatus.UNDER_MAINTENANCE);
@@ -293,7 +295,7 @@ export default function OperatorHome() {
         return 0;
       });
 
-      setUrgentAlerts(alerts.slice(0, 5)); // Show max 5 alerts
+      setUrgentAlerts(alerts.slice(0, 5));
     } catch (error) {
       console.error('Failed to load urgent alerts:', error);
     }
@@ -303,12 +305,9 @@ export default function OperatorHome() {
     loadDashboardData();
   }, []);
 
-  // Refresh when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      if (!loading) {
-        loadDashboardData();
-      }
+      loadDashboardData();
     }, [])
   );
 
@@ -319,57 +318,45 @@ export default function OperatorHome() {
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good Morning';
-    if (hour < 18) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
   };
 
   const getFormattedDate = () => {
-    const now = new Date();
-    const manilaDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Manila' }));
-    return manilaDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
+    const date = new Date();
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
       day: 'numeric',
-      year: 'numeric',
-      timeZone: 'Asia/Manila',
     });
   };
 
   const formatTripRoute = (trip: Trip) => {
-    const pickup = trip.pickup_warehouse || trip.pickup_location || 'Unknown';
-    const destination = trip.delivery_destination || 'Unknown';
-    return `${pickup} → ${destination}`;
+    const origin = (trip as any).pickup_location || (trip as any).pickup_warehouse || (trip as any).origin || 'Depot';
+    const dest = (trip as any).delivery_destination || (trip as any).destination || 'Delivery';
+    return `${origin} → ${dest}`;
   };
 
-  const formatDateTime = (date: string, time: string) => {
-    const dateObj = new Date(`${date}T${time}`);
-    return dateObj.toLocaleDateString('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
+  const formatDateTime = (dateStr?: string, timeStr?: string) => {
+    if (!dateStr) return 'Today';
+    const d = new Date(dateStr);
+    const dateFormatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return timeStr ? `${dateFormatted}, ${timeStr}` : dateFormatted;
   };
 
   const getStatusColor = (status: TripStatus) => {
     switch (status) {
       case TripStatus.IN_TRANSIT:
-      case TripStatus.DISPATCHED:
-        return { bg: COLORS.statusOnTrip, text: COLORS.teal };
+        return { bg: isDarkMode ? '#1E3A5F' : '#F0F9FF', text: '#0EA5E9' };
       case TripStatus.SCHEDULED:
-      case TripStatus.ASSIGNED:
-        return { bg: COLORS.statusScheduled, text: COLORS.textMuted };
-      case TripStatus.DELAYED:
-        return { bg: COLORS.statusDelayed, text: COLORS.warning };
+        return { bg: isDarkMode ? '#1E293B' : '#F1F5F9', text: '#64748B' };
       case TripStatus.COMPLETED:
-        return { bg: COLORS.statusAvailable, text: COLORS.success };
-      case TripStatus.CANCELLED:
-        return { bg: COLORS.alertErrorBg, text: COLORS.error };
+        return { bg: isDarkMode ? '#064E3B' : '#ECFDF5', text: '#10B981' };
+      case TripStatus.DELAYED:
+        return { bg: isDarkMode ? '#451A1A' : '#FEF2F2', text: '#EF4444' };
       default:
-        return { bg: COLORS.statusScheduled, text: COLORS.textMuted };
+        return { bg: isDarkMode ? '#1E293B' : '#F1F5F9', text: '#64748B' };
     }
   };
 
@@ -398,39 +385,52 @@ export default function OperatorHome() {
 
   if (loading && !refreshing) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color={COLORS.navy} />
+      <View style={[styles.container, styles.centerContent, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color="#0EA5E9" />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.navy]} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0EA5E9']} />
         }
         showsVerticalScrollIndicator={false}
       >
-        {/* 1. Compact Header */}
-        <View style={styles.header}>
+        {/* 1. Modern Header */}
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
           <View style={styles.headerLeft}>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <Text style={styles.username}>
-              {user?.user_metadata?.first_name || 'System'}
-            </Text>
-            <Text style={styles.date}>{getFormattedDate()}</Text>
+            <View style={styles.avatarRow}>
+              <View style={styles.avatarCapsule}>
+                <Text style={styles.avatarLetter}>
+                  {(user?.user_metadata?.first_name || 'Admin')[0].toUpperCase()}
+                </Text>
+                <View style={[styles.onlineDot, { borderColor: colors.surface }]} />
+              </View>
+              <View>
+                <Text style={[styles.greeting, { color: colors.textSecondary }]}>{getGreeting()},</Text>
+                <Text style={[styles.username, { color: colors.text }]}>
+                  {user?.user_metadata?.first_name || 'Operator'}
+                </Text>
+              </View>
+            </View>
+            <View style={styles.dateRow}>
+              <Ionicons name="calendar-outline" size={13} color={colors.textSecondary} />
+              <Text style={[styles.date, { color: colors.textSecondary }]}>{getFormattedDate()}</Text>
+            </View>
           </View>
           <TouchableOpacity
-            style={styles.notificationButton}
+            style={[styles.notificationButton, { backgroundColor: isDarkMode ? '#1E293B' : '#F1F5F9' }]}
             onPress={() => router.push('/(operator)/profile')}
             activeOpacity={0.7}
             accessible={true}
             accessibilityLabel="View notifications"
             accessibilityRole="button"
           >
-            <Ionicons name="notifications-outline" size={24} color={COLORS.navy} />
+            <Ionicons name="notifications-outline" size={22} color={colors.text} />
             {unreadNotifications > 0 && (
               <View style={styles.notificationBadge}>
                 <Text style={styles.notificationBadgeText}>{unreadNotifications}</Text>
@@ -439,129 +439,208 @@ export default function OperatorHome() {
           </TouchableOpacity>
         </View>
 
-        {/* 2. Analytics Overview */}
+        {/* 2. Analytics KPI Overview */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionLabel}>ANALYTICS OVERVIEW</Text>
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>FLEET OVERVIEW</Text>
             <TouchableOpacity 
               onPress={() => router.push('/(operator)/analytics')} 
               activeOpacity={0.7}
               style={styles.viewAnalyticsLink}
             >
-              <Text style={styles.viewAnalyticsText}>View Full Analytics</Text>
-              <Ionicons name="arrow-forward" size={14} color={COLORS.teal} style={{ marginLeft: 4 }} />
+              <Text style={styles.viewAnalyticsText}>Full Report</Text>
+              <Ionicons name="arrow-forward" size={13} color="#0EA5E9" style={{ marginLeft: 4 }} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.analyticsGrid}>
             <View style={styles.analyticsRow}>
               <TouchableOpacity
-                style={styles.analyticsCard}
+                style={[styles.analyticsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 onPress={() => router.push('/(operator)/trips')}
-                activeOpacity={0.7}
+                activeOpacity={0.75}
               >
-                <View style={[styles.iconCircle, { backgroundColor: DS.helpers.getIconBackground('teal') }]}>
-                  <Ionicons name="navigate" size={22} color={DS.helpers.getIconColor('teal')} />
+                <View style={styles.kpiTopRow}>
+                  <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#1E3A5F' : '#F0F9FF' }]}>
+                    <Ionicons name="navigate" size={20} color="#0EA5E9" />
+                  </View>
+                  <View style={[styles.trendPill, { backgroundColor: isDarkMode ? '#064E3B' : '#ECFDF5' }]}>
+                    <Ionicons name="trending-up" size={11} color="#10B981" />
+                    <Text style={styles.trendText}>Live</Text>
+                  </View>
                 </View>
-                <Text style={styles.analyticsValue}>{stats.totalTrips}</Text>
-                <Text style={styles.analyticsLabel}>Total Trips</Text>
+                <Text style={[styles.analyticsValue, { color: colors.text }]}>{stats.totalTrips}</Text>
+                <Text style={[styles.analyticsLabel, { color: colors.textSecondary }]}>Total Trips</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.analyticsCard}
+                style={[styles.analyticsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 onPress={() => router.push('/(operator)/trips')}
-                activeOpacity={0.7}
+                activeOpacity={0.75}
               >
-                <View style={[styles.iconCircle, { backgroundColor: DS.helpers.getIconBackground('green') }]}>
-                  <Ionicons name="checkmark-circle" size={22} color={DS.helpers.getIconColor('green')} />
+                <View style={styles.kpiTopRow}>
+                  <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#064E3B' : '#ECFDF5' }]}>
+                    <Ionicons name="checkmark-circle" size={20} color="#10B981" />
+                  </View>
+                  <View style={[styles.trendPill, { backgroundColor: isDarkMode ? '#064E3B' : '#ECFDF5' }]}>
+                    <Text style={[styles.trendText, { color: '#10B981' }]}>Done</Text>
+                  </View>
                 </View>
-                <Text style={styles.analyticsValue}>{stats.completedTrips}</Text>
-                <Text style={styles.analyticsLabel}>Completed</Text>
+                <Text style={[styles.analyticsValue, { color: colors.text }]}>{stats.completedTrips}</Text>
+                <Text style={[styles.analyticsLabel, { color: colors.textSecondary }]}>Completed</Text>
               </TouchableOpacity>
             </View>
 
             <View style={styles.analyticsRow}>
               <TouchableOpacity
-                style={styles.analyticsCard}
+                style={[styles.analyticsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                 onPress={() => router.push('/(operator)/employees')}
-                activeOpacity={0.7}
+                activeOpacity={0.75}
               >
-                <View style={[styles.iconCircle, { backgroundColor: DS.helpers.getIconBackground('navy') }]}>
-                  <Ionicons name="people" size={22} color={DS.helpers.getIconColor('navy')} />
+                <View style={styles.kpiTopRow}>
+                  <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#1E3A5F' : '#EFF6FF' }]}>
+                    <Ionicons name="people" size={20} color="#3B82F6" />
+                  </View>
+                  <View style={[styles.trendPill, { backgroundColor: isDarkMode ? '#1E3A5F' : '#EFF6FF' }]}>
+                    <Text style={[styles.trendText, { color: '#38BDF8' }]}>Active</Text>
+                  </View>
                 </View>
-                <Text style={styles.analyticsValue}>{stats.activeEmployees}</Text>
-                <Text style={styles.analyticsLabel}>Active Employees</Text>
+                <Text style={[styles.analyticsValue, { color: colors.text }]}>{stats.activeEmployees}</Text>
+                <Text style={[styles.analyticsLabel, { color: colors.textSecondary }]}>Staff Active</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.analyticsCard}
-                onPress={() => router.push('/(operator)/trips')}
-                activeOpacity={0.7}
+                style={[styles.analyticsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => router.push('/(operator)/trucks')}
+                activeOpacity={0.75}
               >
-                <View style={[styles.iconCircle, { backgroundColor: DS.helpers.getIconBackground('orange') }]}>
-                  <Ionicons name="sync" size={22} color={DS.helpers.getIconColor('orange')} />
+                <View style={styles.kpiTopRow}>
+                  <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? '#3B2A10' : '#FFFBEB' }]}>
+                    <Ionicons name="car" size={20} color="#F59E0B" />
+                  </View>
+                  <View style={[styles.trendPill, { backgroundColor: isDarkMode ? '#3B2A10' : '#FFFBEB' }]}>
+                    <Text style={[styles.trendText, { color: '#F59E0B' }]}>Ready</Text>
+                  </View>
                 </View>
-                <Text style={styles.analyticsValue}>{stats.inProgressTrips}</Text>
-                <Text style={styles.analyticsLabel}>In Progress</Text>
+                <Text style={[styles.analyticsValue, { color: colors.text }]}>{stats.availableTrucks}</Text>
+                <Text style={[styles.analyticsLabel, { color: colors.textSecondary }]}>Available Trucks</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        {/* 3. Urgent Alerts */}
+        {/* 3. Urgent Operational Alerts */}
         {urgentAlerts.length > 0 && (
           <View style={styles.section}>
-            <View style={styles.alertsHeader}>
-              <Text style={styles.sectionLabel}>URGENT ALERTS</Text>
-              <View style={styles.alertBadge}>
-                <Text style={styles.alertBadgeText}>{urgentAlerts.length}</Text>
-              </View>
-            </View>
-
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>OPERATIONAL ALERTS</Text>
             {urgentAlerts.map((alert) => (
               <TouchableOpacity
                 key={alert.id}
                 style={[
                   styles.alertCard,
                   {
-                    backgroundColor: alert.type === 'warning' ? COLORS.alertWarningBg : COLORS.alertErrorBg,
-                    borderLeftColor: alert.type === 'warning' ? COLORS.warning : COLORS.error,
+                    backgroundColor: alert.type === 'warning' 
+                      ? (isDarkMode ? '#2D2008' : '#FFFBEB') 
+                      : (isDarkMode ? '#331111' : '#FEF2F2'),
+                    borderColor: alert.type === 'warning' 
+                      ? (isDarkMode ? '#5C4010' : '#FDE68A') 
+                      : (isDarkMode ? '#5C1D1D' : '#FECACA'),
                   },
                 ]}
                 onPress={() => handleAlertPress(alert)}
-                activeOpacity={0.7}
+                activeOpacity={0.8}
               >
                 <View style={[
                   styles.alertIcon,
-                  { backgroundColor: alert.type === 'warning' ? COLORS.warning : COLORS.error },
+                  { backgroundColor: alert.type === 'warning' ? '#F59E0B' : '#EF4444' },
                 ]}>
                   <Ionicons 
                     name={alert.type === 'warning' ? 'alert-circle' : 'close-circle'} 
-                    size={18} 
-                    color={COLORS.white} 
+                    size={16} 
+                    color="#FFFFFF" 
                   />
                 </View>
                 <View style={styles.alertContent}>
                   <Text style={[
                     styles.alertTitle,
-                    { color: alert.type === 'warning' ? COLORS.warning : COLORS.error },
+                    { color: alert.type === 'warning' ? (isDarkMode ? '#FCD34D' : '#92400E') : (isDarkMode ? '#FCA5A5' : '#991B1B') },
                   ]}>
                     {alert.title}
                   </Text>
-                  <Text style={styles.alertMessage} numberOfLines={1}>
+                  <Text style={[
+                    styles.alertMessage,
+                    { color: alert.type === 'warning' ? (isDarkMode ? '#FBBF24' : '#78350F') : (isDarkMode ? '#F87171' : '#7F1D1D') }
+                  ]} numberOfLines={1}>
                     {alert.message}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={COLORS.textMuted} />
+                <Ionicons name="chevron-forward" size={18} color={colors.textTertiary} />
               </TouchableOpacity>
             ))}
           </View>
         )}
 
-        {/* 4. Today's Operations */}
+        {/* 4. Quick Actions Grid */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>QUICK ACTIONS</Text>
+
+          <View style={styles.quickActionsGrid}>
+            <TouchableOpacity
+              style={styles.primaryActionPill}
+              onPress={() => router.push('/(operator)/trips/add')}
+              activeOpacity={0.85}
+            >
+              <View style={styles.primaryActionIconBg}>
+                <Ionicons name="add" size={20} color="#0F1E36" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.primaryActionTitle}>New Trip Dispatch</Text>
+                <Text style={styles.primaryActionSub}>Assign driver and schedule cargo</Text>
+              </View>
+              <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+
+            <View style={styles.secondaryGridRow}>
+              <TouchableOpacity
+                style={[styles.secondaryActionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => router.push('/(operator)/trucks')}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.secIconWrap, { backgroundColor: isDarkMode ? '#1E3A5F' : '#F0F9FF' }]}>
+                  <Ionicons name="car-outline" size={20} color="#0EA5E9" />
+                </View>
+                <Text style={[styles.secActionText, { color: colors.text }]}>Manage Fleet</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.secondaryActionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => router.push('/(operator)/employees')}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.secIconWrap, { backgroundColor: isDarkMode ? '#1E3A5F' : '#EFF6FF' }]}>
+                  <Ionicons name="people-outline" size={20} color="#3B82F6" />
+                </View>
+                <Text style={[styles.secActionText, { color: colors.text }]}>Staff Directory</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.secondaryActionCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                onPress={() => router.push('/record-expense')}
+                activeOpacity={0.75}
+              >
+                <View style={[styles.secIconWrap, { backgroundColor: isDarkMode ? '#3B2A10' : '#FFFBEB' }]}>
+                  <Ionicons name="receipt-outline" size={20} color="#F59E0B" />
+                </View>
+                <Text style={[styles.secActionText, { color: colors.text }]}>Record Expense</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
+        {/* 5. Live Trips Activity */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionLabel}>TODAY'S OPERATIONS</Text>
+            <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>LIVE TRIP ACTIVITY</Text>
             <TouchableOpacity 
               onPress={() => router.push('/(operator)/trips')} 
               activeOpacity={0.7}
@@ -570,124 +649,13 @@ export default function OperatorHome() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.operationsGrid}>
-            <View style={styles.operationsRow}>
-              <TouchableOpacity
-                style={styles.operationCard}
-                onPress={() => router.push('/(operator)/trips')}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.iconCircleSmall, { backgroundColor: DS.helpers.getIconBackground('teal') }]}>
-                  <Ionicons name="navigate" size={18} color={DS.helpers.getIconColor('teal')} />
-                </View>
-                <Text style={styles.operationValue}>{stats.activeTodayTrips}</Text>
-                <Text style={styles.operationLabel}>Active Trips</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.operationCard}
-                onPress={() => router.push('/(operator)/trips')}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.iconCircleSmall, { backgroundColor: DS.helpers.getIconBackground('navy') }]}>
-                  <Ionicons name="calendar" size={18} color={DS.helpers.getIconColor('navy')} />
-                </View>
-                <Text style={styles.operationValue}>{stats.scheduledTodayTrips}</Text>
-                <Text style={styles.operationLabel}>Scheduled</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.operationsRow}>
-              <TouchableOpacity
-                style={styles.operationCard}
-                onPress={() => router.push('/(operator)/trips')}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.iconCircleSmall, { backgroundColor: DS.helpers.getIconBackground('orange') }]}>
-                  <Ionicons name="alert-circle" size={18} color={DS.helpers.getIconColor('orange')} />
-                </View>
-                <Text style={styles.operationValue}>{stats.delayedTodayTrips}</Text>
-                <Text style={styles.operationLabel}>Delayed</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.operationCard}
-                onPress={() => router.push('/(operator)/trucks')}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.iconCircleSmall, { backgroundColor: DS.helpers.getIconBackground('green') }]}>
-                  <Ionicons name="car" size={18} color={DS.helpers.getIconColor('green')} />
-                </View>
-                <Text style={styles.operationValue}>{stats.availableTrucks}</Text>
-                <Text style={styles.operationLabel}>Available Trucks</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-
-        {/* 5. Quick Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>QUICK ACTIONS</Text>
-
-          <TouchableOpacity
-            style={styles.primaryActionButton}
-            onPress={() => router.push('/(operator)/trips/add')}
-            activeOpacity={0.8}
-            accessible={true}
-            accessibilityLabel="Create new trip"
-            accessibilityRole="button"
-          >
-            <Ionicons name="add" size={22} color={COLORS.white} style={{ marginRight: 8 }} />
-            <Text style={styles.primaryActionText}>Create Trip</Text>
-          </TouchableOpacity>
-
-          <View style={styles.secondaryActionsRow}>
-            <TouchableOpacity
-              style={styles.secondaryActionButton}
-              onPress={() => router.push('/(operator)/import')}
-              activeOpacity={0.7}
-              accessible={true}
-              accessibilityLabel="Import schedule"
-              accessibilityRole="button"
-            >
-              <Ionicons name="cloud-upload-outline" size={20} color={COLORS.navy} />
-              <Text style={styles.secondaryActionText}>Import Schedule</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.secondaryActionButton}
-              onPress={() => router.push('/(operator)/trucks')}
-              activeOpacity={0.7}
-              accessible={true}
-              accessibilityLabel="Track fleet"
-              accessibilityRole="button"
-            >
-              <Ionicons name="location-outline" size={20} color={COLORS.navy} />
-              <Text style={styles.secondaryActionText}>Track Fleet</Text>
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity
-            style={styles.secondaryActionButtonFull}
-            onPress={() => router.push('/record-expense')}
-            activeOpacity={0.7}
-            accessible={true}
-            accessibilityLabel="Record expense"
-            accessibilityRole="button"
-          >
-            <Ionicons name="receipt-outline" size={20} color={COLORS.navy} style={{ marginRight: 8 }} />
-            <Text style={styles.secondaryActionText}>Record Expense</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* 6. Active Trips */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>ACTIVE TRIPS</Text>
-
           {activeTrips.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="navigate-outline" size={48} color={COLORS.textMuted} />
-              <Text style={styles.emptyStateText}>No active trips</Text>
+            <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={[styles.emptyIconCircle, { backgroundColor: isDarkMode ? '#1E293B' : '#F1F5F9' }]}>
+                <Ionicons name="navigate-outline" size={28} color="#94A3B8" />
+              </View>
+              <Text style={[styles.emptyStateTitle, { color: colors.text }]}>No Active Dispatches</Text>
+              <Text style={[styles.emptyStateText, { color: colors.textSecondary }]}>All trucks are currently parked or idle.</Text>
             </View>
           ) : (
             activeTrips.map((trip) => {
@@ -695,100 +663,105 @@ export default function OperatorHome() {
               return (
                 <TouchableOpacity
                   key={trip.id}
-                  style={styles.tripCard}
+                  style={[styles.tripCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
                   onPress={() => router.push(`/(operator)/trips/${trip.id}`)}
-                  activeOpacity={0.7}
+                  activeOpacity={0.75}
                 >
-                  <View style={styles.tripIconCircle}>
-                    <Ionicons name="navigate" size={18} color={COLORS.white} />
-                  </View>
-                  <View style={styles.tripContent}>
-                    <View style={styles.tripHeader}>
-                      <Text style={styles.tripNumber}>{trip.trip_number}</Text>
-                      <View style={[styles.tripStatusBadge, { backgroundColor: statusColors.bg }]}>
-                        <Text style={[styles.tripStatusText, { color: statusColors.text }]}>
-                          {getStatusLabel(trip.status)}
-                        </Text>
-                      </View>
+                  <View style={styles.tripCardTop}>
+                    <View style={[styles.tripBadgePill, { backgroundColor: isDarkMode ? '#1E293B' : '#F1F5F9' }]}>
+                      <Ionicons name="car-outline" size={14} color="#0EA5E9" />
+                      <Text style={[styles.tripNumber, { color: colors.text }]}>{trip.trip_number}</Text>
                     </View>
-                    <View style={styles.tripRoute}>
-                      <Ionicons name="location" size={12} color={COLORS.textMuted} style={{ marginRight: 4 }} />
-                      <Text style={styles.tripRouteText} numberOfLines={1}>
-                        {formatTripRoute(trip)}
+                    <View style={[styles.tripStatusBadge, { backgroundColor: statusColors.bg }]}>
+                      <Text style={[styles.tripStatusText, { color: statusColors.text }]}>
+                        {getStatusLabel(trip.status)}
                       </Text>
                     </View>
-                    <View style={styles.tripMeta}>
-                      <View style={styles.tripMetaItem}>
-                        <Ionicons name="calendar-outline" size={11} color={COLORS.textMuted} style={{ marginRight: 4 }} />
-                        <Text style={styles.tripMetaText}>
-                          {formatDateTime(trip.delivery_date, trip.call_time)}
+                  </View>
+
+                  <View style={styles.tripRouteRow}>
+                    <View style={styles.routeDotsCol}>
+                      <View style={styles.dotOrigin} />
+                      <View style={styles.dotLine} />
+                      <View style={styles.dotDest} />
+                    </View>
+                    <Text style={[styles.tripRouteText, { color: colors.text }]} numberOfLines={1}>
+                      {formatTripRoute(trip)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.tripMetaRow}>
+                    <View style={[styles.metaChip, { backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC' }]}>
+                      <Ionicons name="calendar-outline" size={12} color={colors.textSecondary} />
+                      <Text style={[styles.tripMetaText, { color: colors.textSecondary }]}>
+                        {formatDateTime(trip.delivery_date, trip.call_time)}
+                      </Text>
+                    </View>
+                    {trip.assigned_truck_number && (
+                      <View style={[styles.metaChip, { backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC' }]}>
+                        <Ionicons name="car-outline" size={12} color={colors.textSecondary} />
+                        <Text style={[styles.tripMetaText, { color: colors.textSecondary }]}>{trip.assigned_truck_number}</Text>
+                      </View>
+                    )}
+                    {trip.assigned_driver_name && (
+                      <View style={[styles.metaChip, { backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC' }]}>
+                        <Ionicons name="person-outline" size={12} color={colors.textSecondary} />
+                        <Text style={[styles.tripMetaText, { color: colors.textSecondary }]} numberOfLines={1}>
+                          {trip.assigned_driver_name}
                         </Text>
                       </View>
-                      {trip.assigned_truck_number && (
-                        <View style={styles.tripMetaItem}>
-                          <Ionicons name="car-outline" size={11} color={COLORS.textMuted} style={{ marginRight: 4 }} />
-                          <Text style={styles.tripMetaText}>{trip.assigned_truck_number}</Text>
-                        </View>
-                      )}
-                      {trip.assigned_driver_name && (
-                        <View style={styles.tripMetaItem}>
-                          <Ionicons name="person-outline" size={11} color={COLORS.textMuted} style={{ marginRight: 4 }} />
-                          <Text style={styles.tripMetaText} numberOfLines={1}>
-                            {trip.assigned_driver_name}
-                          </Text>
-                        </View>
-                      )}
-                    </View>
+                    )}
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={COLORS.textMuted} />
                 </TouchableOpacity>
               );
             })
           )}
         </View>
 
-        {/* 7. This Week Financial Summary */}
+        {/* 6. This Week Financial Summary */}
         <View style={[styles.section, styles.lastSection]}>
-          <Text style={styles.sectionLabel}>THIS WEEK</Text>
+          <Text style={[styles.sectionLabel, { color: colors.textSecondary }]}>WEEKLY FINANCIAL OVERVIEW</Text>
 
           <TouchableOpacity
-            style={styles.financialCard}
+            style={[styles.financialCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => router.push('/(operator)/analytics')}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
             <View style={styles.financialRow}>
               <View style={styles.financialItem}>
-                <Text style={styles.financialLabel}>Trip Income</Text>
-                <Text style={[styles.financialValue, { color: COLORS.success }]}>
+                <Text style={[styles.financialLabel, { color: colors.textSecondary }]}>Total Revenue</Text>
+                <Text style={[styles.financialValue, { color: '#10B981' }]}>
                   {formatPhilippinePeso(financial.tripIncome)}
                 </Text>
               </View>
-              <View style={styles.financialDivider} />
+              <View style={[styles.financialDivider, { backgroundColor: colors.border }]} />
               <View style={styles.financialItem}>
-                <Text style={styles.financialLabel}>Expenses</Text>
-                <Text style={[styles.financialValue, { color: COLORS.error }]}>
+                <Text style={[styles.financialLabel, { color: colors.textSecondary }]}>Operating Expenses</Text>
+                <Text style={[styles.financialValue, { color: '#EF4444' }]}>
                   {formatPhilippinePeso(financial.expenses)}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.financialDividerHorizontal} />
+            <View style={[styles.financialDividerHorizontal, { backgroundColor: colors.border }]} />
 
             <View style={styles.profitSection}>
               <View style={styles.profitHeader}>
-                <Text style={styles.profitLabel}>Estimated Profit</Text>
-                <Text style={styles.profitPercentage}>{financial.profitPercentage}%</Text>
+                <Text style={[styles.profitLabel, { color: colors.textSecondary }]}>Net Margin & Profit</Text>
+                <View style={styles.profitBadgePill}>
+                  <Text style={styles.profitPercentageText}>{financial.profitPercentage}% Margin</Text>
+                </View>
               </View>
-              <Text style={[styles.profitValue, { color: financial.profit >= 0 ? COLORS.navy : COLORS.error }]}>
+              <Text style={[styles.profitValue, { color: financial.profit >= 0 ? colors.text : '#EF4444' }]}>
                 {formatPhilippinePeso(financial.profit)}
               </Text>
-              <View style={styles.profitBar}>
+              <View style={[styles.profitBar, { backgroundColor: isDarkMode ? '#334155' : '#E2E8F0' }]}>
                 <View
                   style={[
                     styles.profitBarFill,
                     {
                       width: `${financial.profitPercentage}%`,
-                      backgroundColor: financial.profitPercentage >= 50 ? COLORS.success : COLORS.warning,
+                      backgroundColor: financial.profitPercentage >= 50 ? '#10B981' : '#F59E0B',
                     },
                   ]}
                 />
@@ -796,6 +769,8 @@ export default function OperatorHome() {
             </View>
           </TouchableOpacity>
         </View>
+
+        <View style={{ height: 20 }} />
       </ScrollView>
     </View>
   );
@@ -804,93 +779,132 @@ export default function OperatorHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#F8FAFC',
   },
   centerContent: {
     justifyContent: 'center',
     alignItems: 'center',
   },
   scrollContent: {
-    paddingBottom: SPACING.lg, // 20px space for bottom navigation
+    paddingBottom: 24,
   },
 
   // Header
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: SPACING.base,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.base,
-    backgroundColor: COLORS.white,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
   },
   headerLeft: {
     flex: 1,
   },
+  avatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 6,
+  },
+  avatarCapsule: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#0F1E36',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  avatarLetter: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: -1,
+    right: -1,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#10B981',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
   greeting: {
     fontSize: 12,
-    color: COLORS.textMuted,
-    marginBottom: 2,
+    color: '#64748B',
+    fontWeight: '500',
   },
   username: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '700',
-    color: COLORS.navy,
-    marginBottom: 2,
+    color: '#0F172A',
+    letterSpacing: -0.3,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
   },
   date: {
     fontSize: 12,
-    color: COLORS.textMuted,
+    color: '#64748B',
+    fontWeight: '500',
   },
   notificationButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: COLORS.background,
+    borderRadius: 14,
+    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
   },
   notificationBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: COLORS.orange,
+    top: 6,
+    right: 6,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#EF4444',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.white,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
   },
   notificationBadgeText: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '700',
-    color: COLORS.white,
+    color: '#FFFFFF',
   },
 
   // Sections
   section: {
-    paddingHorizontal: SPACING.base,
-    marginTop: SPACING.lg,
+    paddingHorizontal: 20,
+    marginTop: 20,
   },
   lastSection: {
-    marginBottom: 0, // No extra margin - scrollContent paddingBottom handles it
+    marginBottom: 10,
   },
   sectionLabel: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textMuted,
+    color: '#64748B',
     textTransform: 'uppercase',
-    letterSpacing: 1.2,
-    marginBottom: SPACING.md,
+    letterSpacing: 0.8,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: 12,
   },
   viewAnalyticsLink: {
     flexDirection: 'row',
@@ -899,226 +913,217 @@ const styles = StyleSheet.create({
   viewAnalyticsText: {
     fontSize: 12,
     fontWeight: '600',
-    color: COLORS.teal,
+    color: '#0EA5E9',
   },
   viewAllText: {
     fontSize: 12,
     fontWeight: '600',
-    color: COLORS.teal,
+    color: '#0EA5E9',
   },
 
-  // Analytics Overview
+  // Analytics KPI Overview
   analyticsGrid: {
-    gap: SPACING.sm,
+    gap: 10,
   },
   analyticsRow: {
     flexDirection: 'row',
-    gap: SPACING.sm,
+    gap: 10,
   },
   analyticsCard: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: DS.borderRadius.lg,
-    padding: SPACING.md,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 14,
+    minHeight: 110,
+  },
+  kpiTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    minHeight: 120,
-    ...DS.shadows.sm,
+    marginBottom: 8,
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
+  },
+  trendPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+    backgroundColor: '#ECFDF5',
+    gap: 2,
+  },
+  trendText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#059669',
   },
   analyticsValue: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
-    color: COLORS.navy,
-    marginBottom: 4,
+    color: '#0F1E36',
+    letterSpacing: -0.4,
+    marginBottom: 2,
   },
   analyticsLabel: {
     fontSize: 11,
-    color: COLORS.textMuted,
-    textAlign: 'center',
+    fontWeight: '500',
+    color: '#64748B',
   },
 
   // Urgent Alerts
   alertsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.md,
+    marginBottom: 12,
   },
   alertBadge: {
-    width: 20,
-    height: 20,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
     borderRadius: 10,
-    backgroundColor: COLORS.error,
+    backgroundColor: '#EF4444',
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: SPACING.sm,
+    marginLeft: 8,
   },
   alertBadgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
-    color: COLORS.white,
+    color: '#FFFFFF',
   },
   alertCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.alertWarningBg,
-    borderRadius: DS.borderRadius.base,
+    borderRadius: 14,
     borderLeftWidth: 4,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
+    borderWidth: 1,
+    padding: 12,
+    marginBottom: 8,
+    gap: 10,
   },
   alertIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 28,
+    height: 28,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.md,
   },
   alertContent: {
     flex: 1,
   },
   alertTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     marginBottom: 2,
   },
   alertMessage: {
     fontSize: 12,
-    color: COLORS.textMuted,
   },
 
-  // Today's Operations
-  operationsGrid: {
-    gap: SPACING.sm,
+  // Quick Actions Grid
+  quickActionsGrid: {
+    marginTop: 10,
+    gap: 10,
   },
-  operationsRow: {
+  primaryActionPill: {
     flexDirection: 'row',
-    gap: SPACING.sm,
-  },
-  operationCard: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: DS.borderRadius.base,
-    padding: SPACING.md,
     alignItems: 'center',
-    minHeight: 100,
-    ...DS.shadows.sm,
-  },
-  iconCircleSmall: {
-    width: 36,
-    height: 36,
+    backgroundColor: '#0F1E36',
     borderRadius: 18,
-    justifyContent: 'center',
+    padding: 16,
+    gap: 14,
+    shadowColor: '#0F1E36',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  primaryActionIconBg: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#38BDF8',
     alignItems: 'center',
-    marginBottom: SPACING.sm,
-  },
-  operationValue: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: COLORS.navy,
-    marginBottom: 4,
-  },
-  operationLabel: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-  },
-
-  // Quick Actions
-  primaryActionButton: {
-    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.navy,
-    borderRadius: DS.borderRadius.md,
-    paddingVertical: SPACING.base,
-    paddingHorizontal: SPACING.lg,
-    minHeight: 52,
-    marginBottom: SPACING.sm,
-    ...DS.shadows.sm,
   },
-  primaryActionText: {
+  primaryActionTitle: {
     fontSize: 15,
-    fontWeight: '600',
-    color: COLORS.white,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
-  secondaryActionsRow: {
+  primaryActionSub: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  secondaryGridRow: {
     flexDirection: 'row',
-    gap: SPACING.sm,
-    marginBottom: SPACING.sm,
+    gap: 10,
   },
-  secondaryActionButton: {
+  secondaryActionCard: {
     flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: DS.borderRadius.md,
-    paddingVertical: SPACING.md,
-    paddingHorizontal: SPACING.sm,
-    minHeight: 52,
-    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 12,
     alignItems: 'center',
-    gap: 6,
-    ...DS.shadows.sm,
-  },
-  secondaryActionButtonFull: {
-    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: DS.borderRadius.md,
-    paddingVertical: SPACING.base,
-    paddingHorizontal: SPACING.lg,
-    minHeight: 52,
-    ...DS.shadows.sm,
+    minHeight: 88,
   },
-  secondaryActionText: {
-    fontSize: 13,
+  secIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 6,
+  },
+  secActionText: {
+    fontSize: 11,
     fontWeight: '600',
-    color: COLORS.navy,
+    color: '#0F172A',
     textAlign: 'center',
   },
 
-  // Active Trips
+  // Live Trips Activity
   tripCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-    borderRadius: DS.borderRadius.base,
-    padding: SPACING.md,
-    marginBottom: SPACING.sm,
-    ...DS.shadows.sm,
-  },
-  tripIconCircle: {
-    width: 36,
-    height: 36,
+    backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    backgroundColor: COLORS.navy,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: SPACING.md,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 14,
+    marginBottom: 10,
   },
-  tripContent: {
-    flex: 1,
-  },
-  tripHeader: {
+  tripCardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 10,
+  },
+  tripBadgePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   tripNumber: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '700',
-    color: COLORS.navy,
+    color: '#0F1E36',
   },
   tripStatusBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 10,
   },
@@ -1126,47 +1131,102 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   },
-  tripRoute: {
+  tripRouteRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    gap: 8,
+    marginBottom: 10,
+  },
+  routeDotsCol: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 10,
+  },
+  dotOrigin: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#94A3B8',
+  },
+  dotLine: {
+    width: 1.5,
+    height: 8,
+    backgroundColor: '#CBD5E1',
+    marginVertical: 1,
+  },
+  dotDest: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#0EA5E9',
   },
   tripRouteText: {
     flex: 1,
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.text,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F172A',
   },
-  tripMeta: {
+  tripMetaRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: SPACING.md,
+    gap: 6,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
   },
-  tripMetaItem: {
+  metaChip: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   tripMetaText: {
     fontSize: 10,
-    color: COLORS.textMuted,
+    color: '#475569',
+    fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
-    paddingVertical: SPACING.lg,
-    paddingHorizontal: SPACING.base,
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingVertical: 28,
+    paddingHorizontal: 16,
+  },
+  emptyIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  },
+  emptyStateTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    marginBottom: 2,
   },
   emptyStateText: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-    marginTop: SPACING.sm,
+    fontSize: 12,
+    color: '#64748B',
   },
 
   // Financial Card
   financialCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: DS.borderRadius.lg,
-    padding: SPACING.base,
-    ...DS.shadows.sm,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
   },
   financialRow: {
     flexDirection: 'row',
@@ -1177,27 +1237,29 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   financialLabel: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginBottom: 4,
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+    marginBottom: 3,
   },
   financialValue: {
     fontSize: 18,
     fontWeight: '700',
+    letterSpacing: -0.3,
   },
   financialDivider: {
     width: 1,
-    height: 40,
-    backgroundColor: COLORS.divider,
-    marginHorizontal: SPACING.md,
+    height: 36,
+    backgroundColor: '#E2E8F0',
+    marginHorizontal: 16,
   },
   financialDividerHorizontal: {
     height: 1,
-    backgroundColor: COLORS.divider,
-    marginVertical: SPACING.base,
+    backgroundColor: '#F1F5F9',
+    marginVertical: 14,
   },
   profitSection: {
-    marginTop: SPACING.xs,
+    marginTop: 0,
   },
   profitHeader: {
     flexDirection: 'row',
@@ -1207,21 +1269,29 @@ const styles = StyleSheet.create({
   },
   profitLabel: {
     fontSize: 12,
-    color: COLORS.textMuted,
-  },
-  profitPercentage: {
-    fontSize: 12,
+    color: '#64748B',
     fontWeight: '600',
-    color: COLORS.textMuted,
+  },
+  profitBadgePill: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  profitPercentageText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
   },
   profitValue: {
-    fontSize: 26,
-    fontWeight: '700',
-    marginBottom: SPACING.sm,
+    fontSize: 24,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+    marginBottom: 8,
   },
   profitBar: {
     height: 6,
-    backgroundColor: COLORS.divider,
+    backgroundColor: '#F1F5F9',
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -1230,3 +1300,4 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
 });
+

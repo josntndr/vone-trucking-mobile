@@ -135,10 +135,10 @@ export function getCities(params: { regionCode?: string; provinceCode?: string }
   if (regionCode) {
     // For NCR, return all cities in the region (they don't have provinces)
     if (!regionHasProvinces(regionCode)) {
-      return CITIES.filter(c => c.regionCode === regionCode && !c.provinceCode);
+      return CITIES.filter(c => c.regionCode === regionCode);
     }
-    // For other regions, only independent cities are selectable before a province.
-    return CITIES.filter(c => c.regionCode === regionCode && !c.provinceCode);
+    // For regions with provinces, province must be selected first
+    return [];
   }
   
   return CITIES;

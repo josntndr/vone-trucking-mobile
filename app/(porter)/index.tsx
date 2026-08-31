@@ -544,163 +544,90 @@ export default function PorterHome() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0EA5E9']} />
         }
+        showsVerticalScrollIndicator={false}
       >
         {/* Header */}
-        <View style={[styles.header, { padding: spacing[4] }]}>
-          <View>
-            <Text
-              style={[
-                styles.greeting,
-                {
-                  color: colors.textSecondary,
-                  fontSize: fontSizes.sm,
-                },
-              ]}
-            >
-              Welcome back
-            </Text>
-            <Text
-              style={[
-                styles.name,
-                {
-                  color: colors.text,
-                  fontSize: fontSizes['2xl'],
-                  fontWeight: fontWeights.bold,
-                },
-              ]}
-            >
-              {user?.user_metadata?.first_name || 'Porter'}
-            </Text>
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <View>
+              <Text style={styles.greeting}>Welcome back,</Text>
+              <Text style={styles.name}>
+                {user?.user_metadata?.first_name || 'Pedro Santos'}
+              </Text>
+            </View>
+            <View style={styles.porterStatusBadge}>
+              <View style={styles.porterDot} />
+              <Text style={styles.porterStatusText}>Active Helper</Text>
+            </View>
           </View>
         </View>
 
         {/* Current Assignment Section */}
-        <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              {
-                color: colors.text,
-                fontSize: fontSizes.lg,
-                fontWeight: fontWeights.semibold,
-                marginBottom: spacing[3],
-              },
-            ]}
-          >
-            Current Assignment
-          </Text>
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>CURRENT ASSIGNMENT</Text>
+          </View>
           {renderCurrentAssignment()}
         </View>
 
-        {/* Quick Stats */}
-        {hasActiveAssignment && (
-          <View style={[styles.section, { paddingHorizontal: spacing[4] }]}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                {
-                  color: colors.text,
-                  fontSize: fontSizes.lg,
-                  fontWeight: fontWeights.semibold,
-                  marginBottom: spacing[3],
-                },
-              ]}
-            >
-              This Week
-            </Text>
-            <View style={[styles.statsRow, { gap: spacing[3] }]}>
-              <StatCard label="Completed" value={10} icon="check-circle" variant="success" />
-              <StatCard label="Total Trips" value={15} icon="dolly" variant="primary" />
-            </View>
-          </View>
-        )}
-
-        {/* Upcoming Assignments */}
-        <View style={[styles.section, { paddingHorizontal: spacing[4], paddingBottom: spacing[8] }]}>
+        {/* Today's Overview Section */}
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text
-              style={[
-                styles.sectionTitle,
-                {
-                  color: colors.text,
-                  fontSize: fontSizes.lg,
-                  fontWeight: fontWeights.semibold,
-                },
-              ]}
+            <Text style={styles.sectionTitle}>TODAY'S SUMMARY</Text>
+          </View>
+          <View style={styles.statsRow}>
+            <StatCard
+              label="Assigned Trips"
+              value="2"
+              icon="dolly"
+              variant="teal"
+            />
+            <StatCard
+              label="Items Handled"
+              value="120"
+              icon="package-variant"
+              variant="success"
+              trend="up"
+              trendValue="100%"
+            />
+          </View>
+        </View>
+
+        {/* Upcoming Assignments Section */}
+        <View style={[styles.section, { paddingBottom: 28 }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>UPCOMING TRIPS</Text>
+            <TouchableOpacity 
+              onPress={() => router.push('/(porter)/trips')}
+              activeOpacity={0.7}
             >
-              Upcoming Trips
-            </Text>
-            <TouchableOpacity onPress={() => router.push('/(porter)/trips')}>
-              <Text style={[styles.viewAllText, { color: colors.primary, fontSize: fontSizes.sm }]}>
-                View All
-              </Text>
+              <Text style={styles.viewAllText}>View All</Text>
             </TouchableOpacity>
           </View>
-
-          <View style={{ marginTop: spacing[3] }}>
-            {DEMO_UPCOMING_ASSIGNMENTS.map((assignment, index) => (
-              <View
-                key={assignment.id}
-                style={[
-                  styles.upcomingCard,
-                  {
-                    backgroundColor: colors.surface,
-                    borderRadius: borderRadius.base,
-                    padding: spacing[3],
-                    marginBottom: index < DEMO_UPCOMING_ASSIGNMENTS.length - 1 ? spacing[2] : 0,
-                  },
-                ]}
-              >
+          <View style={{ gap: 8, marginTop: 4 }}>
+            {DEMO_UPCOMING_ASSIGNMENTS.map((assignment) => (
+              <View key={assignment.id} style={styles.upcomingCard}>
                 <View style={styles.upcomingHeader}>
                   <View style={styles.upcomingLeft}>
-                    <MaterialCommunityIcons name="calendar" size={18} color={colors.textSecondary} />
-                    <Text
-                      style={[
-                        styles.upcomingDate,
-                        {
-                          color: colors.text,
-                          fontSize: fontSizes.sm,
-                          fontWeight: fontWeights.medium,
-                          marginLeft: spacing[2],
-                        },
-                      ]}
-                    >
+                    <MaterialCommunityIcons name="calendar" size={16} color="#64748B" />
+                    <Text style={styles.upcomingDate}>
                       {assignment.date} • {assignment.callTime}
                     </Text>
                   </View>
                   <StatusChip status="scheduled" label="Scheduled" size="sm" />
                 </View>
-                <Text
-                  style={[
-                    styles.upcomingTripNumber,
-                    {
-                      color: colors.primary,
-                      fontSize: fontSizes.sm,
-                      fontWeight: fontWeights.medium,
-                      marginTop: spacing[2],
-                    },
-                  ]}
-                >
+                <Text style={styles.upcomingTripNumber}>
                   {assignment.tripNumber}
                 </Text>
-                <View style={[styles.upcomingDestination, { marginTop: spacing[1] }]}>
-                  <MaterialCommunityIcons name="map-marker" size={16} color={colors.textSecondary} />
-                  <Text
-                    style={[
-                      styles.upcomingDestinationText,
-                      {
-                        color: colors.textSecondary,
-                        fontSize: fontSizes.sm,
-                        marginLeft: spacing[1],
-                      },
-                    ]}
-                  >
+                <View style={styles.upcomingDestination}>
+                  <MaterialCommunityIcons name="map-marker" size={14} color="#64748B" />
+                  <Text style={styles.upcomingDestinationText}>
                     {assignment.destination}
                   </Text>
                 </View>
@@ -716,115 +643,339 @@ export default function PorterHome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F8FAFC',
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 24,
   },
-  header: {},
-  greeting: {},
-  name: {},
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  greeting: {
+    color: '#64748B',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  name: {
+    color: '#0F172A',
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: -0.4,
+    marginTop: 2,
+  },
+  porterStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+    gap: 6,
+  },
+  porterDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#0EA5E9',
+  },
+  porterStatusText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0284C7',
+  },
   section: {
-    marginBottom: 24,
+    marginTop: 20,
+    paddingHorizontal: 20,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 10,
   },
-  sectionTitle: {},
-  viewAllText: {},
-  assignmentCard: {},
+  sectionTitle: {
+    color: '#64748B',
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  viewAllText: {
+    color: '#0EA5E9',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  assignmentCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+  },
   assignmentHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 12,
   },
   assignmentHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
     flex: 1,
   },
-  tripNumber: {},
-  detailsSection: {},
+  tripNumber: {
+    color: '#0F1E36',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  detailsSection: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginBottom: 12,
+  },
   detailRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    gap: 4,
   },
-  detailLabel: {},
-  detailValue: {},
-  progressSection: {},
+  detailLabel: {
+    color: '#64748B',
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  detailValue: {
+    color: '#0F172A',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  progressSection: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    marginBottom: 14,
+  },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 6,
   },
-  progressTitle: {},
-  progressValue: {},
+  progressTitle: {
+    color: '#334155',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  progressValue: {
+    color: '#0EA5E9',
+    fontSize: 12,
+    fontWeight: '700',
+  },
   progressBar: {
     height: 8,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 4,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
+    backgroundColor: '#0EA5E9',
+    borderRadius: 4,
   },
-  progressPercentage: {},
-  routeSection: {},
+  progressPercentage: {
+    color: '#64748B',
+    fontSize: 11,
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  routeSection: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    marginBottom: 14,
+  },
   routePoint: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: 10,
   },
   routeDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     marginTop: 4,
   },
   routeLine: {
     width: 2,
-    height: 24,
-    marginLeft: 5,
-    marginVertical: 4,
+    height: 18,
+    backgroundColor: '#E2E8F0',
+    marginLeft: 4,
+    marginVertical: 2,
   },
   routeContent: {
     flex: 1,
-    marginLeft: 12,
   },
-  routeLabel: {},
-  routeLocation: {},
+  routeLabel: {
+    color: '#64748B',
+    fontSize: 11,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+  },
+  routeLocation: {
+    color: '#0F172A',
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 1,
+  },
   primaryButton: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    gap: 8,
+    backgroundColor: '#10B981',
+    shadowColor: '#10B981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  primaryButtonText: {},
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
   secondaryButton: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    gap: 6,
   },
-  secondaryButtonText: {},
-  checklistCard: {},
+  secondaryButtonText: {
+    color: '#0F172A',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  checklistCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    marginTop: 12,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
   checklistHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 10,
   },
-  checklistTitle: {},
-  checklistBadge: {},
-  checklistBadgeText: {},
+  checklistTitle: {
+    color: '#0F172A',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  checklistBadge: {
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#BAE6FD',
+  },
+  checklistBadgeText: {
+    color: '#0284C7',
+    fontSize: 11,
+    fontWeight: '700',
+  },
   checklistItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 10,
+    gap: 12,
+  },
+  checklistItemBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
   checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  checklistItemLabel: {},
+  checkboxChecked: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+  },
+  checklistItemLabel: {
+    color: '#0F172A',
+    fontSize: 14,
+    fontWeight: '500',
+    flex: 1,
+  },
+  checklistItemLabelCompleted: {
+    color: '#94A3B8',
+    textDecorationLine: 'line-through',
+  },
   statsRow: {
     flexDirection: 'row',
+    gap: 10,
   },
-  upcomingCard: {},
+  upcomingCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 14,
+  },
   upcomingHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -833,13 +984,28 @@ const styles = StyleSheet.create({
   upcomingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1,
+    gap: 6,
   },
-  upcomingDate: {},
-  upcomingTripNumber: {},
+  upcomingDate: {
+    color: '#0F172A',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  upcomingTripNumber: {
+    color: '#0EA5E9',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 2,
+  },
   upcomingDestination: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 6,
+    gap: 4,
   },
-  upcomingDestinationText: {},
+  upcomingDestinationText: {
+    color: '#64748B',
+    fontSize: 12,
+  },
 });
+

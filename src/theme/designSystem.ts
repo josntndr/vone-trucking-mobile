@@ -8,45 +8,52 @@ export const DESIGN_SYSTEM = {
   // ==================== COLORS ====================
   colors: {
     // Backgrounds
-    background: '#F5F4F0',      // Warm off-white primary background
-    surface: '#FFFFFF',         // Card background
+    background: '#0B1120',      // Deep modern slate canvas
+    backgroundSecondary: '#111827',
+    surface: '#1E293B',         // Executive dark surface card
+    surfaceElevated: '#334155',
     
     // Primary Colors
-    navy: '#1B2A4A',           // Primary navy for headers, buttons, icons
-    teal: '#3A7D8C',           // Accent teal for links, secondary actions
-    orange: '#E07B2A',         // Accent orange for highlights, badges
+    navy: '#0F1E36',           // Executive Deep Navy
+    navyLight: '#1E293B',      // Slate Dark Navy
+    teal: '#0EA5E9',           // Electric Cyan/Teal accent
+    tealDark: '#0284C7',
+    orange: '#F59E0B',         // Warm Amber/Orange highlight
+    orangeDark: '#D97706',
     
     // Semantic Colors
-    success: '#2E7D32',        // Green for success states
+    success: '#10B981',        // Emerald Green for success
     warning: '#F59E0B',        // Amber for warnings
-    error: '#D32F2F',          // Red for errors
+    error: '#EF4444',          // Crimson for errors
+    info: '#3B82F6',           // Modern Royal Blue for info
     
     // Text Colors
-    text: '#2D2D2D',           // Primary body text
-    textSecondary: '#9E9E9E',  // Secondary grey text (alias for textMuted)
-    textTertiary: '#BDBDBD',   // Tertiary light grey text (alias for textLight)
-    textMuted: '#9E9E9E',      // Muted grey text for labels
-    textLight: '#BDBDBD',      // Light grey for disabled/subtle text
+    text: '#F8FAFC',           // Crisp White Primary text
+    textSecondary: '#94A3B8',  // Slate 400 Secondary text
+    textTertiary: '#64748B',   // Slate 500 Tertiary text
+    textMuted: '#94A3B8',      // Muted text
+    textLight: '#CBD5E1',      // Light text
     
     // Additional Colors
     white: '#FFFFFF',
-    border: '#E0E0E0',         // Light grey for borders
-    divider: '#F0F0F0',        // Very light grey for dividers
-    overlay: 'rgba(0,0,0,0.5)', // Dark overlay for modals
+    border: '#334155',         // High-contrast clean dark border
+    borderLight: '#475569',
+    divider: '#334155',        // Dark divider
+    overlay: 'rgba(11, 17, 32, 0.8)', // Deep modern overlay
     
-    // Status Badge Backgrounds
-    statusAvailable: '#E8F5E9',      // Light green
-    statusOnTrip: '#E0F2F7',         // Light teal
-    statusAssigned: '#E3F2FD',       // Light navy
-    statusMaintenance: '#FFF8E1',    // Light amber
-    statusDelayed: '#FFF4E6',        // Light orange
-    statusScheduled: '#F5F5F5',      // Light grey
+    // Status Badge Backgrounds (dark pastel tints)
+    statusAvailable: '#064E3B',      // Dark emerald
+    statusOnTrip: '#1E3A5F',         // Dark cyan
+    statusAssigned: '#1E3A5F',       // Dark blue
+    statusMaintenance: '#3B2A10',    // Dark amber
+    statusDelayed: '#451A1A',        // Dark red
+    statusScheduled: '#1E293B',      // Dark slate
     
     // Alert Backgrounds
-    alertWarningBg: '#FFFBF0',       // Soft amber background
-    alertErrorBg: '#FFF5F5',         // Soft red background
-    alertSuccessBg: '#F1F8F4',       // Soft green background
-    alertInfoBg: '#F0F7FA',          // Soft teal background
+    alertWarningBg: '#2D2008',       // Dark amber background
+    alertErrorBg: '#331111',         // Dark red background
+    alertSuccessBg: '#064E3B',       // Dark emerald background
+    alertInfoBg: '#1E3A5F',          // Dark cyan background
   },
 
   // ==================== TYPOGRAPHY ====================
@@ -54,13 +61,14 @@ export const DESIGN_SYSTEM = {
     // Font Sizes
     fontSize: {
       xs: 10,
-      sm: 11,
+      sm: 12,
       base: 14,
       md: 16,
       lg: 18,
       xl: 20,
-      '2xl': 22,
+      '2xl': 24,
       '3xl': 28,
+      '4xl': 34,
     },
     
     // Font Weights
@@ -108,6 +116,7 @@ export const DESIGN_SYSTEM = {
     md: 14,
     lg: 16,
     xl: 20,
+    '2xl': 24,
     full: 9999,
   },
 
@@ -121,53 +130,55 @@ export const DESIGN_SYSTEM = {
       elevation: 0,
     },
     sm: {
-      shadowColor: '#000',
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
+      shadowOpacity: 0.04,
+      shadowRadius: 3,
       elevation: 1,
     },
     base: {
-      shadowColor: '#000',
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.07,
-      shadowRadius: 12,
+      shadowOpacity: 0.06,
+      shadowRadius: 10,
       elevation: 2,
     },
     md: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 3 },
-      shadowOpacity: 0.1,
-      shadowRadius: 8,
+      shadowColor: '#0F172A',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.08,
+      shadowRadius: 14,
       elevation: 3,
     },
     lg: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.12,
-      shadowRadius: 16,
-      elevation: 4,
+      shadowColor: '#0F172A',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.1,
+      shadowRadius: 20,
+      elevation: 5,
     },
     fab: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 12,
-      elevation: 4,
+      shadowColor: '#0F1E36',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.25,
+      shadowRadius: 16,
+      elevation: 6,
     },
   },
 
   // ==================== COMPONENT STYLES ====================
   components: {
-    // Card Styles
+    // Card Styles - Modern clean border with soft elevation
     card: {
       backgroundColor: '#FFFFFF',
-      borderRadius: 16,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: '#E2E8F0',
       padding: 16,
-      shadowColor: '#000',
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.07,
-      shadowRadius: 12,
+      shadowOpacity: 0.05,
+      shadowRadius: 10,
       elevation: 2,
     },
     
@@ -175,43 +186,46 @@ export const DESIGN_SYSTEM = {
     cardSmall: {
       backgroundColor: '#FFFFFF',
       borderRadius: 16,
-      padding: 12,
-      shadowColor: '#000',
+      borderWidth: 1,
+      borderColor: '#E2E8F0',
+      padding: 14,
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.07,
-      shadowRadius: 12,
-      elevation: 2,
+      shadowOpacity: 0.04,
+      shadowRadius: 8,
+      elevation: 1,
     },
     
     // Button - Primary
     buttonPrimary: {
-      backgroundColor: '#1B2A4A',
+      backgroundColor: '#0F1E36',
       borderRadius: 14,
-      paddingVertical: 16,
+      paddingVertical: 15,
       paddingHorizontal: 20,
       height: 52,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.1,
-      shadowRadius: 3,
-      elevation: 2,
+      shadowColor: '#0F1E36',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 8,
+      elevation: 3,
     },
     
     buttonPrimaryText: {
       color: '#FFFFFF',
-      fontSize: 14,
-      fontWeight: '700' as const,
+      fontSize: 15,
+      fontWeight: '600' as const,
+      letterSpacing: 0.2,
     },
     
     // Button - Secondary (Outlined)
     buttonSecondary: {
-      backgroundColor: 'transparent',
+      backgroundColor: '#FFFFFF',
       borderWidth: 1.5,
-      borderColor: '#1B2A4A',
+      borderColor: '#E2E8F0',
       borderRadius: 14,
-      paddingVertical: 16,
+      paddingVertical: 15,
       paddingHorizontal: 20,
       height: 52,
       justifyContent: 'center' as const,
@@ -219,26 +233,26 @@ export const DESIGN_SYSTEM = {
     },
     
     buttonSecondaryText: {
-      color: '#1B2A4A',
-      fontSize: 14,
-      fontWeight: '700' as const,
+      color: '#0F1E36',
+      fontSize: 15,
+      fontWeight: '600' as const,
     },
     
-    // Button - Small (44px height)
+    // Button - Small (40px height)
     buttonSmall: {
-      backgroundColor: 'transparent',
+      backgroundColor: '#F8FAFC',
       borderWidth: 1,
-      borderColor: '#E0E0E0',
-      borderRadius: 12,
-      paddingVertical: 10,
-      paddingHorizontal: 16,
-      height: 44,
+      borderColor: '#E2E8F0',
+      borderRadius: 10,
+      paddingVertical: 8,
+      paddingHorizontal: 14,
+      height: 40,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
     },
     
     buttonSmallText: {
-      color: '#2D2D2D',
+      color: '#0F172A',
       fontSize: 13,
       fontWeight: '600' as const,
     },
@@ -248,65 +262,65 @@ export const DESIGN_SYSTEM = {
       width: 56,
       height: 56,
       borderRadius: 28,
-      backgroundColor: '#1B2A4A',
+      backgroundColor: '#0F1E36',
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
       position: 'absolute' as const,
-      bottom: 20,
+      bottom: 24,
       right: 20,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
+      shadowColor: '#0F1E36',
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.3,
       shadowRadius: 12,
-      elevation: 4,
+      elevation: 5,
     },
     
     // Search Bar
     searchBar: {
       backgroundColor: '#FFFFFF',
-      borderWidth: 1,
-      borderColor: '#E0E0E0',
-      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: '#E2E8F0',
+      borderRadius: 14,
       paddingHorizontal: 16,
-      paddingVertical: 12,
-      height: 44,
-      shadowColor: '#000',
+      paddingVertical: 10,
+      height: 48,
+      shadowColor: '#0F172A',
       shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
       elevation: 1,
     },
     
     searchBarText: {
-      color: '#2D2D2D',
+      color: '#0F172A',
       fontSize: 14,
     },
     
     searchBarPlaceholder: {
-      color: '#9E9E9E',
-      fontSize: 13,
+      color: '#94A3B8',
+      fontSize: 14,
     },
     
     // Filter Pill
     filterPill: {
-      paddingHorizontal: 16,
+      paddingHorizontal: 14,
       paddingVertical: 8,
       borderRadius: 20,
       borderWidth: 1,
-      borderColor: 'transparent',
-      backgroundColor: 'transparent',
+      borderColor: '#E2E8F0',
+      backgroundColor: '#FFFFFF',
       marginRight: 8,
     },
     
     filterPillActive: {
-      backgroundColor: '#1B2A4A',
-      borderColor: '#1B2A4A',
+      backgroundColor: '#0F1E36',
+      borderColor: '#0F1E36',
     },
     
     filterPillText: {
       fontSize: 13,
       fontWeight: '600' as const,
-      color: '#2D2D2D',
+      color: '#64748B',
     },
     
     filterPillTextActive: {
@@ -315,9 +329,9 @@ export const DESIGN_SYSTEM = {
     
     // Status Badge
     statusBadge: {
-      paddingHorizontal: 12,
+      paddingHorizontal: 10,
       paddingVertical: 4,
-      borderRadius: 12,
+      borderRadius: 20,
     },
     
     statusBadgeText: {
@@ -327,26 +341,27 @@ export const DESIGN_SYSTEM = {
     
     // Section Header
     sectionHeader: {
-      fontSize: 11,
+      fontSize: 12,
       fontWeight: '700' as const,
-      color: '#9E9E9E',
+      color: '#64748B',
       textTransform: 'uppercase' as const,
-      letterSpacing: 1.2,
+      letterSpacing: 1,
       marginBottom: 12,
     },
     
     // Page Title
     pageTitle: {
-      fontSize: 22,
+      fontSize: 24,
       fontWeight: '700' as const,
-      color: '#1B2A4A',
+      color: '#0F172A',
+      letterSpacing: -0.3,
     },
     
     // Page Subtitle
     pageSubtitle: {
-      fontSize: 13,
+      fontSize: 14,
       fontWeight: '400' as const,
-      color: '#9E9E9E',
+      color: '#64748B',
       marginTop: 4,
     },
     
@@ -354,22 +369,23 @@ export const DESIGN_SYSTEM = {
     statNumber: {
       fontSize: 28,
       fontWeight: '700' as const,
-      color: '#1B2A4A',
+      color: '#0F1E36',
+      letterSpacing: -0.5,
     },
     
     // Icon Container (circular)
     iconContainer: {
       width: 48,
       height: 48,
-      borderRadius: 24,
+      borderRadius: 16,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
     },
     
     iconContainerSmall: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+      width: 38,
+      height: 38,
+      borderRadius: 12,
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
     },
@@ -378,40 +394,40 @@ export const DESIGN_SYSTEM = {
   // ==================== STATUS COLORS ====================
   status: {
     available: {
-      background: '#E8F5E9',
-      text: '#2E7D32',
+      background: '#ECFDF5',
+      text: '#059669',
     },
     onTrip: {
-      background: '#E0F2F7',
-      text: '#3A7D8C',
+      background: '#F0F9FF',
+      text: '#0284C7',
     },
     assigned: {
-      background: '#E3F2FD',
-      text: '#1B2A4A',
+      background: '#EFF6FF',
+      text: '#2563EB',
     },
     maintenance: {
-      background: '#FFF8E1',
-      text: '#F59E0B',
+      background: '#FFFBEB',
+      text: '#D97706',
     },
     delayed: {
-      background: '#FFF4E6',
-      text: '#E07B2A',
+      background: '#FFF7ED',
+      text: '#EA580C',
     },
     scheduled: {
-      background: '#F5F5F5',
-      text: '#9E9E9E',
+      background: '#F1F5F9',
+      text: '#64748B',
     },
     inTransit: {
-      background: '#E0F2F7',
-      text: '#3A7D8C',
+      background: '#F0F9FF',
+      text: '#0284C7',
     },
     completed: {
-      background: '#E8F5E9',
-      text: '#2E7D32',
+      background: '#ECFDF5',
+      text: '#059669',
     },
     cancelled: {
-      background: '#FFEBEE',
-      text: '#D32F2F',
+      background: '#FEF2F2',
+      text: '#DC2626',
     },
   },
 
@@ -420,47 +436,47 @@ export const DESIGN_SYSTEM = {
     // Get status badge style
     getStatusStyle: (status: string) => {
       const statusMap: Record<string, { background: string; text: string }> = {
-        available: { background: '#E8F5E9', text: '#2E7D32' },
-        'on trip': { background: '#E0F2F7', text: '#3A7D8C' },
-        'on-trip': { background: '#E0F2F7', text: '#3A7D8C' },
-        assigned: { background: '#E3F2FD', text: '#1B2A4A' },
-        maintenance: { background: '#FFF8E1', text: '#F59E0B' },
-        delayed: { background: '#FFF4E6', text: '#E07B2A' },
-        scheduled: { background: '#F5F5F5', text: '#9E9E9E' },
-        'in transit': { background: '#E0F2F7', text: '#3A7D8C' },
-        'in-transit': { background: '#E0F2F7', text: '#3A7D8C' },
-        completed: { background: '#E8F5E9', text: '#2E7D32' },
-        cancelled: { background: '#FFEBEE', text: '#D32F2F' },
+        available: { background: '#ECFDF5', text: '#059669' },
+        'on trip': { background: '#F0F9FF', text: '#0284C7' },
+        'on-trip': { background: '#F0F9FF', text: '#0284C7' },
+        assigned: { background: '#EFF6FF', text: '#2563EB' },
+        maintenance: { background: '#FFFBEB', text: '#D97706' },
+        delayed: { background: '#FFF7ED', text: '#EA580C' },
+        scheduled: { background: '#F1F5F9', text: '#64748B' },
+        'in transit': { background: '#F0F9FF', text: '#0284C7' },
+        'in-transit': { background: '#F0F9FF', text: '#0284C7' },
+        completed: { background: '#ECFDF5', text: '#059669' },
+        cancelled: { background: '#FEF2F2', text: '#DC2626' },
       };
       
       const normalizedStatus = status.toLowerCase().trim();
-      return statusMap[normalizedStatus] || { background: '#F5F5F5', text: '#9E9E9E' };
+      return statusMap[normalizedStatus] || { background: '#F1F5F9', text: '#64748B' };
     },
     
     // Get icon background color by type
     getIconBackground: (type: 'teal' | 'navy' | 'orange' | 'green' | 'amber' | 'red') => {
       const colorMap = {
-        teal: '#E0F2F7',
-        navy: '#E3F2FD',
-        orange: '#FFF4E6',
-        green: '#E8F5E9',
-        amber: '#FFF8E1',
-        red: '#FFEBEE',
+        teal: '#F0F9FF',
+        navy: '#EFF6FF',
+        orange: '#FFF7ED',
+        green: '#ECFDF5',
+        amber: '#FFFBEB',
+        red: '#FEF2F2',
       };
-      return colorMap[type] || '#F5F5F5';
+      return colorMap[type] || '#F1F5F9';
     },
     
     // Get icon color by type
     getIconColor: (type: 'teal' | 'navy' | 'orange' | 'green' | 'amber' | 'red') => {
       const colorMap = {
-        teal: '#3A7D8C',
-        navy: '#1B2A4A',
-        orange: '#E07B2A',
-        green: '#2E7D32',
-        amber: '#F59E0B',
-        red: '#D32F2F',
+        teal: '#0284C7',
+        navy: '#0F1E36',
+        orange: '#EA580C',
+        green: '#059669',
+        amber: '#D97706',
+        red: '#DC2626',
       };
-      return colorMap[type] || '#9E9E9E';
+      return colorMap[type] || '#64748B';
     },
   },
 };

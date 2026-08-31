@@ -3,47 +3,53 @@
  * Consistent colors per specification
  */
 
-// Brand Colors
+// Brand Colors - Modern Executive Fleet Theme
 export const brandColors = {
-  // Primary Navy: #192A4A
-  primary: '#192A4A',
-  primaryLight: '#2D4166',
-  primaryDark: '#0F1A2E',
+  // Primary Navy: #0F1E36 (Executive Deep Navy)
+  primary: '#0F1E36',
+  primaryLight: '#1E293B',
+  primaryDark: '#0A1220',
   
-  // Accent Orange: #D87532
-  accent: '#D87532',
-  accentLight: '#E89358',
-  accentDark: '#B65E23',
+  // Accent Teal / Electric Cyan: #0EA5E9
+  accent: '#0EA5E9',
+  accentLight: '#38BDF8',
+  accentDark: '#0284C7',
+
+  // Secondary Warm Amber: #F59E0B
+  accentOrange: '#F59E0B',
+  accentOrangeLight: '#FBBF24',
+  accentOrangeDark: '#D97706',
   
-  // Warm Background: #F7F4EF
-  warmBackground: '#F7F4EF',
+  // Ultra-Clean Background: #F8FAFC
+  warmBackground: '#F8FAFC',
   
-  // Main Surface: #FFFDFC
-  surface: '#FFFDFC',
+  // Main Surface: #FFFFFF
+  surface: '#FFFFFF',
   
   // Text Colors
-  textPrimary: '#24211F',
-  textSecondary: '#746B63',
+  textPrimary: '#0F172A',
+  textSecondary: '#64748B',
+  textTertiary: '#94A3B8',
   
-  // Border: #E5DDD5
-  border: '#E5DDD5',
+  // Border: #E2E8F0
+  border: '#E2E8F0',
   
   // Status Colors
-  success: '#4F956E',
-  successLight: '#6BAA85',
-  successDark: '#3A7053',
+  success: '#10B981',
+  successLight: '#34D399',
+  successDark: '#059669',
   
-  warning: '#C68A24',
-  warningLight: '#D4A450',
-  warningDark: '#9A6B1B',
+  warning: '#F59E0B',
+  warningLight: '#FBBF24',
+  warningDark: '#D97706',
   
-  error: '#C44C47',
-  errorLight: '#D37169',
-  errorDark: '#9B3A36',
+  error: '#EF4444',
+  errorLight: '#F87171',
+  errorDark: '#DC2626',
   
-  info: '#4D728C',
-  infoLight: '#6B8EA4',
-  infoDark: '#3A5669',
+  info: '#3B82F6',
+  infoLight: '#60A5FA',
+  infoDark: '#2563EB',
   
   // Base colors
   white: '#FFFFFF',
@@ -55,7 +61,7 @@ export const brandColors = {
 export const lightTheme = {
   // Backgrounds
   background: brandColors.warmBackground,
-  backgroundSecondary: brandColors.surface,
+  backgroundSecondary: '#F1F5F9',
   
   // Surfaces
   surface: brandColors.surface,
@@ -64,9 +70,9 @@ export const lightTheme = {
   // Text
   text: brandColors.textPrimary,
   textSecondary: brandColors.textSecondary,
-  textTertiary: '#B4ADA5',
+  textTertiary: brandColors.textTertiary,
   textInverse: brandColors.white,
-  textDisabled: '#B4ADA5',
+  textDisabled: '#CBD5E1',
   
   // Brand
   primary: brandColors.primary,
@@ -96,12 +102,12 @@ export const lightTheme = {
   
   // Borders
   border: brandColors.border,
-  borderLight: '#EFE9E3',
-  borderDark: '#D0C7BD',
+  borderLight: '#F1F5F9',
+  borderDark: '#CBD5E1',
   
   // Overlay
-  overlay: 'rgba(0, 0, 0, 0.5)',
-  overlayLight: 'rgba(0, 0, 0, 0.25)',
+  overlay: 'rgba(15, 23, 42, 0.6)',
+  overlayLight: 'rgba(15, 23, 42, 0.3)',
   
   // Base
   white: brandColors.white,
@@ -110,69 +116,69 @@ export const lightTheme = {
   
   // Card surface variants for elevated/flat distinction
   elevated: brandColors.white,
-  light: '#EFE9E3',
+  light: '#F8FAFC',
   
-  // Legacy/common style properties
+  // Modern refined shadow properties
   shadow: {
-    shadowColor: '#000',
+    shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
     elevation: 2,
   },
 } as const;
 
-// Dark Theme (if needed later)
+// Dark Theme (if needed)
 export const darkTheme = {
   // Backgrounds
-  background: '#1A1614',
-  backgroundSecondary: '#242220',
+  background: '#0B1120',
+  backgroundSecondary: '#111827',
   
   // Surfaces
-  surface: '#2A2826',
-  surfaceElevated: '#342F2D',
+  surface: '#1E293B',
+  surfaceElevated: '#334155',
   
   // Text
-  text: '#F7F4EF',
-  textSecondary: '#B4ADA5',
-  textTertiary: '#746B63',
-  textInverse: '#24211F',
-  textDisabled: '#746B63',
+  text: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  textInverse: '#0F172A',
+  textDisabled: '#475569',
   
   // Brand (adjusted for dark mode)
-  primary: '#4D6B99',
-  primaryLight: '#6685B3',
-  primaryDark: '#3A5273',
+  primary: '#38BDF8',
+  primaryLight: '#7DD3FC',
+  primaryDark: '#0284C7',
   
-  accent: '#E89358',
-  accentLight: '#F0A976',
-  accentDark: '#D87532',
+  accent: '#38BDF8',
+  accentLight: '#7DD3FC',
+  accentDark: '#0284C7',
   
   // Status
-  success: '#6BAA85',
-  successLight: '#88BFA0',
-  successDark: '#4F956E',
+  success: '#34D399',
+  successLight: '#6EE7B7',
+  successDark: '#10B981',
   
-  warning: '#D4A450',
-  warningLight: '#E0B86F',
-  warningDark: '#C68A24',
+  warning: '#FBBF24',
+  warningLight: '#FCD34D',
+  warningDark: '#F59E0B',
   
-  error: '#D37169',
-  errorLight: '#E0918A',
-  errorDark: '#C44C47',
+  error: '#F87171',
+  errorLight: '#FCA5A5',
+  errorDark: '#EF4444',
   
-  info: '#6B8EA4',
-  infoLight: '#88A5B8',
-  infoDark: '#4D728C',
+  info: '#60A5FA',
+  infoLight: '#93C5FD',
+  infoDark: '#3B82F6',
   
   // Borders
-  border: '#3E3935',
-  borderLight: '#4A443F',
-  borderDark: '#32302D',
+  border: '#334155',
+  borderLight: '#475569',
+  borderDark: '#1E293B',
   
   // Overlay
-  overlay: 'rgba(0, 0, 0, 0.7)',
-  overlayLight: 'rgba(0, 0, 0, 0.5)',
+  overlay: 'rgba(0, 0, 0, 0.8)',
+  overlayLight: 'rgba(0, 0, 0, 0.6)',
   
   // Base
   white: brandColors.white,
@@ -180,15 +186,15 @@ export const darkTheme = {
   transparent: brandColors.transparent,
   
   // Card surface variants for elevated/flat distinction
-  elevated: '#342F2D',
-  light: '#4A443F',
+  elevated: '#334155',
+  light: '#1E293B',
   
-  // Legacy/common style properties
+  // Shadow properties
   shadow: {
-    shadowColor: '#000',
+    shadowColor: '#000000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
     elevation: 4,
   },
 } as const;
@@ -208,15 +214,15 @@ export const colors = {
   black: brandColors.black,
   transparent: brandColors.transparent,
   gray: {
-    50: '#FAF9F7',
-    100: '#F7F4EF',
-    200: '#E5DDD5',
-    300: '#D0C7BD',
-    400: '#B4ADA5',
-    500: '#8A827A',
-    600: '#746B63',
-    700: '#5A534D',
-    800: '#3E3935',
-    900: '#24211F',
+    50: '#F8FAFC',
+    100: '#F1F5F9',
+    200: '#E2E8F0',
+    300: '#CBD5E1',
+    400: '#94A3B8',
+    500: '#64748B',
+    600: '#475569',
+    700: '#334155',
+    800: '#1E293B',
+    900: '#0F172A',
   },
 } as const;

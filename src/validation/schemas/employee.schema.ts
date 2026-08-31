@@ -73,22 +73,18 @@ const passwordSchema = z
 
 // Per-trip rate validation
 const perTripRateSchema = z
-  .union([
-    z.number().positive('Per-trip rate must be greater than zero'),
-    z.string()
-      .min(1, 'Enter a valid per-trip rate')
-      .transform((val) => {
-        const cleaned = val.replace(/[₱,\s]/g, '');
-        const num = parseFloat(cleaned);
-        if (isNaN(num) || num <= 0) {
-          throw new Error('Enter a valid per-trip rate');
-        }
-        return num;
-      }),
-  ])
-  .refine(
-    (val) => val > 0 && val <= 999999,
-    'Per-trip rate must be between ₱1.00 and ₱999,999.00'
+  .preprocess((val) => {
+    if (typeof val === 'number') return val;
+    if (typeof val === 'string') {
+      const cleaned = val.replace(/[₱,\s]/g, '');
+      if (!cleaned) return undefined;
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) ? undefined : parsed;
+    }
+    return undefined;
+  }, z.number({ message: 'Enter a valid per-trip rate' })
+    .positive('Per-trip rate must be greater than zero')
+    .max(999999, 'Per-trip rate must be between ₱1.00 and ₱999,999.00')
   );
 
 // Structured Address Validation
@@ -155,7 +151,7 @@ const structuredAddressSchema = z.object({
   },
   {
     message: 'Select a province (required for this region)',
-    path: ['province'],
+    path: ['province_code'],
   }
 );
 
@@ -310,7 +306,7 @@ export const employeeSchema = z
     },
     {
       message: 'Select a province (required for this region)',
-      path: ['province'],
+      path: ['province_code'],
     }
   )
   .refine(

@@ -584,16 +584,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
   },
   periodButtonActive: {
-    backgroundColor: COLORS.navy,
-    borderColor: COLORS.navy,
+    backgroundColor: COLORS.teal,
+    borderColor: COLORS.teal,
   },
   periodButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: COLORS.navy,
+    color: COLORS.textSecondary,
   },
   periodButtonTextActive: {
     color: COLORS.white,
@@ -607,7 +607,9 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   tooltipContent: {
-    backgroundColor: COLORS.navy,
+    backgroundColor: '#0F1E36',
+    borderWidth: 1,
+    borderColor: COLORS.border,
     borderRadius: 8,
     padding: 10,
     alignItems: 'center',
@@ -622,7 +624,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 6,
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
-    borderTopColor: COLORS.navy,
+    borderTopColor: '#0F1E36',
     alignSelf: 'center',
   },
   tooltipDay: {
@@ -653,6 +655,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 16,
+    backgroundColor: COLORS.surface,
   },
   legendChipOutlined: {
     borderWidth: 1,
@@ -660,27 +663,27 @@ const styles = StyleSheet.create({
   },
   legendChipActive: {
     borderWidth: 1,
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.secondary + '15',
+    borderColor: COLORS.teal,
+    backgroundColor: COLORS.teal + '20',
   },
   legendLine: {
     width: 12,
     height: 3,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.teal,
     borderRadius: 2,
     marginRight: 6,
   },
   legendText: {
     fontSize: 11,
     fontWeight: '600',
-    color: COLORS.primary,
+    color: COLORS.text,
   },
   legendTextSmall: {
     fontSize: 10,
-    color: COLORS.secondary,
+    color: COLORS.textSecondary,
   },
   legendTextBold: {
     fontWeight: '700',
-    color: COLORS.navy,
+    color: COLORS.text,
   },
 });

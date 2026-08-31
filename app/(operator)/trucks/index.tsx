@@ -303,10 +303,9 @@ export default function TrucksListScreen() {
                   style={[
                     styles.filterChip,
                     {
-                      backgroundColor: isSelected ? COLORS.navy : COLORS.white,
-                      ...DS.shadows.base,
-                      shadowOpacity: isSelected ? 0.15 : 0.05,
-                      elevation: isSelected ? 3 : 1,
+                      backgroundColor: isSelected ? COLORS.teal : COLORS.surface,
+                      borderColor: isSelected ? COLORS.teal : COLORS.border,
+                      borderWidth: 1,
                     },
                   ]}
                   onPress={() => setStatusFilter(item.value)}
@@ -315,7 +314,7 @@ export default function TrucksListScreen() {
                   <Text
                     style={[
                       styles.filterText,
-                      { color: isSelected ? COLORS.white : COLORS.text },
+                      { color: isSelected ? COLORS.white : COLORS.textSecondary },
                     ]}
                   >
                     {item.label}
@@ -332,12 +331,13 @@ export default function TrucksListScreen() {
           renderItem={renderTruckItem}
           keyExtractor={item => item.id}
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl 
-              refreshing={refreshing} 
-              onRefresh={onRefresh} 
-              colors={[COLORS.navy]}
-              tintColor={COLORS.navy}
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[COLORS.teal]}
+              tintColor={COLORS.teal}
             />
           }
           onEndReached={loadMore}
@@ -364,7 +364,6 @@ export default function TrucksListScreen() {
               )}
             </View>
           }
-          showsVerticalScrollIndicator={false}
         />
 
         {/* Floating Action Button */}
@@ -389,16 +388,15 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: SPACING.md,
-    paddingTop: SPACING.md,
-    paddingBottom: SPACING.sm,
-    backgroundColor: COLORS.white,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    paddingTop: 20,
+    paddingBottom: 8,
+    backgroundColor: COLORS.background,
   },
   headerTitle: {
-    fontSize: DS.typography.fontSize['2xl'],
-    fontWeight: DS.typography.fontWeight.bold,
-    color: COLORS.navy,
+    fontSize: 26,
+    fontWeight: '800',
+    color: COLORS.text,
+    letterSpacing: -0.5,
     marginBottom: 4,
   },
   headerSubtitle: {
@@ -415,7 +413,7 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.surface,
     borderWidth: 1.5,
     borderColor: COLORS.border,
     borderRadius: 12,

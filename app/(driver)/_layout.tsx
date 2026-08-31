@@ -1,41 +1,73 @@
 /**
  * Driver Layout
- * Main navigation for driver workflow
- * 5 tabs: Home, My Trips, Earnings, Alerts, Profile
+ * Modern navigation for driver workflow with active pill indicators
  */
 
 import { Tabs } from 'expo-router';
+import { View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '../../src/theme/ThemeProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useThemeContext } from '../../src/contexts/ThemeContext';
 
 export default function DriverLayout() {
-  const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { colors, isDarkMode } = useThemeContext();
+
+  const driverNavColors = {
+    active: '#0EA5E9',
+    activeBg: isDarkMode ? '#1E293B' : '#F0F9FF',
+    inactive: isDarkMode ? '#94A3B8' : '#64748B',
+    bg: colors.surface || (isDarkMode ? '#0B1120' : '#FFFFFF'),
+    border: colors.border || (isDarkMode ? '#1E293B' : '#E2E8F0'),
+  };
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
+        tabBarActiveTintColor: driverNavColors.active,
+        tabBarInactiveTintColor: driverNavColors.inactive,
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
-          height: 65,
-          paddingBottom: 8,
-          paddingTop: 8,
+          backgroundColor: driverNavColors.bg,
+          borderTopWidth: 1,
+          borderTopColor: driverNavColors.border,
+          height: 64 + (insets.bottom > 0 ? insets.bottom : 6),
+          paddingBottom: (insets.bottom > 0 ? insets.bottom : 6),
+          paddingTop: 6,
+          shadowColor: '#0F172A',
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: isDarkMode ? 0.2 : 0.05,
+          shadowRadius: 10,
+          elevation: 6,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 2,
+          justifyContent: 'center',
+          alignItems: 'center',
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '500',
+          fontWeight: '600',
+          marginTop: 1,
+          marginBottom: 2,
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" size={size} color={color} />
+          title: 'Dashboard',
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <MaterialCommunityIcons name={focused ? 'steering' : 'steering'} size={22} color={color} />
+            </View>
           ),
         }}
       />
@@ -43,8 +75,17 @@ export default function DriverLayout() {
         name="trips"
         options={{
           title: 'My Trips',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="truck-delivery" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <MaterialCommunityIcons name={focused ? 'truck-delivery' : 'truck-delivery-outline'} size={22} color={color} />
+            </View>
           ),
         }}
       />
@@ -52,8 +93,17 @@ export default function DriverLayout() {
         name="profile"
         options={{
           title: 'Earnings',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="cash-multiple" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <MaterialCommunityIcons name={focused ? 'cash-multiple' : 'cash'} size={22} color={color} />
+            </View>
           ),
         }}
       />
@@ -61,22 +111,22 @@ export default function DriverLayout() {
         name="reports"
         options={{
           title: 'Alerts',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="bell-alert" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <View style={{
+              width: 38,
+              height: 38,
+              borderRadius: 12,
+              backgroundColor: focused ? driverNavColors.activeBg : 'transparent',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <MaterialCommunityIcons name={focused ? 'bell' : 'bell-outline'} size={22} color={color} />
+            </View>
           ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile-menu"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account-circle" size={size} color={color} />
-          ),
-          href: '/(driver)/profile',
         }}
       />
     </Tabs>
   );
 }
+
 

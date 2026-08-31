@@ -65,6 +65,9 @@ export default function AddEmployeeScreen() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [createdSuccessData, setCreatedSuccessData] = useState<CreateEmployeeFormData | null>(null);
+  const [errorBannerList, setErrorBannerList] = useState<string[]>([]);
+  const scrollViewRef = React.useRef<ScrollView>(null);
 
   const {
     control,
@@ -75,7 +78,7 @@ export default function AddEmployeeScreen() {
     trigger,
   } = useForm<CreateEmployeeFormData>({
     resolver: zodResolver(employeeSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: {
       employee_id: '',
       first_name: '',
@@ -120,6 +123,54 @@ export default function AddEmployeeScreen() {
   const usernameValue = watch('username');
   const perTripRateValue = watch('per_trip_rate');
 
+  const [inAppAlert, setInAppAlert] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    type?: 'info' | 'error' | 'success' | 'warning' | 'confirm';
+    confirmText?: string;
+    cancelText?: string;
+    onConfirm?: () => void;
+    onCancel?: () => void;
+  } | null>(null);
+
+  const showAppAlert = (
+    title: string,
+    message: string,
+    type: 'info' | 'error' | 'success' | 'warning' = 'info'
+  ) => {
+    setInAppAlert({
+      visible: true,
+      title,
+      message,
+      type,
+      confirmText: 'OK',
+      onConfirm: () => setInAppAlert(null),
+    });
+  };
+
+  const showAppConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void,
+    confirmText = 'Leave',
+    cancelText = 'Stay'
+  ) => {
+    setInAppAlert({
+      visible: true,
+      title,
+      message,
+      type: 'confirm',
+      confirmText,
+      cancelText,
+      onConfirm: () => {
+        setInAppAlert(null);
+        onConfirm();
+      },
+      onCancel: () => setInAppAlert(null),
+    });
+  };
+
   // Track unsaved changes
   useEffect(() => {
     setHasUnsavedChanges(isDirty);
@@ -148,68 +199,64 @@ export default function AddEmployeeScreen() {
 
   const handleGeneratePassword = () => {
     const password = generateSecurePassword();
-    setValue('temporary_password', password);
-    setValue('confirm_password', password);
+    setValue('temporary_password', password, { shouldValidate: true, shouldDirty: true });
+    setValue('confirm_password', password, { shouldValidate: true, shouldDirty: true });
     trigger(['temporary_password', 'confirm_password']);
-    Alert.alert(
+    
+    showAppAlert(
       'Password Generated',
       `Secure password: ${password}\n\nMake sure to save this password securely.`,
-      [{ text: 'OK' }]
+      'success'
     );
   };
 
   const handleBackPress = () => {
     if (hasUnsavedChanges) {
-      Alert.alert(
+      showAppConfirm(
         'Unsaved Changes',
         'You have unsaved changes. Are you sure you want to leave?',
-        [
-          { text: 'Stay', style: 'cancel' },
-          { 
-            text: 'Leave', 
-            style: 'destructive',
-            onPress: () => router.back() 
-          },
-        ]
+        () => router.back(),
+        'Leave',
+        'Stay'
       );
     } else {
       router.back();
     }
   };
 
+  const onFormError = (formErrors: any) => {
+    console.warn('Form validation errors:', formErrors);
+    const errorKeys = Object.keys(formErrors);
+    if (errorKeys.length > 0) {
+      setErrorBannerList(errorKeys);
+      scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      showAppAlert('Incomplete Form', 'Please fill in the required fields highlighted in red below.', 'error');
+    }
+  };
+
   const onSubmit = async (data: CreateEmployeeFormData) => {
+    setErrorBannerList([]);
+
+    if (usernameAvailable === false) {
+      showAppAlert('Username Taken', 'This username is already in use. Please enter a unique username.', 'warning');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       const response = await createEmployee(data);
 
       if (response.error) {
-        Alert.alert('Error', response.error);
+        showAppAlert('Creation Failed', response.error, 'error');
         return;
       }
 
-      // Show success with one-time credentials
-      Alert.alert(
-        'Employee Created',
-        `${data.first_name} ${data.last_name} has been added successfully.\n\n` +
-        `Username: ${data.username}\n` +
-        `Role: ${data.role === UserRole.DRIVER ? 'Driver' : 'Helper'}\n\n` +
-        `Provide the temporary password securely to the employee. ` +
-        `They will be required to change it on first login.`,
-        [
-          {
-            text: 'Done',
-            onPress: () => {
-              router.back();
-              // Optionally navigate to the employee profile
-              // router.push(`/(operator)/employees/${response.data?.id}`);
-            },
-          },
-        ],
-        { cancelable: false }
-      );
-    } catch (error) {
-      Alert.alert('Error', 'An unexpected error occurred');
+      // Show success modal inside mobile frame
+      setCreatedSuccessData(data);
+    } catch (error: any) {
+      const errorMsg = error?.message || 'An unexpected error occurred';
+      showAppAlert('Error', errorMsg, 'error');
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -479,6 +526,7 @@ export default function AddEmployeeScreen() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <ScrollView
+          ref={scrollViewRef}
           style={styles.container}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
@@ -493,6 +541,18 @@ export default function AddEmployeeScreen() {
               <Text style={styles.headerSubtitle}>Create employee profile and account</Text>
             </View>
           </View>
+
+          {/* Validation Errors Banner */}
+          {errorBannerList.length > 0 && (
+            <View style={styles.errorBanner}>
+              <View style={styles.errorBannerHeader}>
+                <Ionicons name="alert-circle" size={18} color={COLORS.error} />
+                <Text style={styles.errorBannerTitle}>
+                  Please fill in the required fields highlighted in red below.
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* Section 1: Basic Information */}
           <View style={styles.section}>
@@ -810,10 +870,11 @@ export default function AddEmployeeScreen() {
           <TouchableOpacity
             style={[
               styles.createButton,
-              (!isValid || isSubmitting || usernameAvailable === false) && styles.createButtonDisabled,
+              isSubmitting && styles.createButtonDisabled,
             ]}
-            onPress={handleSubmit(onSubmit)}
-            disabled={!isValid || isSubmitting || usernameAvailable === false}
+            onPress={handleSubmit(onSubmit, onFormError)}
+            disabled={isSubmitting}
+            activeOpacity={0.8}
           >
             {isSubmitting ? (
               <ActivityIndicator size="small" color={COLORS.white} />
@@ -823,6 +884,116 @@ export default function AddEmployeeScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Success Modal */}
+      {createdSuccessData && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.successModalCard}>
+            <View style={styles.successIconCircle}>
+              <Ionicons name="checkmark-circle" size={44} color={COLORS.success} />
+            </View>
+            
+            <Text style={styles.successModalTitle}>Employee Created!</Text>
+            <Text style={styles.successModalSubtitle}>
+              {createdSuccessData.first_name} {createdSuccessData.last_name} has been added successfully.
+            </Text>
+
+            <View style={styles.credentialsBox}>
+              <View style={styles.credRow}>
+                <Text style={styles.credLabel}>Role:</Text>
+                <Text style={styles.credValue}>
+                  {createdSuccessData.role === UserRole.DRIVER ? 'Driver' : 'Helper'}
+                </Text>
+              </View>
+              <View style={styles.credRow}>
+                <Text style={styles.credLabel}>Username:</Text>
+                <Text style={styles.credValue}>{createdSuccessData.username}</Text>
+              </View>
+              <View style={styles.credRow}>
+                <Text style={styles.credLabel}>Temp Password:</Text>
+                <Text style={[styles.credValue, { color: COLORS.teal, fontWeight: '700' }]}>
+                  {createdSuccessData.temporary_password}
+                </Text>
+              </View>
+            </View>
+
+            <Text style={styles.successNote}>
+              Provide this temporary password securely. The employee will be required to change it on their first login.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.modalDoneButton}
+              onPress={() => {
+                setCreatedSuccessData(null);
+                router.back();
+              }}
+            >
+              <Text style={styles.modalDoneButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+      {/* In-App Alert / Confirm Modal (Contained within mobile frame) */}
+      {inAppAlert && inAppAlert.visible && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.inAppAlertCard}>
+            <View style={[
+              styles.inAppAlertIconCircle,
+              inAppAlert.type === 'error' && { backgroundColor: '#FEE2E2' },
+              inAppAlert.type === 'warning' && { backgroundColor: '#FEF3C7' },
+              inAppAlert.type === 'success' && { backgroundColor: '#DCFCE7' },
+              inAppAlert.type === 'confirm' && { backgroundColor: '#FEE2E2' },
+            ]}>
+              <Ionicons
+                name={
+                  inAppAlert.type === 'error'
+                    ? 'alert-circle'
+                    : inAppAlert.type === 'warning'
+                    ? 'warning'
+                    : inAppAlert.type === 'success'
+                    ? 'checkmark-circle'
+                    : inAppAlert.type === 'confirm'
+                    ? 'help-circle'
+                    : 'information-circle'
+                }
+                size={34}
+                color={
+                  inAppAlert.type === 'error' || inAppAlert.type === 'confirm'
+                    ? '#EF4444'
+                    : inAppAlert.type === 'warning'
+                    ? '#F59E0B'
+                    : inAppAlert.type === 'success'
+                    ? '#10B981'
+                    : '#0EA5E9'
+                }
+              />
+            </View>
+
+            <Text style={styles.inAppAlertTitle}>{inAppAlert.title}</Text>
+            <Text style={styles.inAppAlertMessage}>{inAppAlert.message}</Text>
+
+            <View style={styles.inAppAlertButtonsRow}>
+              {inAppAlert.cancelText && (
+                <TouchableOpacity
+                  style={styles.inAppAlertCancelBtn}
+                  onPress={inAppAlert.onCancel || (() => setInAppAlert(null))}
+                >
+                  <Text style={styles.inAppAlertCancelText}>{inAppAlert.cancelText}</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[
+                  styles.inAppAlertConfirmBtn,
+                  inAppAlert.cancelText ? { flex: 1 } : { width: '100%' },
+                ]}
+                onPress={inAppAlert.onConfirm || (() => setInAppAlert(null))}
+              >
+                <Text style={styles.inAppAlertConfirmText}>{inAppAlert.confirmText || 'OK'}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </Screen>
   );
 }
@@ -832,29 +1003,210 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-    scrollContent: {
-
-    paddingBottom: 100,
+  scrollContent: {
+    paddingBottom: 120,
+  },
+  inAppAlertCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: SPACING.xl,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  inAppAlertIconCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#F0F9FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.base,
+  },
+  inAppAlertTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.navy,
+    marginBottom: SPACING.xs,
+    textAlign: 'center',
+  },
+  inAppAlertMessage: {
+    fontSize: 14,
+    color: COLORS.text,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: SPACING.lg,
+  },
+  inAppAlertButtonsRow: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: SPACING.sm,
+  },
+  inAppAlertCancelBtn: {
+    flex: 1,
+    height: 46,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+  },
+  inAppAlertCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+  },
+  inAppAlertConfirmBtn: {
+    height: 46,
+    borderRadius: 12,
+    backgroundColor: COLORS.navy,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  inAppAlertConfirmText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: COLORS.white,
+  },
+  errorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FCA5A5',
+    borderWidth: 1,
+    borderRadius: 12,
+    marginHorizontal: SPACING.base,
+    marginBottom: SPACING.base,
+    padding: SPACING.md,
+  },
+  errorBannerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+    gap: 6,
+  },
+  errorBannerTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.error,
+  },
+  errorBannerItem: {
+    fontSize: 13,
+    color: '#991B1B',
+    lineHeight: 18,
+    marginLeft: 4,
+  },
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.base,
+    zIndex: 9999,
+  },
+  successModalCard: {
+    width: '100%',
+    maxWidth: 440,
+    backgroundColor: COLORS.white,
+    borderRadius: 20,
+    padding: SPACING.xl,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  successIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#ECFDF5',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: SPACING.base,
+  },
+  successModalTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: COLORS.navy,
+    marginBottom: SPACING.xs,
+    textAlign: 'center',
+  },
+  successModalSubtitle: {
+    fontSize: 14,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    marginBottom: SPACING.base,
+  },
+  credentialsBox: {
+    width: '100%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: SPACING.md,
+    marginBottom: SPACING.md,
+    gap: SPACING.xs,
+  },
+  credRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 2,
+  },
+  credLabel: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontWeight: '500',
+  },
+  credValue: {
+    fontSize: 14,
+    color: COLORS.navy,
+    fontWeight: '600',
+  },
+  successNote: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    textAlign: 'center',
+    lineHeight: 16,
+    marginBottom: SPACING.lg,
+  },
+  modalDoneButton: {
+    width: '100%',
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: COLORS.navy,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalDoneButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: COLORS.white,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.base,
-    paddingTop: SPACING.base,
-    paddingBottom: SPACING.md,
+    paddingVertical: SPACING.md,
     backgroundColor: COLORS.white,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   backButton: {
-    padding: SPACING.xs,
     marginRight: SPACING.sm,
+    padding: SPACING.xs,
   },
   headerTextContainer: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: COLORS.navy,
   },
@@ -866,35 +1218,38 @@ const styles = StyleSheet.create({
   section: {
     backgroundColor: COLORS.white,
     marginTop: SPACING.base,
-    paddingHorizontal: SPACING.base,
-    paddingVertical: SPACING.lg,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: COLORS.border,
+    marginHorizontal: SPACING.base,
+    padding: SPACING.base,
+    borderRadius: 16,
+    shadowColor: COLORS.navy,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: SPACING.lg,
+    marginBottom: SPACING.base,
   },
   sectionNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: COLORS.navy,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: SPACING.sm,
+    marginRight: SPACING.xs,
   },
   sectionNumberText: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: '700',
     color: COLORS.white,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
-    color: COLORS.text,
+    color: COLORS.navy,
   },
   inputGroup: {
     marginBottom: SPACING.base,
@@ -912,41 +1267,44 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   input: {
+    height: 48,
     borderWidth: 1,
     borderColor: COLORS.border,
     borderRadius: 12,
-    padding: SPACING.md,
-    fontSize: 16,
+    paddingHorizontal: SPACING.base,
+    fontSize: 15,
     color: COLORS.text,
     backgroundColor: COLORS.white,
   },
-  inputMultiline: {
-    height: 100,
-    paddingTop: SPACING.md,
-    textAlignVertical: 'top',
-  },
   inputError: {
     borderColor: COLORS.error,
+    backgroundColor: '#FEF2F2',
   },
   inputWithPrefix: {
     paddingLeft: 36,
   },
   inputWithRightButton: {
-    paddingRight: 44,
-  },
-  currencySymbol: {
-    position: 'absolute',
-    left: SPACING.md,
-    top: SPACING.md,
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
-    zIndex: 1,
+    paddingRight: 48,
   },
   inputRightIcon: {
     position: 'absolute',
-    right: SPACING.md,
-    top: SPACING.md,
+    right: SPACING.sm,
+    top: 14,
+  },
+  currencySymbol: {
+    position: 'absolute',
+    left: SPACING.base,
+    top: 14,
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.textMuted,
+    zIndex: 1,
+  },
+  previewText: {
+    fontSize: 13,
+    color: COLORS.teal,
+    fontWeight: '600',
+    marginTop: SPACING.xs,
   },
   errorText: {
     fontSize: 12,
@@ -958,23 +1316,18 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     marginTop: 4,
   },
-  previewText: {
-    fontSize: 13,
-    color: COLORS.teal,
-    marginTop: 4,
-    fontWeight: '500',
-  },
   selectorContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: SPACING.xs,
   },
   selectorOption: {
-    paddingHorizontal: SPACING.base,
-    paddingVertical: 10,
-    borderRadius: 12,
-    borderWidth: 1.5,
+    flex: 1,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.xs,
+    borderWidth: 1,
     borderColor: COLORS.border,
+    borderRadius: 10,
+    alignItems: 'center',
     backgroundColor: COLORS.white,
   },
   selectorOptionActive: {
@@ -1093,4 +1446,3 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
 });
-

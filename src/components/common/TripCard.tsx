@@ -1,7 +1,6 @@
 /**
  * TripCard Component
- * Reusable card for displaying trip information
- * Shows essential trip details with status indicator
+ * Modern card for displaying trip details with route visualizer, badges, and status
  */
 
 import React from 'react';
@@ -13,6 +12,7 @@ import { formatPhilippineDate, formatPhilippineTime } from '../../utils/philippi
 
 interface TripCardProps {
   tripNumber: string;
+  origin?: string;
   destination: string;
   callTime?: Date | string;
   truckNumber?: string;
@@ -25,6 +25,7 @@ interface TripCardProps {
 
 export default function TripCard({
   tripNumber,
+  origin = 'Warehouse Depot',
   destination,
   callTime,
   truckNumber,
@@ -34,7 +35,7 @@ export default function TripCard({
   onPress,
   style,
 }: TripCardProps) {
-  const { colors, fontSizes, fontWeights, lineHeights, spacing, borderRadius, shadows  } = useTheme();
+  const { colors, shadows } = useTheme();
 
   const Container = onPress ? TouchableOpacity : View;
 
@@ -43,80 +44,58 @@ export default function TripCard({
       style={[
         styles.card,
         {
-          backgroundColor: colors.surface,
-          borderRadius: borderRadius.md,
-          padding: spacing[4],
-          ...shadows.base,
+          backgroundColor: '#FFFFFF',
+          ...shadows.sm,
         },
         style,
       ]}
       onPress={onPress}
-      activeOpacity={onPress ? 0.7 : 1}
+      activeOpacity={onPress ? 0.75 : 1}
     >
-      {/* Header */}
+      {/* Top Header Bar */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
+        <View style={styles.tripBadge}>
           <MaterialCommunityIcons 
-            name="truck-delivery" 
-            size={20} 
-            color={colors.primary} 
+            name="truck-outline" 
+            size={16} 
+            color="#0EA5E9" 
           />
-          <Text
-            style={[
-              styles.tripNumber,
-              {
-                color: colors.primary,
-                fontSize: fontSizes.base,
-                fontWeight: fontWeights.semibold,
-              },
-            ]}
-          >
+          <Text style={styles.tripNumber}>
             {tripNumber}
           </Text>
         </View>
+
         <StatusChip status={status} label={statusLabel} size="sm" />
       </View>
 
-      {/* Destination */}
-      <View style={[styles.row, { marginTop: spacing[3] }]}>
-        <MaterialCommunityIcons 
-          name="map-marker" 
-          size={16} 
-          color={colors.textSecondary} 
-        />
-        <Text
-          style={[
-            styles.destination,
-            {
-              color: colors.text,
-              fontSize: fontSizes.base,
-              fontWeight: fontWeights.medium,
-            },
-          ]}
-          numberOfLines={1}
-        >
-          {destination}
-        </Text>
+      {/* Destination / Route */}
+      <View style={styles.routeSection}>
+        <View style={styles.routeIconCol}>
+          <View style={styles.originDot} />
+          <View style={styles.routeLine} />
+          <View style={styles.destinationDot} />
+        </View>
+
+        <View style={styles.routeTextCol}>
+          <Text style={styles.originText} numberOfLines={1}>
+            {origin}
+          </Text>
+          <Text style={styles.destinationText} numberOfLines={1}>
+            {destination}
+          </Text>
+        </View>
       </View>
 
-      {/* Details Grid */}
-      <View style={[styles.detailsGrid, { marginTop: spacing[3], gap: spacing[2] }]}>
+      {/* Footer Details Pills */}
+      <View style={styles.footer}>
         {callTime && (
-          <View style={styles.detailItem}>
+          <View style={styles.infoPill}>
             <MaterialCommunityIcons 
               name="clock-outline" 
-              size={14} 
-              color={colors.textSecondary} 
+              size={13} 
+              color="#64748B" 
             />
-            <Text
-              style={[
-                styles.detailText,
-                {
-                  color: colors.textSecondary,
-                  fontSize: fontSizes.sm,
-                },
-              ]}
-            >
+            <Text style={styles.infoText}>
               {typeof callTime === 'string' 
                 ? callTime 
                 : `${formatPhilippineDate(callTime)} ${formatPhilippineTime(callTime)}`
@@ -126,103 +105,145 @@ export default function TripCard({
         )}
 
         {truckNumber && (
-          <View style={styles.detailItem}>
+          <View style={styles.infoPill}>
             <MaterialCommunityIcons 
-              name="truck" 
-              size={14} 
-              color={colors.textSecondary} 
+              name="car-outline" 
+              size={13} 
+              color="#64748B" 
             />
-            <Text
-              style={[
-                styles.detailText,
-                {
-                  color: colors.textSecondary,
-                  fontSize: fontSizes.sm,
-                },
-              ]}
-            >
+            <Text style={styles.infoText}>
               {truckNumber}
             </Text>
           </View>
         )}
 
         {driverName && (
-          <View style={styles.detailItem}>
+          <View style={styles.infoPill}>
             <MaterialCommunityIcons 
-              name="account" 
-              size={14} 
-              color={colors.textSecondary} 
+              name="account-outline" 
+              size={13} 
+              color="#64748B" 
             />
-            <Text
-              style={[
-                styles.detailText,
-                {
-                  color: colors.textSecondary,
-                  fontSize: fontSizes.sm,
-                },
-              ]}
-            >
+            <Text style={styles.infoText}>
               {driverName}
             </Text>
           </View>
         )}
-      </View>
 
-      {/* Chevron for touchable cards */}
-      {onPress && (
-        <View style={styles.chevron}>
-          <MaterialCommunityIcons 
-            name="chevron-right" 
-            size={20} 
-            color={colors.textTertiary} 
-          />
-        </View>
-      )}
+        {onPress && (
+          <View style={styles.chevronWrap}>
+            <MaterialCommunityIcons 
+              name="chevron-right" 
+              size={18} 
+              color="#94A3B8" 
+            />
+          </View>
+        )}
+      </View>
     </Container>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    position: 'relative',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    marginBottom: 12,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    marginBottom: 14,
   },
-  headerLeft: {
+  tripBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    flex: 1,
+    gap: 6,
+    backgroundColor: '#F0F9FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
   tripNumber: {
-    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#0F1E36',
+    letterSpacing: 0.2,
   },
-  row: {
+  routeSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    marginBottom: 14,
+    gap: 12,
   },
-  destination: {
-    flex: 1,
-  },
-  detailsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  detailItem: {
-    flexDirection: 'row',
+  routeIconCol: {
     alignItems: 'center',
+    justifyContent: 'center',
+    width: 14,
+  },
+  originDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#94A3B8',
+  },
+  routeLine: {
+    width: 2,
+    height: 14,
+    backgroundColor: '#E2E8F0',
+    marginVertical: 2,
+  },
+  destinationDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#0EA5E9',
+  },
+  routeTextCol: {
+    flex: 1,
     gap: 4,
-    marginRight: 12,
   },
-  detailText: {},
-  chevron: {
-    position: 'absolute',
-    right: 12,
-    top: '50%',
-    marginTop: -10,
+  originText: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  destinationText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#0F172A',
+    letterSpacing: -0.2,
+  },
+  footer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  infoPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  infoText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#475569',
+  },
+  chevronWrap: {
+    marginLeft: 'auto',
   },
 });
+
