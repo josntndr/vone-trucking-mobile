@@ -44,7 +44,8 @@ export default function TripCard({
       style={[
         styles.card,
         {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: '#1E293B',
+          borderColor: '#334155',
           ...shadows.sm,
         },
         style,

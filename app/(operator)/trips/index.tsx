@@ -346,25 +346,25 @@ export default function TripsListScreen() {
           {/* Team Assignments */}
           <View style={styles.teamRow}>
             {item.assigned_truck_number ? (
-              <View style={[styles.teamBadge, { backgroundColor: COLORS.navy + '10', borderColor: COLORS.navy + '30' }]}>
-                <Ionicons name="car-outline" size={14} color={COLORS.navy} />
-                <Text style={[styles.teamText, { color: COLORS.navy }]}>
+              <View style={[styles.teamBadge, styles.truckBadge]}>
+                <Ionicons name="car-outline" size={14} color="#E2E8F0" />
+                <Text style={[styles.teamText, { color: '#E2E8F0' }]}>
                   {item.assigned_truck_number}
                 </Text>
               </View>
             ) : null}
             {item.assigned_driver_name ? (
-              <View style={[styles.teamBadge, { backgroundColor: COLORS.teal + '10', borderColor: COLORS.teal + '30' }]}>
-                <Ionicons name="person-outline" size={14} color={COLORS.teal} />
-                <Text style={[styles.teamText, { color: COLORS.teal }]}>
+              <View style={[styles.teamBadge, styles.driverBadge]}>
+                <Ionicons name="person-outline" size={14} color="#38BDF8" />
+                <Text style={[styles.teamText, { color: '#38BDF8' }]}>
                   {item.assigned_driver_name}
                 </Text>
               </View>
             ) : null}
             {item.assigned_porter_name ? (
-              <View style={[styles.teamBadge, { backgroundColor: COLORS.orange + '10', borderColor: COLORS.orange + '30' }]}>
-                <Ionicons name="person-outline" size={14} color={COLORS.orange} />
-                <Text style={[styles.teamText, { color: COLORS.orange }]}>
+              <View style={[styles.teamBadge, styles.porterBadge]}>
+                <Ionicons name="person-outline" size={14} color="#FBBF24" />
+                <Text style={[styles.teamText, { color: '#FBBF24' }]}>
                   {item.assigned_porter_name}
                 </Text>
               </View>
@@ -383,7 +383,7 @@ export default function TripsListScreen() {
               onPress={() => router.push(`/(operator)/trips/${item.id}`)}
               activeOpacity={0.7}
             >
-              <Ionicons name={contextualAction.icon as any} size={16} color={COLORS.navy} />
+              <Ionicons name={contextualAction.icon as any} size={16} color="#0EA5E9" />
               <Text style={styles.actionText}>
                 {contextualAction.label}
               </Text>
@@ -961,7 +961,7 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingHorizontal: SPACING.md,
-    paddingBottom: 32,
+    paddingBottom: 120,
   },
   listContentEmpty: {
     flexGrow: 1,
@@ -1040,11 +1040,23 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 12,
     borderWidth: 1,
-    gap: 4,
+    gap: 5,
+  },
+  truckBadge: {
+    backgroundColor: '#334155',
+    borderColor: '#475569',
+  },
+  driverBadge: {
+    backgroundColor: 'rgba(14, 165, 233, 0.15)',
+    borderColor: 'rgba(14, 165, 233, 0.35)',
+  },
+  porterBadge: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderColor: 'rgba(245, 158, 11, 0.35)',
   },
   teamText: {
     fontSize: 12,
-    fontWeight: DS.typography.fontWeight.semibold,
+    fontWeight: '700',
   },
   unassignedText: {
     fontSize: 13,
@@ -1056,17 +1068,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: COLORS.border,
-    backgroundColor: COLORS.surface,
+    borderColor: '#334155',
+    backgroundColor: '#0F172A',
     borderRadius: 10,
     paddingVertical: 10,
-    gap: 6,
+    gap: 8,
     minHeight: 44,
   },
   actionText: {
     fontSize: 14,
-    fontWeight: DS.typography.fontWeight.semibold,
-    color: COLORS.text,
+    fontWeight: '700',
+    color: '#F8FAFC',
   },
   emptyState: {
     flex: 1,
