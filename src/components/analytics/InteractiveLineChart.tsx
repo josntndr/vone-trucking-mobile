@@ -113,14 +113,17 @@ const PERIOD_DATA = {
 };
 
 const COLORS = {
-  primary: '#3A7D8C',
-  secondary: '#9E9E9E',
-  background: '#FFFCF8',
-  navy: '#1B2A4A',
+  primary: '#0EA5E9',
+  secondary: '#94A3B8',
+  background: '#0B1120',
+  surface: '#1E293B',
+  text: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  navy: '#0F1E36',
   white: '#FFFFFF',
-  success: '#4F7A5E',
-  error: '#C74C47',
-  border: '#E0E0E0',
+  success: '#10B981',
+  error: '#EF4444',
+  border: '#334155',
 };
 
 export default function InteractiveLineChart({
@@ -587,8 +590,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surface,
   },
   periodButtonActive: {
-    backgroundColor: COLORS.teal,
-    borderColor: COLORS.teal,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
   },
   periodButtonText: {
     fontSize: 13,
@@ -597,6 +600,7 @@ const styles = StyleSheet.create({
   },
   periodButtonTextActive: {
     color: COLORS.white,
+    fontWeight: '700',
   },
   chartContainer: {
     position: 'relative',
