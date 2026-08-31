@@ -1,420 +1,534 @@
 /**
  * Location Service
- * Provides access to Philippine location data with caching and search functionality
+ * Handles Philippine address hierarchy with proper Region/Province separation
+ * Supports NCR (no province) and international addresses
  */
 
 import {
   COUNTRIES,
+  REGIONS,
   PROVINCES,
   CITIES,
   BARANGAYS,
-  Country,
-  Province,
-  City,
-  Barangay,
-  getProvincesForCountry,
-  getCitiesForProvince,
-  getBarangaysForCity,
-  getPostalCodesForCity,
-  findProvinceByCode,
-  findCityByCode,
-  findBarangayByCode,
-  formatAddress as formatAddressUtil,
-} from '../data/locations/philippines';
+  type Country,
+  type Region,
+  type Province,
+  type City,
+  type Barangay,
+} from '../data/locations/philippines-complete';
 
 // Cache for search results
 const searchCache = new Map<string, any>();
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 
-// Search debounce timeout
-let searchTimeout: ReturnType<typeof setTimeout> | null = null;
-
-export interface LocationOption {
-  code: string;
-  name: string;
-  label: string; // For display in selectors
+interface CacheEntry {
+  data: any;
+  timestamp: number;
 }
 
-export interface AddressComponents {
-  country: string;
-  countryCode: string;
-  province: string;
-  provinceCode: string;
-  city: string;
-  cityCode: string;
-  barangay: string;
-  barangayCode: string;
-  postalCode: string;
-  addressLine1: string;
+// =============================================================================
+// COUNTRY FUNCTIONS
+// =============================================================================
+
+export function getCountries(): Country[] {
+  return COUNTRIES;
+}
+
+export function getCountryByCode(code: string): Country | undefined {
+  return COUNTRIES.find(c => c.code === code);
+}
+
+export function searchCountries(query: string): Country[] {
+  if (!query.trim()) return COUNTRIES;
+  
+  const lowerQuery = query.toLowerCase();
+  return COUNTRIES.filter(country =>
+    country.name.toLowerCase().includes(lowerQuery) ||
+    country.code.toLowerCase().includes(lowerQuery)
+  );
+}
+
+// =============================================================================
+// REGION FUNCTIONS
+// =============================================================================
+
+export function getRegions(countryCode: string = 'PH'): Region[] {
+  if (countryCode !== 'PH') {
+    // For non-PH countries, return empty (can be extended with other country regions)
+    return [];
+  }
+  return REGIONS;
+}
+
+export function getRegionByCode(regionCode: string): Region | undefined {
+  return REGIONS.find(r => r.code === regionCode);
+}
+
+export function searchRegions(query: string, countryCode: string = 'PH'): Region[] {
+  const regions = getRegions(countryCode);
+  if (!query.trim()) return regions;
+  
+  const lowerQuery = query.toLowerCase();
+  return regions.filter(region =>
+    region.name.toLowerCase().includes(lowerQuery) ||
+    region.code.toLowerCase().includes(lowerQuery)
+  );
+}
+
+/**
+ * Check if a region requires a province
+ * NCR (Region 13) does not have provinces
+ */
+export function regionHasProvinces(regionCode: string): boolean {
+  const region = getRegionByCode(regionCode);
+  return region?.hasProvinces ?? true;
+}
+
+// =============================================================================
+// PROVINCE FUNCTIONS
+// =============================================================================
+
+export function getProvinces(regionCode?: string): Province[] {
+  if (!regionCode) return PROVINCES;
+  
+  // Check if region has provinces
+  if (!regionHasProvinces(regionCode)) {
+    return [];
+  }
+  
+  return PROVINCES.filter(p => p.regionCode === regionCode);
+}
+
+export function getProvinceByCode(provinceCode: string): Province | undefined {
+  return PROVINCES.find(p => p.code === provinceCode);
+}
+
+export function searchProvinces(query: string, regionCode?: string): Province[] {
+  const provinces = getProvinces(regionCode);
+  if (!query.trim()) return provinces;
+  
+  const lowerQuery = query.toLowerCase();
+  return provinces.filter(province =>
+    province.name.toLowerCase().includes(lowerQuery) ||
+    province.code.toLowerCase().includes(lowerQuery)
+  );
+}
+
+// =============================================================================
+// CITY/MUNICIPALITY FUNCTIONS
+// =============================================================================
+
+/**
+ * Get cities/municipalities for a region or province
+ * For NCR: returns cities directly under region (no province filter)
+ * For other regions: returns independent cities before a province is selected
+ */
+export function getCities(params: { regionCode?: string; provinceCode?: string }): City[] {
+  const { regionCode, provinceCode } = params;
+  
+  // If province is specified, filter by province
+  if (provinceCode) {
+    return CITIES.filter(c => c.provinceCode === provinceCode);
+  }
+  
+  // If only region is specified
+  if (regionCode) {
+    // For NCR, return all cities in the region (they don't have provinces)
+    if (!regionHasProvinces(regionCode)) {
+      return CITIES.filter(c => c.regionCode === regionCode && !c.provinceCode);
+    }
+    // For other regions, only independent cities are selectable before a province.
+    return CITIES.filter(c => c.regionCode === regionCode && !c.provinceCode);
+  }
+  
+  return CITIES;
+}
+
+export function getCityByCode(cityCode: string): City | undefined {
+  return CITIES.find(c => c.code === cityCode);
+}
+
+export function searchCities(
+  query: string,
+  params: { regionCode?: string; provinceCode?: string } = {}
+): City[] {
+  const cities = getCities(params);
+  if (!query.trim()) return cities;
+  
+  const lowerQuery = query.toLowerCase();
+  return cities.filter(city =>
+    city.name.toLowerCase().includes(lowerQuery) ||
+    city.code.toLowerCase().includes(lowerQuery) ||
+    city.type.toLowerCase().includes(lowerQuery)
+  );
+}
+
+// =============================================================================
+// BARANGAY FUNCTIONS
+// =============================================================================
+
+export function getBarangays(cityCode?: string): Barangay[] {
+  if (!cityCode) return BARANGAYS;
+  return BARANGAYS.filter(b => b.cityMunicipalityCode === cityCode);
+}
+
+export function getBarangayByCode(barangayCode: string): Barangay | undefined {
+  return BARANGAYS.find(b => b.code === barangayCode);
+}
+
+export function searchBarangays(query: string, cityCode?: string): Barangay[] {
+  const barangays = getBarangays(cityCode);
+  if (!query.trim()) return barangays;
+  
+  const lowerQuery = query.toLowerCase();
+  return barangays.filter(barangay =>
+    barangay.name.toLowerCase().includes(lowerQuery) ||
+    barangay.code.toLowerCase().includes(lowerQuery)
+  );
+}
+
+// =============================================================================
+// VALIDATION FUNCTIONS
+// =============================================================================
+
+export interface AddressValidationResult {
+  isValid: boolean;
+  errors: string[];
+}
+
+export function validateAddress(address: {
+  countryCode?: string;
+  regionCode?: string;
+  provinceCode?: string;
+  cityCode?: string;
+  barangayCode?: string;
+}): AddressValidationResult {
+  const errors: string[] = [];
+
+  // Validate country
+  if (address.countryCode) {
+    const country = getCountryByCode(address.countryCode);
+    if (!country) {
+      errors.push('Invalid country code');
+    }
+  }
+
+  // Validate region
+  if (address.regionCode) {
+    const region = getRegionByCode(address.regionCode);
+    if (!region) {
+      errors.push('Invalid region code');
+    }
+  }
+
+  const selectedCity = address.cityCode ? getCityByCode(address.cityCode) : undefined;
+
+  // Validate province
+  if (address.provinceCode) {
+    const province = getProvinceByCode(address.provinceCode);
+    if (!province) {
+      errors.push('Invalid province code');
+    } else if (address.regionCode && province.regionCode !== address.regionCode) {
+      errors.push('Province does not belong to the selected region');
+    }
+  } else if (selectedCity?.provinceCode) {
+    errors.push('Province is required for this region');
+  }
+
+  // Validate city/municipality
+  if (address.cityCode) {
+    const city = selectedCity;
+    if (!city) {
+      errors.push('Invalid city/municipality code');
+    } else {
+      // Check if city belongs to the correct province (if applicable)
+      if (address.provinceCode && city.provinceCode !== address.provinceCode) {
+        errors.push('City/municipality does not belong to the selected province');
+      }
+      // Check if city belongs to the correct region
+      if (address.regionCode && city.regionCode !== address.regionCode) {
+        errors.push('City/municipality does not belong to the selected region');
+      }
+    }
+  }
+
+  // Validate barangay
+  if (address.barangayCode) {
+    const barangay = getBarangayByCode(address.barangayCode);
+    if (!barangay) {
+      errors.push('Invalid barangay code');
+    } else if (address.cityCode && barangay.cityMunicipalityCode !== address.cityCode) {
+      errors.push('Barangay does not belong to the selected city/municipality');
+    }
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
+export function validatePostalCode(postalCode: string, countryCode: string): boolean {
+  if (countryCode === 'PH') {
+    // Philippine postal code: 4 digits
+    return /^\d{4}$/.test(postalCode);
+  }
+  // Add validation for other countries as needed
+  return true;
+}
+
+// =============================================================================
+// ADDRESS FORMATTING
+// =============================================================================
+
+export interface FormattedAddressOptions {
+  countryCode?: string;
+  countryName?: string;
+  regionCode?: string;
+  regionName?: string;
+  provinceCode?: string;
+  provinceName?: string;
+  cityCode?: string;
+  cityName?: string;
+  barangayCode?: string;
+  barangayName?: string;
+  postalCode?: string;
+  addressLine1?: string;
   addressLine2?: string;
 }
 
 /**
- * Get all available countries
+ * Format address according to Philippine standards
+ * Properly handles NCR (no province) and other special cases
  */
-export function getCountries(): LocationOption[] {
-  return COUNTRIES.map(country => ({
-    code: country.code,
-    name: country.name,
-    label: country.name,
-  }));
-}
+export function formatAddress(options: FormattedAddressOptions): string {
+  const parts: string[] = [];
 
-/**
- * Get provinces for a country
- */
-export function getProvinces(countryCode: string): LocationOption[] {
-  const provinces = getProvincesForCountry(countryCode);
-  return provinces.map(province => ({
-    code: province.code,
-    name: province.name,
-    label: `${province.name} (${province.region})`,
-  }));
-}
-
-/**
- * Get cities/municipalities for a province
- */
-export function getCities(provinceCode: string): LocationOption[] {
-  const cities = getCitiesForProvince(provinceCode);
-  return cities.map(city => ({
-    code: city.code,
-    name: city.name,
-    label: city.type === 'city' ? `${city.name} (City)` : city.name,
-  }));
-}
-
-/**
- * Get barangays for a city
- */
-export function getBarangays(cityCode: string): LocationOption[] {
-  const barangays = getBarangaysForCity(cityCode);
-  return barangays.map(barangay => ({
-    code: barangay.code,
-    name: barangay.name,
-    label: barangay.name,
-  }));
-}
-
-/**
- * Get postal codes for a city
- */
-export function getPostalCodes(cityCode: string): string[] {
-  return getPostalCodesForCity(cityCode);
-}
-
-/**
- * Search provinces by name
- */
-export function searchProvinces(countryCode: string, query: string): LocationOption[] {
-  if (!query.trim()) {
-    return getProvinces(countryCode);
+  // Address Line 1 (House/Unit, Building, Street)
+  if (options.addressLine1) {
+    parts.push(options.addressLine1);
   }
 
-  const cacheKey = `provinces_${countryCode}_${query.toLowerCase()}`;
-  if (searchCache.has(cacheKey)) {
-    return searchCache.get(cacheKey);
+  // Address Line 2 (Apartment, Floor, Landmark)
+  if (options.addressLine2) {
+    parts.push(options.addressLine2);
   }
 
-  const provinces = getProvincesForCountry(countryCode);
-  const searchLower = query.toLowerCase();
+  // Barangay
+  if (options.barangayName) {
+    parts.push(options.barangayName);
+  }
+
+  // City/Municipality
+  if (options.cityName) {
+    parts.push(options.cityName);
+  }
+
+  // Province (only if applicable - not for NCR)
+  if (options.provinceName && options.regionCode) {
+    // Only add province if the region has provinces
+    if (regionHasProvinces(options.regionCode)) {
+      parts.push(options.provinceName);
+    }
+  }
+
+  // Region
+  if (options.regionName) {
+    parts.push(options.regionName);
+  }
+
+  // Postal Code
+  if (options.postalCode) {
+    parts.push(options.postalCode);
+  }
+
+  // Country
+  if (options.countryName) {
+    parts.push(options.countryName);
+  }
+
+  // Join with commas, filter out empty parts
+  return parts.filter(part => part && part.trim()).join(', ');
+}
+
+/**
+ * Get suggested postal codes for a city
+ */
+export function getSuggestedPostalCodes(cityCode: string): string[] {
+  const city = getCityByCode(cityCode);
+  return city?.postalCodes || [];
+}
+
+// =============================================================================
+// LEGACY ADDRESS PARSING (for migration)
+// =============================================================================
+
+export interface ParsedLegacyAddress {
+  addressLine1?: string;
+  addressLine2?: string;
+  cityName?: string;
+  provinceName?: string;
+  regionName?: string;
+  postalCode?: string;
+  needsReview: boolean;
+  matchedCityCode?: string;
+  matchedProvinceCode?: string;
+  matchedRegionCode?: string;
+}
+
+/**
+ * Attempt to parse old combined address strings
+ * Marks ambiguous results for manual review
+ */
+export function parseLegacyAddress(legacyAddress: string): ParsedLegacyAddress {
+  const result: ParsedLegacyAddress = {
+    needsReview: true, // Default to needs review
+  };
+
+  if (!legacyAddress || !legacyAddress.trim()) {
+    return result;
+  }
+
+  // Split by common delimiters
+  const parts = legacyAddress.split(/[,\n]/).map(p => p.trim()).filter(p => p);
+
+  // Try to extract postal code (4 digits for PH)
+  const postalCodeMatch = legacyAddress.match(/\b\d{4}\b/);
+  if (postalCodeMatch) {
+    result.postalCode = postalCodeMatch[0];
+  }
+
+  // Try to match city names
+  for (const part of parts) {
+    const matchedCity = CITIES.find(c => 
+      c.name.toLowerCase() === part.toLowerCase()
+    );
+    if (matchedCity) {
+      result.cityName = matchedCity.name;
+      result.matchedCityCode = matchedCity.code;
+      
+      // If city has a province, try to match it
+      if (matchedCity.provinceCode) {
+        const province = getProvinceByCode(matchedCity.provinceCode);
+        if (province) {
+          result.provinceName = province.name;
+          result.matchedProvinceCode = province.code;
+          result.matchedRegionCode = province.regionCode;
+          
+          const region = getRegionByCode(province.regionCode);
+          if (region) {
+            result.regionName = region.name;
+          }
+        }
+      } else if (matchedCity.regionCode) {
+        // NCR city - no province
+        const region = getRegionByCode(matchedCity.regionCode);
+        if (region) {
+          result.regionName = region.name;
+          result.matchedRegionCode = region.code;
+        }
+      }
+      break;
+    }
+  }
+
+  // If we found a complete match, mark as not needing review
+  if (result.matchedCityCode && (result.matchedProvinceCode || result.matchedRegionCode === '1300000000')) {
+    result.needsReview = false;
+  }
+
+  // Use remaining parts as address lines
+  const usedParts = new Set([result.cityName, result.provinceName, result.regionName, result.postalCode]);
+  const addressParts = parts.filter(p => !usedParts.has(p) && !/^\d{4}$/.test(p));
   
-  const results = provinces
-    .filter(province => 
-      province.name.toLowerCase().includes(searchLower) ||
-      province.region.toLowerCase().includes(searchLower)
-    )
-    .map(province => ({
-      code: province.code,
-      name: province.name,
-      label: `${province.name} (${province.region})`,
-    }));
+  if (addressParts.length > 0) {
+    result.addressLine1 = addressParts[0];
+  }
+  if (addressParts.length > 1) {
+    result.addressLine2 = addressParts.slice(1).join(', ');
+  }
 
-  searchCache.set(cacheKey, results);
-  return results;
+  return result;
 }
 
-/**
- * Search cities by name
- */
-export function searchCities(provinceCode: string, query: string): LocationOption[] {
-  if (!query.trim()) {
-    return getCities(provinceCode);
-  }
-
-  const cacheKey = `cities_${provinceCode}_${query.toLowerCase()}`;
-  if (searchCache.has(cacheKey)) {
-    return searchCache.get(cacheKey);
-  }
-
-  const cities = getCitiesForProvince(provinceCode);
-  const searchLower = query.toLowerCase();
-  
-  const results = cities
-    .filter(city => city.name.toLowerCase().includes(searchLower))
-    .map(city => ({
-      code: city.code,
-      name: city.name,
-      label: city.type === 'city' ? `${city.name} (City)` : city.name,
-    }));
-
-  searchCache.set(cacheKey, results);
-  return results;
-}
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
 
 /**
- * Search barangays by name
+ * Check if location data is complete enough for the selected area
  */
-export function searchBarangays(cityCode: string, query: string): LocationOption[] {
-  if (!query.trim()) {
-    return getBarangays(cityCode);
-  }
-
-  const cacheKey = `barangays_${cityCode}_${query.toLowerCase()}`;
-  if (searchCache.has(cacheKey)) {
-    return searchCache.get(cacheKey);
-  }
-
-  const barangays = getBarangaysForCity(cityCode);
-  const searchLower = query.toLowerCase();
+export function isLocationDataComplete(regionCode: string, provinceCode?: string): {
+  hasCities: boolean;
+  hasBarangays: boolean;
+  message?: string;
+} {
+  const cities = getCities({ regionCode, provinceCode });
   
-  const results = barangays
-    .filter(barangay => barangay.name.toLowerCase().includes(searchLower))
-    .map(barangay => ({
-      code: barangay.code,
-      name: barangay.name,
-      label: barangay.name,
-    }));
-
-  searchCache.set(cacheKey, results);
-  return results;
-}
-
-/**
- * Validate location hierarchy
- * Ensures city belongs to province and barangay belongs to city
- */
-export function validateLocationHierarchy(
-  provinceCode: string,
-  cityCode: string,
-  barangayCode: string
-): { valid: boolean; error?: string } {
-  // Validate city belongs to province
-  const city = findCityByCode(cityCode);
-  if (!city) {
-    return { valid: false, error: 'Invalid city code' };
-  }
-  
-  if (city.provinceCode !== provinceCode) {
-    return { valid: false, error: 'This city does not belong to the selected province' };
+  if (cities.length === 0) {
+    return {
+      hasCities: false,
+      hasBarangays: false,
+      message: 'Location data for this area could not be loaded. Please retry.',
+    };
   }
 
-  // Validate barangay belongs to city
-  const barangay = findBarangayByCode(barangayCode);
-  if (!barangay) {
-    return { valid: false, error: 'Invalid barangay code' };
-  }
-  
-  if (barangay.cityCode !== cityCode) {
-    return { valid: false, error: 'This barangay does not belong to the selected city' };
-  }
-
-  return { valid: true };
-}
-
-/**
- * Get address components from codes
- */
-export function getAddressComponents(
-  countryCode: string,
-  provinceCode: string,
-  cityCode: string,
-  barangayCode: string,
-  postalCode: string,
-  addressLine1: string,
-  addressLine2?: string
-): AddressComponents | null {
-  const country = COUNTRIES.find(c => c.code === countryCode);
-  const province = findProvinceByCode(provinceCode);
-  const city = findCityByCode(cityCode);
-  const barangay = findBarangayByCode(barangayCode);
-
-  if (!country || !province || !city || !barangay) {
-    return null;
-  }
+  // Check if at least one city has barangay data
+  const hasBarangays = cities.some(city => {
+    const barangays = getBarangays(city.code);
+    return barangays.length > 0;
+  });
 
   return {
-    country: country.name,
-    countryCode: country.code,
-    province: province.name,
-    provinceCode: province.code,
-    city: city.name,
-    cityCode: city.code,
-    barangay: barangay.name,
-    barangayCode: barangay.code,
-    postalCode,
-    addressLine1,
-    addressLine2,
+    hasCities: true,
+    hasBarangays,
+    message: hasBarangays ? undefined : 'Barangay data could not be loaded for this area. Please retry.',
   };
 }
 
 /**
- * Format complete address for display
+ * Get location hierarchy display text
  */
-export function formatAddress(components: {
-  addressLine1: string;
-  addressLine2?: string;
-  barangayCode: string;
-  cityCode: string;
-  provinceCode: string;
-  postalCode: string;
-  countryCode: string;
+export function getLocationHierarchyText(locationCodes: {
+  countryCode?: string;
+  regionCode?: string;
+  provinceCode?: string;
+  cityCode?: string;
+  barangayCode?: string;
 }): string {
-  return formatAddressUtil(components);
-}
+  const parts: string[] = [];
 
-/**
- * Format address with line 2 included
- */
-export function formatAddressWithLine2(components: {
-  addressLine1: string;
-  addressLine2?: string;
-  barangayCode: string;
-  cityCode: string;
-  provinceCode: string;
-  postalCode: string;
-  countryCode: string;
-}): string {
-  const barangay = findBarangayByCode(components.barangayCode);
-  const city = findCityByCode(components.cityCode);
-  const province = findProvinceByCode(components.provinceCode);
-  const country = COUNTRIES.find(c => c.code === components.countryCode);
-
-  const addressParts: string[] = [];
-  
-  // Add address lines
-  addressParts.push(components.addressLine1);
-  if (components.addressLine2?.trim()) {
-    addressParts.push(components.addressLine2);
-  }
-  
-  // Add location hierarchy
-  if (barangay) addressParts.push(barangay.name);
-  if (city) addressParts.push(city.name);
-  if (province) addressParts.push(province.name);
-  addressParts.push(components.postalCode);
-  if (country) addressParts.push(country.name);
-
-  return addressParts.filter(Boolean).join(', ');
-}
-
-/**
- * Validate Philippine postal code format
- */
-export function validatePostalCode(postalCode: string, cityCode: string): { valid: boolean; error?: string } {
-  // Philippine postal codes are 4 digits
-  if (!/^\d{4}$/.test(postalCode)) {
-    return { valid: false, error: 'Postal code must be exactly 4 digits' };
+  if (locationCodes.countryCode) {
+    const country = getCountryByCode(locationCodes.countryCode);
+    if (country) parts.push(country.name);
   }
 
-  // Check if postal code is valid for the city
-  const validCodes = getPostalCodesForCity(cityCode);
-  if (validCodes.length > 0 && !validCodes.includes(postalCode)) {
-    return { 
-      valid: false, 
-      error: `This postal code is not valid for the selected city. Expected: ${validCodes.join(', ')}` 
-    };
+  if (locationCodes.regionCode) {
+    const region = getRegionByCode(locationCodes.regionCode);
+    if (region) parts.push(region.name);
   }
 
-  return { valid: true };
+  if (locationCodes.provinceCode) {
+    const province = getProvinceByCode(locationCodes.provinceCode);
+    if (province) parts.push(province.name);
+  }
+
+  if (locationCodes.cityCode) {
+    const city = getCityByCode(locationCodes.cityCode);
+    if (city) parts.push(city.name);
+  }
+
+  if (locationCodes.barangayCode) {
+    const barangay = getBarangayByCode(locationCodes.barangayCode);
+    if (barangay) parts.push(barangay.name);
+  }
+
+  return parts.join(' -> ');
 }
 
 /**
- * Get suggested postal code for a city
- */
-export function getSuggestedPostalCode(cityCode: string): string | null {
-  const codes = getPostalCodesForCity(cityCode);
-  return codes.length > 0 ? codes[0] : null;
-}
-
-/**
- * Clear search cache
+ * Clear cached search results
  */
 export function clearLocationCache(): void {
   searchCache.clear();
-}
-
-/**
- * Parse legacy address string (best effort)
- * This attempts to extract structured components from old single-line addresses
- * Returns null if parsing is not reliable
- */
-export function parseLegacyAddress(address: string): {
-  addressLine1?: string;
-  city?: string;
-  province?: string;
-  confidence: 'high' | 'low' | 'none';
-} | null {
-  if (!address || address.trim().length < 10) {
-    return null;
-  }
-
-  const parts = address.split(',').map(p => p.trim());
-  
-  // Look for known provinces in the address
-  const foundProvince = PROVINCES.find(p => 
-    address.toLowerCase().includes(p.name.toLowerCase())
-  );
-
-  // Look for known cities in the address
-  const foundCity = CITIES.find(c => 
-    address.toLowerCase().includes(c.name.toLowerCase())
-  );
-
-  if (foundProvince && foundCity) {
-    // High confidence: both province and city found
-    const cityIndex = parts.findIndex(p => 
-      p.toLowerCase().includes(foundCity.name.toLowerCase())
-    );
-    
-    const addressLine1 = parts.slice(0, cityIndex).join(', ');
-    
-    return {
-      addressLine1: addressLine1 || parts[0],
-      city: foundCity.name,
-      province: foundProvince.name,
-      confidence: 'high',
-    };
-  }
-
-  if (foundCity || foundProvince) {
-    // Low confidence: only one component found
-    return {
-      addressLine1: parts[0],
-      city: foundCity?.name,
-      province: foundProvince?.name,
-      confidence: 'low',
-    };
-  }
-
-  // No confidence: couldn't parse
-  return {
-    addressLine1: address,
-    confidence: 'none',
-  };
-}
-
-/**
- * Check if address appears to be structured (has location codes)
- */
-export function isStructuredAddress(address: any): boolean {
-  return (
-    address &&
-    typeof address === 'object' &&
-    'countryCode' in address &&
-    'provinceCode' in address &&
-    'cityCode' in address &&
-    'barangayCode' in address &&
-    'postalCode' in address &&
-    'addressLine1' in address
-  );
 }

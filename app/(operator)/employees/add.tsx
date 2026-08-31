@@ -87,6 +87,8 @@ export default function AddEmployeeScreen() {
       // Structured address fields (required)
       country: 'Philippines',
       country_code: 'PH',
+      region: '',
+      region_code: '',
       province: '',
       province_code: '',
       city: '',
@@ -791,8 +793,8 @@ export default function AddEmployeeScreen() {
             </View>
           </View>
 
-          {/* Bottom spacing for keyboard */}
-          <View style={{ height: 120 }} />
+
+
         </ScrollView>
 
         {/* Sticky Footer */}
@@ -830,7 +832,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  scrollContent: {
+    scrollContent: {
+
     paddingBottom: 100,
   },
   header: {
@@ -1081,7 +1084,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.navy,
   },
   createButtonDisabled: {
-    backgroundColor: COLORS.border,
+    backgroundColor: COLORS.navy,
+    opacity: 0.5,
   },
   createButtonText: {
     fontSize: 16,
