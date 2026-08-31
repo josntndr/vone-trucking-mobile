@@ -259,20 +259,20 @@ export const DESIGN_SYSTEM = {
     
     // FAB (Floating Action Button)
     fab: {
-      width: 56,
-      height: 56,
-      borderRadius: 28,
-      backgroundColor: '#0F1E36',
+      width: 60,
+      height: 60,
+      borderRadius: 30,
+      backgroundColor: '#0EA5E9',
       justifyContent: 'center' as const,
       alignItems: 'center' as const,
       position: 'absolute' as const,
       bottom: 24,
       right: 20,
-      shadowColor: '#0F1E36',
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.3,
+      shadowColor: '#0EA5E9',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.4,
       shadowRadius: 12,
-      elevation: 5,
+      elevation: 6,
     },
     
     // Search Bar
