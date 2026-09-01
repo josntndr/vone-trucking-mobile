@@ -6,11 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#1A237E"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vonetrucking.mobile"
@@ -29,7 +24,15 @@
       "expo-router",
       "expo-font",
       "expo-sharing",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#1A237E"
+        }
+      ]
     ]
   }
 }

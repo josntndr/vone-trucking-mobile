@@ -221,14 +221,14 @@ export default function DriverHome() {
         ...prev,
         status: TripStatus.IN_TRANSIT,
       }));
-      setFeedbackMessage('🚚 Trip started! Live In-App Navigation is active.');
+      setFeedbackMessage('Trip started! Live In-App Navigation is active.');
       setTimeout(() => setFeedbackMessage(null), 5000);
     } else if (status === TripStatus.IN_TRANSIT) {
       setCurrentTrip((prev) => ({
         ...prev,
         status: TripStatus.UNLOADING,
       }));
-      setFeedbackMessage('📍 Arrival confirmed. Coordinate cargo unloading with helper.');
+      setFeedbackMessage('Arrival confirmed. Coordinate cargo unloading with helper.');
       setTimeout(() => setFeedbackMessage(null), 5000);
     } else if (status === TripStatus.UNLOADING) {
       setCurrentTrip((prev) => ({
@@ -236,7 +236,7 @@ export default function DriverHome() {
         status: TripStatus.COMPLETED,
       }));
       setCompletedTripsCount((prev) => prev + 1);
-      setFeedbackMessage('🎉 Delivery completed! Proof of delivery recorded to your earnings.');
+      setFeedbackMessage('Delivery completed! Proof of delivery recorded to your earnings.');
       setTimeout(() => setFeedbackMessage(null), 6000);
     } else if (status === TripStatus.COMPLETED) {
       setCurrentTrip(INITIAL_TRIP);

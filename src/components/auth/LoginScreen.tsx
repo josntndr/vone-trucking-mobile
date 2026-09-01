@@ -794,12 +794,14 @@ const styles = StyleSheet.create({
   
   // ==================== Sign In Button ====================
   signInButton: {
-    backgroundColor: '#0EA5E9',
+    backgroundColor: '#0F1E36',
     borderRadius: 14,
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#0EA5E9',
+    borderWidth: 1,
+    borderColor: '#1E293B',
+    shadowColor: '#0F1E36',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
     shadowRadius: 10,

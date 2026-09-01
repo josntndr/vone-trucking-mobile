@@ -317,15 +317,16 @@ export default function OperatorHome() {
   };
 
   const getGreeting = () => {
-    const hour = new Date().getHours();
+    const manilaTimeStr = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila' });
+    const hour = new Date(manilaTimeStr).getHours();
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   };
 
   const getFormattedDate = () => {
-    const date = new Date();
-    return date.toLocaleDateString('en-US', {
+    return new Date().toLocaleDateString('en-US', {
+      timeZone: 'Asia/Manila',
       weekday: 'short',
       month: 'short',
       day: 'numeric',
@@ -333,7 +334,7 @@ export default function OperatorHome() {
   };
 
   const formatTripRoute = (trip: Trip) => {
-    const origin = (trip as any).pickup_location || (trip as any).pickup_warehouse || (trip as any).origin || 'Depot';
+    const origin = (trip as any).pickup_location || (trip as any).pickup_warehouse || (trip as any).origin || 'Imus Plant';
     const dest = (trip as any).delivery_destination || (trip as any).destination || 'Delivery';
     return `${origin} → ${dest}`;
   };

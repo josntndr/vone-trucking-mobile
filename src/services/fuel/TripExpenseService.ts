@@ -481,9 +481,18 @@ export class TripExpenseService {
       expense.notes || '',
     ]);
 
+    const sanitizeCell = (val: any): string => {
+      if (val === null || val === undefined) return '""';
+      let str = String(val);
+      if (/^[=+\-@\t\r]/.test(str)) {
+        str = `'${str}`;
+      }
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
     const csvContent = [
       headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
+      ...rows.map(row => row.map(cell => sanitizeCell(cell)).join(',')),
     ].join('\n');
 
     return csvContent;

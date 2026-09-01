@@ -18,6 +18,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import * as Print from 'expo-print';
 import type {
   ReportType,
   ReportFilters,
@@ -479,7 +480,7 @@ export class ReportGenerationService {
   }
 
   /**
-   * Export report to CSV
+   * Export report to CSV with spreadsheet formula injection protection
    */
   async exportToCSV(reportData: ReportData): Promise<string> {
     try {
@@ -493,23 +494,30 @@ export class ReportGenerationService {
       const headers = Object.keys(data[0]);
       let csv = headers.join(',') + '\n';
 
+      // Helper to sanitize CSV field against formula injection (=, +, -, @)
+      const sanitizeCsvField = (val: any): string => {
+        if (val === null || val === undefined) return '';
+        let str = String(val);
+        // Formula injection protection: prepend single quote if string starts with formula trigger characters
+        if (/^[=+\-@\t\r]/.test(str)) {
+          str = `'${str}`;
+        }
+        if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
       // Add data rows
       data.forEach((row: any) => {
-        const values = headers.map(header => {
-          const value = row[header];
-          // Escape values containing commas or quotes
-          if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
-            return `"${value.replace(/"/g, '""')}"`;
-          }
-          return value || '';
-        });
+        const values = headers.map(header => sanitizeCsvField(row[header]));
         csv += values.join(',') + '\n';
       });
 
       // Add summary section
       csv += '\n\nSUMMARY\n';
       Object.entries(reportData.summary).forEach(([key, value]) => {
-        csv += `${key},${value}\n`;
+        csv += `${sanitizeCsvField(key)},${sanitizeCsvField(value)}\n`;
       });
 
       // Save to file
@@ -536,31 +544,27 @@ export class ReportGenerationService {
   }
 
   /**
-   * Export report to PDF (mock implementation)
-   * In production, use a proper PDF library like react-native-pdf or similar
+   * Export report to real PDF using expo-print
    */
   async exportToPDF(reportData: ReportData): Promise<string> {
     try {
       // Generate HTML content
       const htmlContent = this.generateReportHTML(reportData);
 
-      // Save HTML as text file (mock - in production, convert to PDF)
-      const fileName = `${reportData.report_type.id}_${Date.now()}.html`;
-      const fileUri = `${FileSystem.documentDirectory}${fileName}`;
-      
-      await FileSystem.writeAsStringAsync(fileUri, htmlContent, {
-        encoding: FileSystem.EncodingType.UTF8,
+      // Generate real PDF file
+      const { uri } = await Print.printToFileAsync({
+        html: htmlContent,
       });
 
       // Share file
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri, {
-          mimeType: 'text/html',
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
           dialogTitle: `Export ${reportData.report_type.name}`,
         });
       }
 
-      return fileUri;
+      return uri;
     } catch (error) {
       console.error('[Reports] Failed to export PDF:', error);
       throw error;

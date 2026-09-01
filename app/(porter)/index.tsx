@@ -122,14 +122,14 @@ export default function PorterHome() {
         status: TripStatus.IN_TRANSIT,
         itemsLoaded: prev.itemsCount,
       }));
-      setFeedbackMessage('✅ Loading verified! Truck is now in transit to delivery destination.');
+      setFeedbackMessage('Loading verified! Truck is now in transit to delivery destination.');
       setTimeout(() => setFeedbackMessage(null), 5000);
     } else if (status === TripStatus.IN_TRANSIT) {
       setCurrentAssignment((prev) => ({
         ...prev,
         status: TripStatus.UNLOADING,
       }));
-      setFeedbackMessage('📍 Arrival confirmed! Prepare for cargo unloading & customer handover.');
+      setFeedbackMessage('Arrival confirmed! Prepare for cargo unloading and customer handover.');
       setTimeout(() => setFeedbackMessage(null), 5000);
     } else if (status === TripStatus.UNLOADING) {
       setCurrentAssignment((prev) => ({
@@ -137,7 +137,7 @@ export default function PorterHome() {
         status: TripStatus.COMPLETED,
       }));
       setHandledCount((prev) => prev + currentAssignment.itemsCount);
-      setFeedbackMessage('🎉 Unloading completed! Handover recorded in your helper earnings.');
+      setFeedbackMessage('Unloading completed! Handover recorded in your helper earnings.');
       setTimeout(() => setFeedbackMessage(null), 6000);
     } else if (status === TripStatus.COMPLETED) {
       setCurrentAssignment(INITIAL_ASSIGNMENT);
