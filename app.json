@@ -33,6 +33,13 @@
           "backgroundColor": "#1A237E"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "03ec9c6f-a234-458f-a203-485673848e57"
+      }
+    },
+    "owner": "josephinesantander"
   }
 }
