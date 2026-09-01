@@ -20,9 +20,9 @@ const DEFAULT_DEMO_EMPLOYEES: Employee[] = [
   {
     id: 'vone-admin-001',
     employee_id: 'ADMIN-001',
-    first_name: 'System',
-    last_name: 'Administrator',
-    full_name: 'System Administrator',
+    first_name: 'Operator',
+    last_name: 'Admin',
+    full_name: 'Operator Admin',
     phone: '+63 917 000 0000',
     address: '',
     role: UserRole.OPERATOR,

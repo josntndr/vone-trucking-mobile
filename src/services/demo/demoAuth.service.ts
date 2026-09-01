@@ -28,8 +28,8 @@ const INITIAL_OPERATOR: DemoUser = {
   profile: {
     id: 'vone-admin-001',
     employee_id: 'ADMIN-001',
-    first_name: 'System',
-    last_name: 'Administrator',
+    first_name: 'Operator',
+    last_name: 'Admin',
     phone: '+63 917 000 0000',
     role: 'operator' as UserRole,
     hire_date: '2024-01-01',

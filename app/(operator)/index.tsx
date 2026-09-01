@@ -407,14 +407,14 @@ export default function OperatorHome() {
             <View style={styles.avatarRow}>
               <View style={styles.avatarCapsule}>
                 <Text style={styles.avatarLetter}>
-                  {(user?.user_metadata?.first_name || 'Admin')[0].toUpperCase()}
+                  {((user?.user_metadata?.first_name && user.user_metadata.first_name !== 'System' ? user.user_metadata.first_name : 'Operator')[0]).toUpperCase()}
                 </Text>
                 <View style={[styles.onlineDot, { borderColor: colors.surface }]} />
               </View>
               <View>
                 <Text style={[styles.greeting, { color: colors.textSecondary }]}>{getGreeting()},</Text>
                 <Text style={[styles.username, { color: colors.text }]}>
-                  {user?.user_metadata?.first_name || 'Operator'}
+                  {user?.user_metadata?.first_name && user.user_metadata.first_name !== 'System' ? user.user_metadata.first_name : 'Operator'}
                 </Text>
               </View>
             </View>
