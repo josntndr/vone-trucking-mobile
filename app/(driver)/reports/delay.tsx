@@ -136,7 +136,7 @@ export default function DelayReportScreen() {
                 styles.reasonButton,
                 {
                   backgroundColor:
-                    selectedReason === reason.value ? colors.warningLight : colors.surface,
+                    selectedReason === reason.value ? colors.warning + '20' : colors.surface,
                   borderColor:
                     selectedReason === reason.value ? colors.warning : colors.border,
                 },

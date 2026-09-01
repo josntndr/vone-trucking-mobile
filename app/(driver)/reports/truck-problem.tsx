@@ -148,7 +148,7 @@ export default function TruckProblemReportScreen() {
                 styles.typeButton,
                 {
                   backgroundColor:
-                    problemType === type.value ? colors.errorLight : colors.surface,
+                    problemType === type.value ? colors.error + '20' : colors.surface,
                   borderColor:
                     problemType === type.value ? colors.error : colors.border,
                 },

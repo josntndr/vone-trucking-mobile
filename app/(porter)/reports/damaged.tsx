@@ -130,9 +130,9 @@ export default function DamagedProductReportScreen() {
       contentContainerStyle={styles.content}
     >
       {/* Info Banner */}
-      <Card style={[styles.banner, { backgroundColor: colors.errorLight }]}>
+      <Card style={[styles.banner, { backgroundColor: colors.error + '1A', borderColor: colors.error + '50', borderWidth: 1 }]}>
         <MaterialCommunityIcons name="alert-octagon" size={24} color={colors.error} />
-        <Text style={[styles.bannerText, { color: colors.error }]}>
+        <Text style={[styles.bannerText, { color: colors.text }]}>
           Report items that arrived or were delivered in damaged condition
         </Text>
       </Card>
@@ -178,7 +178,7 @@ export default function DamagedProductReportScreen() {
               style={[
                 styles.damageTypeButton,
                 {
-                  backgroundColor: damageType === type.id ? colors.errorLight : colors.surface,
+                  backgroundColor: damageType === type.id ? colors.error + '20' : colors.surface,
                   borderColor: damageType === type.id ? colors.error : colors.border,
                 },
               ]}

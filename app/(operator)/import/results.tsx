@@ -158,13 +158,13 @@ export default function ResultsScreen() {
 
         {/* Success Message */}
         {imported > 0 && (
-          <Card style={[styles.messageCard, { backgroundColor: colors.successLight }]}>
+          <Card style={[styles.messageCard, { backgroundColor: colors.success + '1A', borderColor: colors.success + '50', borderWidth: 1 }]}>
             <MaterialCommunityIcons
               name="check-circle"
               size={24}
               color={colors.success}
             />
-            <Text style={[styles.messageText, { color: colors.success }]}>
+            <Text style={[styles.messageText, { color: colors.text }]}>
               {imported} {imported === 1 ? 'trip has' : 'trips have'} been successfully
               created and are now available in your trip list.
             </Text>
@@ -173,13 +173,13 @@ export default function ResultsScreen() {
 
         {/* Warning Message */}
         {skipped > 0 && (
-          <Card style={[styles.messageCard, { backgroundColor: colors.warningLight }]}>
+          <Card style={[styles.messageCard, { backgroundColor: colors.warning + '1A', borderColor: colors.warning + '50', borderWidth: 1 }]}>
             <MaterialCommunityIcons
               name="alert"
               size={24}
               color={colors.warning}
             />
-            <Text style={[styles.messageText, { color: colors.warning }]}>
+            <Text style={[styles.messageText, { color: colors.text }]}>
               {skipped} {skipped === 1 ? 'row was' : 'rows were'} skipped because they
               contained duplicate delivery references or validation errors.
             </Text>
@@ -188,13 +188,13 @@ export default function ResultsScreen() {
 
         {/* Error Message */}
         {failed > 0 && (
-          <Card style={[styles.messageCard, { backgroundColor: colors.errorLight }]}>
+          <Card style={[styles.messageCard, { backgroundColor: colors.error + '1A', borderColor: colors.error + '50', borderWidth: 1 }]}>
             <MaterialCommunityIcons
               name="alert-circle"
               size={24}
               color={colors.error}
             />
-            <Text style={[styles.messageText, { color: colors.error }]}>
+            <Text style={[styles.messageText, { color: colors.text }]}>
               {failed} {failed === 1 ? 'row' : 'rows'} failed to import due to errors.
               Check the import history for details.
             </Text>

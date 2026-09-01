@@ -142,9 +142,9 @@ export default function RejectedProductReportScreen() {
       contentContainerStyle={styles.content}
     >
       {/* Info Banner */}
-      <Card style={[styles.banner, { backgroundColor: colors.errorLight }]}>
+      <Card style={[styles.banner, { backgroundColor: colors.error + '1A', borderColor: colors.error + '50', borderWidth: 1 }]}>
         <MaterialCommunityIcons name="arrow-u-left-top" size={24} color={colors.error} />
-        <Text style={[styles.bannerText, { color: colors.error }]}>
+        <Text style={[styles.bannerText, { color: colors.text }]}>
           Report items that were refused or returned by the customer
         </Text>
       </Card>
@@ -190,7 +190,7 @@ export default function RejectedProductReportScreen() {
               style={[
                 styles.reasonButton,
                 {
-                  backgroundColor: rejectionReason === reason.id ? colors.errorLight : colors.surface,
+                  backgroundColor: rejectionReason === reason.id ? colors.error + '20' : colors.surface,
                   borderColor: rejectionReason === reason.id ? colors.error : colors.border,
                 },
               ]}

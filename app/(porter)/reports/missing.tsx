@@ -115,9 +115,9 @@ export default function MissingProductReportScreen() {
       contentContainerStyle={styles.content}
     >
       {/* Info Banner */}
-      <Card style={[styles.banner, { backgroundColor: colors.warningLight }]}>
+      <Card style={[styles.banner, { backgroundColor: colors.warning + '1A', borderColor: colors.warning + '50', borderWidth: 1 }]}>
         <MaterialCommunityIcons name="alert" size={24} color={colors.warning} />
-        <Text style={[styles.bannerText, { color: colors.warning }]}>
+        <Text style={[styles.bannerText, { color: colors.text }]}>
           Report items that are missing from the manifest or delivery
         </Text>
       </Card>

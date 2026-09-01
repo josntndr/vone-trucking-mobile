@@ -134,9 +134,9 @@ export default function CashAdvanceScreen() {
           </Text>
 
           {item.status === 'rejected' && item.rejection_reason && (
-            <View style={[styles.rejectionBox, { backgroundColor: colors.errorLight }]}>
+            <View style={[styles.rejectionBox, { backgroundColor: colors.error + '1A', borderColor: colors.error + '50', borderWidth: 1 }]}>
               <MaterialCommunityIcons name="close-circle" size={16} color={colors.error} />
-              <Text style={[styles.rejectionText, { color: colors.error }]}>
+              <Text style={[styles.rejectionText, { color: colors.text }]}>
                 {item.rejection_reason}
               </Text>
             </View>
