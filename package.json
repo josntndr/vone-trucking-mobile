@@ -58,7 +58,11 @@
     "psgc:build": "node scripts/build-psgc-dataset.js",
     "psgc:download": "node scripts/build-psgc-dataset.js --download",
     "psgc:validate": "node scripts/validate-psgc-dataset.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:web": "expo export -p web",
+    "build:apk": "eas build -p android --profile preview",
+    "build:android": "eas build -p android --profile production",
+    "build:ios": "eas build -p ios --profile production"
   },
   "private": true
 }
