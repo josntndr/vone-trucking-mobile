@@ -512,7 +512,7 @@ export default function LoginScreen({
               <ActivityIndicator color="#FFFFFF" size="small" />
             ) : (
               <View style={styles.btnRow}>
-                <Text style={styles.signInButtonText}>Sign In to Fleet</Text>
+                <Text style={styles.signInButtonText}>Sign In</Text>
                 <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
               </View>
             )}
